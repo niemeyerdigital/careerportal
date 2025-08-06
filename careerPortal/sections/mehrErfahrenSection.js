@@ -1,14 +1,12 @@
 /**
  * Mehr Erfahren Section
- * Sticky scroll section with stacking cards - based on SalesHAX pattern
+ * Simple sticky card stack - based on vertical stack pattern
  */
 
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.cards = [];
-        this.stickyContainer = null;
-        this.stickyWrapper = null;
         this.initializeMehrErfahren();
     }
 
@@ -22,13 +20,12 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         }
 
         this.createMehrErfahrenHTML();
-        this.setupScrollHandler();
         this.initializeAnimations();
         this.bindEvents();
     }
 
     /**
-     * Create the HTML structure based on SalesHAX pattern
+     * Create the HTML structure based on simple sticky stack pattern
      */
     createMehrErfahrenHTML() {
         const orderedCards = this.getOrderedCards();
@@ -36,24 +33,19 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         this.container.innerHTML = `
             <div class="mehr-erfahren-wrapper">
                 <!-- Static Header -->
-                <div class="static-header">
-                    <div class="static-header-content">
-                        <h1>Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
-                        <p>Viele ziemlich gute Gründe.</p>
-                    </div>
+                <div class="section-header">
+                    <h1>Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
+                    <p>Viele ziemlich gute Gründe.</p>
                 </div>
 
-                <!-- Sticky Scroll Section -->
-                <section class="sticky-container">
-                    <div class="sticky-wrapper">
-                        ${orderedCards.map((card, index) => this.createCardHTML(card, index)).join('')}
-                    </div>
-                </section>
+                <!-- Sticky Cards Container -->
+                <div class="cards-wrapper">
+                    ${orderedCards.map((card, index) => this.createCardHTML(card, index)).join('')}
+                </div>
             </div>
         `;
 
-        this.stickyContainer = this.container.querySelector('.sticky-container');
-        this.stickyWrapper = this.container.querySelector('.sticky-wrapper');
+        // Cache DOM elements
         this.cards = this.container.querySelectorAll('.card');
     }
 
@@ -102,7 +94,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      */
     createAboutCardHTML(card, index) {
         return `
-            <div class="card" data-card="${index}">
+            <div class="card" data-index="${index}">
                 <div class="card-content">
                     <i class="${card.icon || 'fas fa-building'} card-icon"></i>
                     <h2>${card.title || 'Über Uns'}</h2>
@@ -126,7 +118,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         ).join('');
 
         return `
-            <div class="card" data-card="${index}">
+            <div class="card" data-index="${index}">
                 <div class="card-content">
                     <i class="${card.icon || 'fas fa-star'} card-icon"></i>
                     <h2>${card.title || 'Deine Vorteile'}</h2>
@@ -162,7 +154,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         ).join('');
 
         return `
-            <div class="card" data-card="${index}">
+            <div class="card" data-index="${index}">
                 <div class="card-content">
                     <i class="${card.icon || 'fas fa-question-circle'} card-icon"></i>
                     <h2>${card.title || 'Häufige Fragen'}</h2>
@@ -179,80 +171,6 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Setup scroll handler for sticky behavior (SalesHAX pattern)
-     */
-    setupScrollHandler() {
-        this.handleScroll = this.debounce(() => {
-            this.updateCards();
-        }, 16); // ~60fps
-        
-        window.addEventListener('scroll', this.handleScroll);
-        
-        // Initialize cards on load
-        setTimeout(() => this.updateCards(), 100);
-    }
-
-    /**
-     * Update cards based on scroll position (SalesHAX pattern)
-     */
-    updateCards() {
-        if (!this.stickyContainer || !this.cards.length) return;
-
-        const scrollTop = window.pageYOffset;
-        const containerTop = this.stickyContainer.offsetTop;
-        const containerHeight = this.stickyContainer.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        
-        // Calculate progress through the sticky section (0 to 1)
-        const progress = Math.max(0, Math.min(1, 
-            (scrollTop - containerTop) / (containerHeight - viewportHeight)
-        ));
-        
-        // Calculate which card should be active based on scroll progress
-        const totalCards = this.cards.length;
-        const cardProgress = progress * totalCards;
-        const activeIndex = Math.min(Math.floor(cardProgress), totalCards - 1);
-        const transitionProgress = cardProgress - activeIndex;
-        
-        this.cards.forEach((card, index) => {
-            card.classList.remove('active', 'stacked', 'transitioning-out', 'transitioning-in');
-            
-            if (index === activeIndex) {
-                if (transitionProgress > 0.3) {
-                    card.classList.add('transitioning-out');
-                    // Current card fading out
-                    const fadeProgress = (transitionProgress - 0.3) / 0.7;
-                    card.style.transform = `translateY(${-50 * fadeProgress}px) scale(${1 - fadeProgress * 0.1})`;
-                    card.style.opacity = 1 - fadeProgress * 0.6;
-                    card.style.zIndex = totalCards;
-                } else {
-                    card.classList.add('active');
-                    card.style.transform = 'translateY(0) scale(1)';
-                    card.style.opacity = '1';
-                    card.style.zIndex = totalCards + 1;
-                }
-            } else if (index === activeIndex + 1 && transitionProgress > 0.3) {
-                card.classList.add('transitioning-in');
-                // Next card fading in
-                const fadeProgress = (transitionProgress - 0.3) / 0.7;
-                card.style.transform = `translateY(${50 * (1 - fadeProgress)}px) scale(${0.9 + fadeProgress * 0.1})`;
-                card.style.opacity = fadeProgress;
-                card.style.zIndex = totalCards + 2;
-            } else if (index < activeIndex) {
-                card.classList.add('stacked');
-                const stackOffset = (activeIndex - index) * -10;
-                card.style.transform = `translateY(${stackOffset}px) scale(${0.95 - (activeIndex - index) * 0.02})`;
-                card.style.zIndex = totalCards - (activeIndex - index);
-                card.style.opacity = '0.8';
-            } else {
-                card.style.transform = 'translateY(100px) scale(0.9)';
-                card.style.zIndex = 1;
-                card.style.opacity = '0';
-            }
-        });
-    }
-
-    /**
      * Bind events for interactive elements
      */
     bindEvents() {
@@ -263,10 +181,16 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             }
         });
 
-        // Window resize handler
-        window.addEventListener('resize', this.debounce(() => {
-            this.updateCards();
-        }, 250));
+        // Card hover effects
+        this.cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = card.style.transform + ' scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = card.style.transform.replace(' scale(1.02)', '');
+            });
+        });
     }
 
     /**
@@ -294,10 +218,10 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         if (window.AnimationController) {
             this.animationController = new window.AnimationController();
             
-            // Animate static header
-            const staticHeader = this.container.querySelector('.static-header');
-            if (staticHeader) {
-                this.animationController.animateSection(staticHeader, 'welcome');
+            // Animate header
+            const header = this.container.querySelector('.section-header');
+            if (header) {
+                this.animationController.animateSection(header, 'welcome');
             }
         }
     }
@@ -325,10 +249,6 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
-        if (this.handleScroll) {
-            window.removeEventListener('scroll', this.handleScroll);
-        }
-
         if (this.animationController) {
             this.animationController.destroy();
         }
