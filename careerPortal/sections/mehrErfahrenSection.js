@@ -212,26 +212,38 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         const totalCards = this.cards.length;
         const cardProgress = progress * totalCards;
         const activeIndex = Math.min(Math.floor(cardProgress), totalCards - 1);
+        const transitionProgress = cardProgress - activeIndex;
         
         this.cards.forEach((card, index) => {
-            card.classList.remove('active', 'stacked');
+            card.classList.remove('active', 'stacked', 'transitioning-out', 'transitioning-in');
             
             if (index === activeIndex) {
-                card.classList.add('active');
+                if (transitionProgress > 0.3) {
+                    card.classList.add('transitioning-out');
+                    // Current card fading out
+                    const fadeProgress = (transitionProgress - 0.3) / 0.7;
+                    card.style.transform = `translateY(${-50 * fadeProgress}px) scale(${1 - fadeProgress * 0.1})`;
+                    card.style.opacity = 1 - fadeProgress * 0.6;
+                    card.style.zIndex = totalCards;
+                } else {
+                    card.classList.add('active');
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.opacity = '1';
+                    card.style.zIndex = totalCards + 1;
+                }
+            } else if (index === activeIndex + 1 && transitionProgress > 0.3) {
+                card.classList.add('transitioning-in');
+                // Next card fading in
+                const fadeProgress = (transitionProgress - 0.3) / 0.7;
+                card.style.transform = `translateY(${50 * (1 - fadeProgress)}px) scale(${0.9 + fadeProgress * 0.1})`;
+                card.style.opacity = fadeProgress;
+                card.style.zIndex = totalCards + 2;
             } else if (index < activeIndex) {
                 card.classList.add('stacked');
-            }
-            
-            // Add stacking effect
-            if (index < activeIndex) {
                 const stackOffset = (activeIndex - index) * -10;
                 card.style.transform = `translateY(${stackOffset}px) scale(${0.95 - (activeIndex - index) * 0.02})`;
                 card.style.zIndex = totalCards - (activeIndex - index);
                 card.style.opacity = '0.8';
-            } else if (index === activeIndex) {
-                card.style.transform = 'translateY(0) scale(1)';
-                card.style.zIndex = totalCards + 1;
-                card.style.opacity = '1';
             } else {
                 card.style.transform = 'translateY(100px) scale(0.9)';
                 card.style.zIndex = 1;
