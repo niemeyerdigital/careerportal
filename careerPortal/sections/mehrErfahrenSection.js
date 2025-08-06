@@ -1,12 +1,11 @@
 /**
  * Mehr Erfahren Section
- * Simple sticky card stack - based on vertical stack pattern
+ * Sticky scroll cards implementation for career portal
  */
 
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
-        this.cards = [];
         this.initializeMehrErfahren();
     }
 
@@ -19,211 +18,243 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             return;
         }
 
-        this.createMehrErfahrenHTML();
+        this.createHTML();
+        this.setupFAQAccordion();
         this.initializeAnimations();
-        this.bindEvents();
     }
 
     /**
-     * Create the HTML structure based on simple sticky stack pattern
+     * Create the HTML structure
      */
-    createMehrErfahrenHTML() {
-        const orderedCards = this.getOrderedCards();
+    createHTML() {
+        // Create wrapper with gradient background
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mehr-erfahren-wrapper';
         
-        this.container.innerHTML = `
-            <div class="mehr-erfahren-wrapper">
-                <!-- Static Header -->
-                <div class="section-header">
-                    <h1>Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
-                    <p>Viele ziemlich gute Gründe.</p>
-                </div>
-
-                <!-- Sticky Cards Container -->
-                <div class="cards-wrapper">
-                    ${orderedCards.map((card, index) => this.createCardHTML(card, index)).join('')}
-                </div>
+        // Create static header
+        const staticHeader = document.createElement('div');
+        staticHeader.className = 'static-header';
+        staticHeader.innerHTML = `
+            <div class="static-header-content">
+                <h1>Warum ${this.config.companyPlaceholder || 'UNTERNEHMEN'}?</h1>
+                <p>Entdecke was uns besonders macht</p>
             </div>
         `;
-
-        // Cache DOM elements
-        this.cards = this.container.querySelectorAll('.card');
+        
+        // Create sticky wrapper for cards
+        const stickyWrapper = document.createElement('div');
+        stickyWrapper.className = 'sticky-wrapper';
+        
+        // Sort cards by order
+        const cards = this.getEnabledCards();
+        
+        cards.forEach((cardConfig, index) => {
+            const card = this.createCard(cardConfig, index);
+            stickyWrapper.appendChild(card);
+        });
+        
+        // Assemble the structure
+        wrapper.appendChild(staticHeader);
+        wrapper.appendChild(stickyWrapper);
+        this.container.appendChild(wrapper);
     }
 
     /**
-     * Get ordered cards based on configuration
+     * Get enabled cards sorted by order
      */
-    getOrderedCards() {
-        const allCards = [];
+    getEnabledCards() {
+        const cards = [];
         
-        if (this.config.aboutCard && this.config.aboutCard.enabled !== false) {
-            allCards.push({ type: 'about', ...this.config.aboutCard });
+        if (this.config.aboutCard?.enabled) {
+            cards.push({ ...this.config.aboutCard, type: 'about' });
+        }
+        if (this.config.benefitsCard?.enabled) {
+            cards.push({ ...this.config.benefitsCard, type: 'benefits' });
+        }
+        if (this.config.faqCard?.enabled) {
+            cards.push({ ...this.config.faqCard, type: 'faq' });
         }
         
-        if (this.config.benefitsCard && this.config.benefitsCard.enabled !== false) {
-            allCards.push({ type: 'benefits', ...this.config.benefitsCard });
-        }
-        
-        if (this.config.faqCard && this.config.faqCard.enabled !== false) {
-            allCards.push({ type: 'faq', ...this.config.faqCard });
-        }
-
-        // Sort by order if specified
-        allCards.sort((a, b) => (a.order || 0) - (b.order || 0));
-
-        return allCards;
+        return cards.sort((a, b) => (a.order || 0) - (b.order || 0));
     }
 
     /**
-     * Create HTML for individual card
+     * Create individual card based on type
      */
-    createCardHTML(card, index) {
-        switch (card.type) {
+    createCard(cardConfig, index) {
+        const card = document.createElement('div');
+        card.className = `card card-${index + 1} card-${cardConfig.type}`;
+        card.setAttribute('data-card-type', cardConfig.type);
+        
+        switch(cardConfig.type) {
             case 'about':
-                return this.createAboutCardHTML(card, index);
+                card.innerHTML = this.createAboutCard(cardConfig);
+                break;
             case 'benefits':
-                return this.createBenefitsCardHTML(card, index);
+                card.innerHTML = this.createBenefitsCard(cardConfig);
+                break;
             case 'faq':
-                return this.createFAQCardHTML(card, index);
-            default:
-                return '';
+                card.innerHTML = this.createFAQCard(cardConfig);
+                break;
         }
+        
+        return card;
     }
 
     /**
-     * Create About card HTML
+     * Create About Card HTML
      */
-    createAboutCardHTML(card, index) {
+    createAboutCard(config) {
         return `
-            <div class="card" data-index="${index}">
-                <div class="card-content">
-                    <i class="${card.icon || 'fas fa-building'} card-icon"></i>
-                    <h2>${card.title || 'Über Uns'}</h2>
-                    <p>${card.text || 'Beschreibungstext hier...'}</p>
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="${config.icon || 'fas fa-building'}"></i>
                 </div>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                         alt="${card.title || 'About Us'}">
-                </div>
+                <h2>${config.title || 'Über Uns'}</h2>
+                <p>${config.text || 'Beschreibung hier...'}</p>
+            </div>
+            <div class="card-image">
+                <img src="${config.imageUrl || 'https://placehold.co/350x150'}" 
+                     alt="${config.title || 'About'}" 
+                     loading="lazy">
             </div>
         `;
     }
 
     /**
-     * Create Benefits card HTML
+     * Create Benefits Card HTML
      */
-    createBenefitsCardHTML(card, index) {
-        const benefits = card.benefits || [];
-        const benefitsList = benefits.map(benefit => 
-            `<li><i class="fas fa-check"></i> ${benefit.emoji || '✨'} ${benefit.text || 'Benefit text'}</li>`
-        ).join('');
-
+    createBenefitsCard(config) {
+        const benefitsList = (config.benefits || []).map(benefit => `
+            <li>
+                <span class="benefit-emoji">${benefit.emoji || '✓'}</span>
+                <span class="benefit-text">${benefit.text || ''}</span>
+            </li>
+        `).join('');
+        
         return `
-            <div class="card" data-index="${index}">
-                <div class="card-content">
-                    <i class="${card.icon || 'fas fa-star'} card-icon"></i>
-                    <h2>${card.title || 'Deine Vorteile'}</h2>
-                    <ul class="card-features">
-                        ${benefitsList}
-                    </ul>
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="${config.icon || 'fas fa-star'}"></i>
                 </div>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                         alt="${card.title || 'Benefits'}">
-                </div>
+                <h2>${config.title || 'Deine Vorteile'}</h2>
+                <ul class="card-features">
+                    ${benefitsList}
+                </ul>
+            </div>
+            <div class="card-image">
+                <img src="${config.imageUrl || 'https://placehold.co/350x150'}" 
+                     alt="${config.title || 'Benefits'}" 
+                     loading="lazy">
             </div>
         `;
     }
 
     /**
-     * Create FAQ card HTML
+     * Create FAQ Card HTML
      */
-    createFAQCardHTML(card, index) {
-        const faqs = card.faqs || [];
-        const faqsList = faqs.map((faq, faqIndex) => 
-            `<div class="faq-item" data-faq="${faqIndex}">
-                <button class="faq-question" type="button">
-                    <span class="faq-question-text">${faq.question || 'FAQ Question'}</span>
-                    <i class="fas fa-chevron-down faq-icon"></i>
-                </button>
+    createFAQCard(config) {
+        const faqItems = (config.faqs || []).map((faq, index) => `
+            <div class="faq-item ${index === 0 ? 'active' : ''}" data-faq-index="${index}">
+                <div class="faq-question">
+                    <span>${faq.question || 'Frage?'}</span>
+                    <div class="faq-icon">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M6 8L10 12L14 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
                 <div class="faq-answer">
                     <div class="faq-answer-content">
-                        <p>${faq.answer || 'FAQ Answer'}</p>
+                        <p>${faq.answer || 'Antwort...'}</p>
                     </div>
                 </div>
-            </div>`
-        ).join('');
-
+            </div>
+        `).join('');
+        
         return `
-            <div class="card" data-index="${index}">
-                <div class="card-content">
-                    <i class="${card.icon || 'fas fa-question-circle'} card-icon"></i>
-                    <h2>${card.title || 'Häufige Fragen'}</h2>
-                    <div class="faq-container">
-                        ${faqsList}
-                    </div>
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="${config.icon || 'fas fa-question-circle'}"></i>
                 </div>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                         alt="${card.title || 'FAQ'}">
+                <h2>${config.title || 'Häufige Fragen'}</h2>
+                <div class="faq-container">
+                    ${faqItems}
                 </div>
+            </div>
+            <div class="card-image">
+                <img src="${config.imageUrl || 'https://placehold.co/350x150'}" 
+                     alt="${config.title || 'FAQ'}" 
+                     loading="lazy">
             </div>
         `;
     }
 
     /**
-     * Bind events for interactive elements
+     * Setup FAQ accordion functionality
      */
-    bindEvents() {
-        // FAQ accordion functionality
-        this.container.addEventListener('click', (e) => {
-            if (e.target.closest('.faq-question')) {
-                this.toggleFAQ(e.target.closest('.faq-item'));
-            }
-        });
-
-        // Card hover effects
-        this.cards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = card.style.transform + ' scale(1.02)';
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = card.style.transform.replace(' scale(1.02)', '');
-            });
-        });
-    }
-
-    /**
-     * Toggle FAQ accordion
-     */
-    toggleFAQ(faqItem) {
-        const isActive = faqItem.classList.contains('active');
+    setupFAQAccordion() {
+        const faqItems = this.container.querySelectorAll('.faq-item');
         
-        // Close all other FAQs in the same card
-        const faqCard = faqItem.closest('.card');
-        faqCard.querySelectorAll('.faq-item.active').forEach(item => {
-            if (item !== faqItem) {
-                item.classList.remove('active');
-            }
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            
+            question?.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close all FAQ items
+                faqItems.forEach(faq => {
+                    faq.classList.remove('active');
+                });
+                
+                // Open clicked item if it wasn't active
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
         });
-
-        // Toggle current FAQ
-        faqItem.classList.toggle('active', !isActive);
     }
 
     /**
      * Initialize animations
      */
     initializeAnimations() {
-        if (window.AnimationController) {
-            this.animationController = new window.AnimationController();
-            
-            // Animate header
-            const header = this.container.querySelector('.section-header');
-            if (header) {
-                this.animationController.animateSection(header, 'welcome');
-            }
+        if (!window.AnimationController) {
+            return;
         }
+
+        const animationController = new window.AnimationController();
+        const cards = this.container.querySelectorAll('.card');
+        
+        // Animate cards on scroll
+        animationController.animateOnScroll(Array.from(cards), {
+            threshold: 0.2,
+            animationType: 'fadeIn',
+            staggerDelay: 150
+        });
+    }
+
+    /**
+     * Validate configuration
+     */
+    validateConfig() {
+        if (!this.config.companyPlaceholder) {
+            console.warn('Mehr Erfahren: companyPlaceholder not provided, using default');
+            this.config.companyPlaceholder = 'UNTERNEHMEN';
+        }
+        
+        // Ensure at least one card is enabled
+        const hasEnabledCard = 
+            this.config.aboutCard?.enabled || 
+            this.config.benefitsCard?.enabled || 
+            this.config.faqCard?.enabled;
+        
+        if (!hasEnabledCard) {
+            console.error('Mehr Erfahren: No cards enabled');
+            return false;
+        }
+        
+        return super.validateConfig();
     }
 
     /**
@@ -231,41 +262,25 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      */
     updateMehrErfahrenConfig(newConfig) {
         this.updateConfig(newConfig);
-        this.reinitialize();
-    }
-
-    /**
-     * Get section metrics
-     */
-    getMetrics() {
-        return {
-            sectionType: 'mehrErfahren',
-            config: this.config,
-            totalCards: this.cards.length
-        };
+        this.container.innerHTML = '';
+        this.initializeMehrErfahren();
     }
 
     /**
      * Cleanup
      */
     destroy() {
-        if (this.animationController) {
-            this.animationController.destroy();
-        }
-
+        // Remove event listeners
+        const faqQuestions = this.container.querySelectorAll('.faq-question');
+        faqQuestions.forEach(question => {
+            question.replaceWith(question.cloneNode(true));
+        });
+        
         super.destroy();
     }
 
     /**
-     * Reinitialize section
-     */
-    reinitialize() {
-        this.destroy();
-        this.initializeMehrErfahren();
-    }
-
-    /**
-     * Static method to create section easily
+     * Static factory method
      */
     static create(containerId, config) {
         return new MehrErfahrenSection(config, containerId);
