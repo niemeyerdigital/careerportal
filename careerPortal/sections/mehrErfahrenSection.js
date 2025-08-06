@@ -35,13 +35,13 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         
         this.container.innerHTML = `
             <div class="mehr-erfahren-wrapper">
-                <!-- Intro Section -->
-                <section class="intro-section">
-                    <div class="intro-content">
+                <!-- Static Header -->
+                <div class="static-header">
+                    <div class="static-header-content">
                         <h1>Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
                         <p>Viele ziemlich gute Gründe.</p>
                     </div>
-                </section>
+                </div>
 
                 <!-- Sticky Scroll Section -->
                 <section class="sticky-container">
@@ -49,18 +49,9 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                         ${orderedCards.map((card, index) => this.createCardHTML(card, index)).join('')}
                     </div>
                 </section>
-
-                <!-- Outro Section -->
-                <section class="outro-section">
-                    <div class="outro-content">
-                        <h2>Bereit für die nächste Stufe?</h2>
-                        <p>Kontaktieren Sie uns und starten Sie Ihre Reise</p>
-                    </div>
-                </section>
             </div>
         `;
 
-        // Cache DOM elements
         this.stickyContainer = this.container.querySelector('.sticky-container');
         this.stickyWrapper = this.container.querySelector('.sticky-wrapper');
         this.cards = this.container.querySelectorAll('.card');
@@ -291,10 +282,10 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         if (window.AnimationController) {
             this.animationController = new window.AnimationController();
             
-            // Animate intro section
-            const introSection = this.container.querySelector('.intro-section');
-            if (introSection) {
-                this.animationController.animateSection(introSection, 'welcome');
+            // Animate static header
+            const staticHeader = this.container.querySelector('.static-header');
+            if (staticHeader) {
+                this.animationController.animateSection(staticHeader, 'welcome');
             }
         }
     }
