@@ -73,23 +73,21 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Create About card HTML
+     * Create About card HTML - Simplified structure
      */
     createAboutCard(card, index) {
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-building'}"></i>
-                        </div>
-                        <h2>${card.title || 'Über Uns'}</h2>
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="${card.icon || 'fas fa-building'}"></i>
                     </div>
-                    <p>${card.text || 'Beschreibung...'}</p>
                 </div>
+                <h2>${card.title || 'Über Uns'}</h2>
+                <p>${card.text || 'Beschreibung...'}</p>
                 <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=About'}" 
+                    <img src="${card.imageUrl || 'https://placehold.co/700x200/e1e5e6/6d7b8b?text=About'}" 
                          alt="${card.title || 'About'}" 
                          loading="lazy">
                 </div>
@@ -98,7 +96,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Create Benefits card HTML
+     * Create Benefits card HTML - Simplified structure
      */
     createBenefitsCard(card, index) {
         const benefitsHTML = (card.benefits || []).map(benefit => `
@@ -111,19 +109,17 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-star'}"></i>
-                        </div>
-                        <h2>${card.title || 'Deine Vorteile'}</h2>
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="${card.icon || 'fas fa-star'}"></i>
                     </div>
-                    <ul class="card-features">
-                        ${benefitsHTML}
-                    </ul>
                 </div>
+                <h2>${card.title || 'Deine Vorteile'}</h2>
+                <ul class="card-features">
+                    ${benefitsHTML}
+                </ul>
                 <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Benefits'}" 
+                    <img src="${card.imageUrl || 'https://placehold.co/700x200/e1e5e6/6d7b8b?text=Benefits'}" 
                          alt="${card.title || 'Benefits'}" 
                          loading="lazy">
                 </div>
@@ -132,7 +128,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Create FAQ card HTML
+     * Create FAQ card HTML - Simplified structure
      */
     createFAQCard(card, index) {
         const faqsHTML = (card.faqs || []).map((faq, faqIndex) => `
@@ -152,21 +148,14 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-question-circle'}"></i>
-                        </div>
-                        <h2>${card.title || 'Häufige Fragen'}</h2>
-                    </div>
-                    <div class="faq-container">
-                        ${faqsHTML}
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="${card.icon || 'fas fa-question-circle'}"></i>
                     </div>
                 </div>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=FAQ'}" 
-                         alt="${card.title || 'FAQ'}" 
-                         loading="lazy">
+                <h2>${card.title || 'Häufige Fragen'}</h2>
+                <div class="faq-container">
+                    ${faqsHTML}
                 </div>
             </div>
         `;
