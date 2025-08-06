@@ -30,6 +30,13 @@ window.ConfigValidator = {
                 mainAsset: ['video', 'image'],
                 buttonType: ['MainButton1', 'MainButton2', 'MainButton3']
             }
+        },
+        mehrErfahren: {
+            required: ['companyPlaceholder'],
+            optional: ['aboutCard', 'benefitsCard', 'faqCard'],
+            types: {
+                companyPlaceholder: 'string'
+            }
         }
     },
 
@@ -101,7 +108,34 @@ window.ConfigValidator = {
                 ctaLink: '#',
                 buttonType: 'MainButton1',
                 secondaryText: 'Mehr erfahren',
-                secondaryTarget: 'MehrErfahren'
+                secondaryTarget: 'SectionMehrErfahren'
+            },
+            mehrErfahren: {
+                companyPlaceholder: 'UNTERNEHMEN',
+                aboutCard: {
+                    enabled: true,
+                    order: 1,
+                    icon: 'fas fa-building',
+                    title: 'Über Uns',
+                    text: 'Beschreibungstext...',
+                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image'
+                },
+                benefitsCard: {
+                    enabled: true,
+                    order: 2,
+                    icon: 'fas fa-star',
+                    title: 'Deine Vorteile',
+                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                    benefits: []
+                },
+                faqCard: {
+                    enabled: true,
+                    order: 3,
+                    icon: 'fas fa-question-circle',
+                    title: 'Häufige Fragen',
+                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                    faqs: []
+                }
             }
         };
 
