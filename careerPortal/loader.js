@@ -5,7 +5,7 @@
 
 class CareerPortalLoader {
     constructor() {
-        this.baseURL = 'https://raw.githubusercontent.com/YOUR_USERNAME/careerPortal/main/';
+        this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
         this.loadedModules = new Map();
         this.initializationQueue = [];
     }
