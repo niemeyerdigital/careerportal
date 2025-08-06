@@ -73,65 +73,51 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Create About card HTML - Simplified structure
+     * Create About card HTML - Test Replica Structure
      */
     createAboutCard(card, index) {
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="${card.icon || 'fas fa-building'}"></i>
-                    </div>
+                <div class="card-icon">
+                    <i class="${card.icon || 'fas fa-building'}"></i>
                 </div>
                 <h2>${card.title || 'Über Uns'}</h2>
                 <p>${card.text || 'Beschreibung...'}</p>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/700x200/e1e5e6/6d7b8b?text=About'}" 
-                         alt="${card.title || 'About'}" 
-                         loading="lazy">
-                </div>
             </div>
         `;
     }
 
     /**
-     * Create Benefits card HTML - Simplified structure
+     * Create Benefits card HTML - Test Replica Structure
      */
     createBenefitsCard(card, index) {
-        const benefitsHTML = (card.benefits || []).map(benefit => `
+        const benefitsHTML = (card.benefits || []).slice(0, 4).map(benefit => `
             <li>
                 <span class="benefit-emoji">${benefit.emoji || '✓'}</span>
-                <span class="benefit-text">${benefit.text || ''}</span>
+                <span>${benefit.text || ''}</span>
             </li>
         `).join('');
 
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="${card.icon || 'fas fa-star'}"></i>
-                    </div>
+                <div class="card-icon">
+                    <i class="${card.icon || 'fas fa-star'}"></i>
                 </div>
                 <h2>${card.title || 'Deine Vorteile'}</h2>
                 <ul class="card-features">
                     ${benefitsHTML}
                 </ul>
-                <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/700x200/e1e5e6/6d7b8b?text=Benefits'}" 
-                         alt="${card.title || 'Benefits'}" 
-                         loading="lazy">
-                </div>
             </div>
         `;
     }
 
     /**
-     * Create FAQ card HTML - Simplified structure
+     * Create FAQ card HTML - Test Replica Structure
      */
     createFAQCard(card, index) {
-        const faqsHTML = (card.faqs || []).map((faq, faqIndex) => `
+        const faqsHTML = (card.faqs || []).slice(0, 3).map((faq, faqIndex) => `
             <div class="faq-item ${faqIndex === 0 ? 'active' : ''}" data-faq-index="${faqIndex}">
                 <div class="faq-question">
                     <span>${faq.question || 'Frage...'}</span>
@@ -148,10 +134,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         return `
             <div class="card">
                 <span class="card-number">${index + 1}</span>
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="${card.icon || 'fas fa-question-circle'}"></i>
-                    </div>
+                <div class="card-icon">
+                    <i class="${card.icon || 'fas fa-question-circle'}"></i>
                 </div>
                 <h2>${card.title || 'Häufige Fragen'}</h2>
                 <div class="faq-container">
