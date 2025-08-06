@@ -1,15 +1,14 @@
 /**
  * Mehr Erfahren Section
- * Sticky scroll section with stacking cards
+ * Sticky scroll section with stacking cards - based on SalesHAX pattern
  */
 
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
-        this.currentCardIndex = 0;
-        this.isScrolling = false;
         this.cards = [];
-        this.sectionHeight = 0;
+        this.stickyContainer = null;
+        this.stickyWrapper = null;
         this.initializeMehrErfahren();
     }
 
@@ -23,80 +22,85 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         }
 
         this.createMehrErfahrenHTML();
-        this.setupScrollObserver();
+        this.setupScrollHandler();
         this.initializeAnimations();
         this.bindEvents();
     }
 
     /**
-     * Create the HTML structure
+     * Create the HTML structure based on SalesHAX pattern
      */
     createMehrErfahrenHTML() {
         const orderedCards = this.getOrderedCards();
         
         this.container.innerHTML = `
             <div class="mehr-erfahren-wrapper">
-                <div class="mehr-erfahren-container">
-                    <!-- Header -->
-                    <div class="mehr-erfahren-header">
-                        <h2 class="mehr-erfahren-title">
-                            Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?
-                        </h2>
-                        <h3 class="mehr-erfahren-subtitle">Viele ziemlich gute Gründe.</h3>
+                <!-- Intro Section -->
+                <section class="intro-section">
+                    <div class="intro-content">
+                        <h1>Warum <span class="title-highlight">${this.config.companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
+                        <p>Viele ziemlich gute Gründe.</p>
                     </div>
-                    
-                    <!-- Cards Container -->
-                    <div class="mehr-erfahren-cards" id="mehrErfahrenCards">
+                </section>
+
+                <!-- Sticky Scroll Section -->
+                <section class="sticky-container">
+                    <div class="sticky-wrapper">
                         ${orderedCards.map((card, index) => this.createCardHTML(card, index)).join('')}
                     </div>
-                    
-                    <!-- Progress Indicator -->
-                    <div class="scroll-progress">
-                        <div class="progress-bar" id="progressBar"></div>
-                        <div class="progress-dots" id="progressDots">
-                            ${orderedCards.map((_, index) => `<div class="progress-dot ${index === 0 ? 'active' : ''}" data-index="${index}"></div>`).join('')}
-                        </div>
+                </section>
+
+                <!-- Outro Section -->
+                <section class="outro-section">
+                    <div class="outro-content">
+                        <h2>Bereit für die nächste Stufe?</h2>
+                        <p>Kontaktieren Sie uns und starten Sie Ihre Reise</p>
                     </div>
-                </div>
+                </section>
             </div>
         `;
 
-        this.cards = document.querySelectorAll('.mehr-card');
-        this.calculateSectionHeight();
+        // Cache DOM elements
+        this.stickyContainer = this.container.querySelector('.sticky-container');
+        this.stickyWrapper = this.container.querySelector('.sticky-wrapper');
+        this.cards = this.container.querySelectorAll('.card');
     }
 
     /**
      * Get ordered cards based on configuration
      */
     getOrderedCards() {
-        const allCards = [
-            { type: 'about', ...this.config.aboutCard },
-            { type: 'benefits', ...this.config.benefitsCard },
-            { type: 'faq', ...this.config.faqCard }
-        ];
-
-        // Filter enabled cards
-        const enabledCards = allCards.filter(card => card.enabled !== false);
+        const allCards = [];
+        
+        if (this.config.aboutCard && this.config.aboutCard.enabled !== false) {
+            allCards.push({ type: 'about', ...this.config.aboutCard });
+        }
+        
+        if (this.config.benefitsCard && this.config.benefitsCard.enabled !== false) {
+            allCards.push({ type: 'benefits', ...this.config.benefitsCard });
+        }
+        
+        if (this.config.faqCard && this.config.faqCard.enabled !== false) {
+            allCards.push({ type: 'faq', ...this.config.faqCard });
+        }
 
         // Sort by order if specified
-        enabledCards.sort((a, b) => (a.order || 0) - (b.order || 0));
+        allCards.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-        return enabledCards;
+        return allCards;
     }
 
     /**
      * Create HTML for individual card
      */
     createCardHTML(card, index) {
-        const zIndex = 100 - index;
-        
         switch (card.type) {
             case 'about':
-                return this.createAboutCardHTML(card, index, zIndex);
+                return this.createAboutCardHTML(card, index);
             case 'benefits':
-                return this.createBenefitsCardHTML(card, index, zIndex);
+                return this.createBenefitsCardHTML(card, index);
             case 'faq':
-                return this.createFAQCardHTML(card, index, zIndex);
+                return this.createFAQCardHTML(card, index);
             default:
                 return '';
         }
@@ -105,21 +109,17 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create About card HTML
      */
-    createAboutCardHTML(card, index, zIndex) {
+    createAboutCardHTML(card, index) {
         return `
-            <div class="mehr-card about-card" data-index="${index}" style="z-index: ${zIndex};">
+            <div class="card" data-card="${index}">
                 <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-building'}"></i>
-                        </div>
-                        <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                             alt="${card.title || 'About Us'}" class="card-image">
-                    </div>
-                    <div class="card-body">
-                        <h3 class="card-title">${card.title || 'Über Uns'}</h3>
-                        <p class="card-text">${card.text || 'Beschreibungstext hier...'}</p>
-                    </div>
+                    <i class="${card.icon || 'fas fa-building'} card-icon"></i>
+                    <h2>${card.title || 'Über Uns'}</h2>
+                    <p>${card.text || 'Beschreibungstext hier...'}</p>
+                </div>
+                <div class="card-image">
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
+                         alt="${card.title || 'About Us'}">
                 </div>
             </div>
         `;
@@ -128,31 +128,24 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create Benefits card HTML
      */
-    createBenefitsCardHTML(card, index, zIndex) {
+    createBenefitsCardHTML(card, index) {
         const benefits = card.benefits || [];
         const benefitsList = benefits.map(benefit => 
-            `<li class="benefit-item">
-                <span class="benefit-emoji">${benefit.emoji || '✨'}</span>
-                <span class="benefit-text">${benefit.text || 'Benefit text'}</span>
-            </li>`
+            `<li><i class="fas fa-check"></i> ${benefit.emoji || '✨'} ${benefit.text || 'Benefit text'}</li>`
         ).join('');
 
         return `
-            <div class="mehr-card benefits-card" data-index="${index}" style="z-index: ${zIndex};">
+            <div class="card" data-card="${index}">
                 <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-star'}"></i>
-                        </div>
-                        <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                             alt="${card.title || 'Benefits'}" class="card-image">
-                    </div>
-                    <div class="card-body">
-                        <h3 class="card-title">${card.title || 'Deine Vorteile'}</h3>
-                        <ul class="benefits-list">
-                            ${benefitsList}
-                        </ul>
-                    </div>
+                    <i class="${card.icon || 'fas fa-star'} card-icon"></i>
+                    <h2>${card.title || 'Deine Vorteile'}</h2>
+                    <ul class="card-features">
+                        ${benefitsList}
+                    </ul>
+                </div>
+                <div class="card-image">
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
+                         alt="${card.title || 'Benefits'}">
                 </div>
             </div>
         `;
@@ -161,7 +154,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create FAQ card HTML
      */
-    createFAQCardHTML(card, index, zIndex) {
+    createFAQCardHTML(card, index) {
         const faqs = card.faqs || [];
         const faqsList = faqs.map((faq, faqIndex) => 
             `<div class="faq-item" data-faq="${faqIndex}">
@@ -178,136 +171,82 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         ).join('');
 
         return `
-            <div class="mehr-card faq-card" data-index="${index}" style="z-index: ${zIndex};">
+            <div class="card" data-card="${index}">
                 <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-icon">
-                            <i class="${card.icon || 'fas fa-question-circle'}"></i>
-                        </div>
-                        <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image'}" 
-                             alt="${card.title || 'FAQ'}" class="card-image">
+                    <i class="${card.icon || 'fas fa-question-circle'} card-icon"></i>
+                    <h2>${card.title || 'Häufige Fragen'}</h2>
+                    <div class="faq-container">
+                        ${faqsList}
                     </div>
-                    <div class="card-body">
-                        <h3 class="card-title">${card.title || 'Häufige Fragen'}</h3>
-                        <div class="faq-list">
-                            ${faqsList}
-                        </div>
-                    </div>
+                </div>
+                <div class="card-image">
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/e1e5e6/6d7b8b?text=Demo+Image'}" 
+                         alt="${card.title || 'FAQ'}">
                 </div>
             </div>
         `;
     }
 
     /**
-     * Setup scroll observer for sticky behavior
+     * Setup scroll handler for sticky behavior (SalesHAX pattern)
      */
-    setupScrollObserver() {
-        this.scrollHandler = this.handleScroll.bind(this);
-        window.addEventListener('scroll', this.scrollHandler, { passive: true });
+    setupScrollHandler() {
+        this.handleScroll = this.debounce(() => {
+            this.updateCards();
+        }, 16); // ~60fps
         
-        // Setup intersection observer for section detection
-        this.observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    this.isInSection = true;
-                } else {
-                    this.isInSection = false;
-                }
-            });
-        }, { threshold: 0.1 });
-
-        this.observer.observe(this.container);
+        window.addEventListener('scroll', this.handleScroll);
+        
+        // Initialize cards on load
+        setTimeout(() => this.updateCards(), 100);
     }
 
     /**
-     * Handle scroll events for sticky card behavior
+     * Update cards based on scroll position (SalesHAX pattern)
      */
-    handleScroll() {
-        if (!this.isInSection || this.isScrolling) return;
+    updateCards() {
+        if (!this.stickyContainer || !this.cards.length) return;
 
-        const containerRect = this.container.getBoundingClientRect();
+        const scrollTop = window.pageYOffset;
+        const containerTop = this.stickyContainer.offsetTop;
+        const containerHeight = this.stickyContainer.offsetHeight;
         const viewportHeight = window.innerHeight;
         
-        // Calculate scroll progress within section
-        const sectionTop = containerRect.top;
-        const sectionHeight = containerRect.height;
-        const scrollProgress = Math.max(0, Math.min(1, -sectionTop / (sectionHeight - viewportHeight)));
+        // Calculate progress through the sticky section (0 to 1)
+        const progress = Math.max(0, Math.min(1, 
+            (scrollTop - containerTop) / (containerHeight - viewportHeight)
+        ));
         
-        // Update cards based on scroll progress
-        this.updateCardsPosition(scrollProgress);
-        this.updateProgressIndicator(scrollProgress);
-    }
-
-    /**
-     * Update card positions based on scroll
-     */
-    updateCardsPosition(progress) {
+        // Calculate which card should be active based on scroll progress
         const totalCards = this.cards.length;
-        const cardProgress = progress * (totalCards - 1);
-        const currentIndex = Math.floor(cardProgress);
-        const cardTransition = cardProgress - currentIndex;
-
-        this.cards.forEach((card, index) => {
-            const cardElement = card;
-            let translateY = 0;
-            let scale = 1;
-            let opacity = 1;
-
-            if (index < currentIndex) {
-                // Cards that have been scrolled past
-                translateY = -100 * (currentIndex - index);
-                scale = 0.95;
-                opacity = 0.7;
-            } else if (index === currentIndex && cardTransition > 0) {
-                // Current card being scrolled
-                translateY = -100 * cardTransition;
-                scale = 1 - (cardTransition * 0.05);
-                opacity = 1 - (cardTransition * 0.3);
-            } else if (index === currentIndex + 1 && cardTransition > 0) {
-                // Next card coming into view
-                translateY = 100 * (1 - cardTransition);
-                scale = 0.95 + (cardTransition * 0.05);
-                opacity = 0.7 + (cardTransition * 0.3);
-            } else if (index > currentIndex + 1) {
-                // Cards still waiting
-                translateY = 100;
-                scale = 0.95;
-                opacity = 0.7;
-            }
-
-            cardElement.style.transform = `translateY(${translateY}%) scale(${scale})`;
-            cardElement.style.opacity = opacity;
-        });
-
-        this.currentCardIndex = currentIndex;
-    }
-
-    /**
-     * Update progress indicator
-     */
-    updateProgressIndicator(progress) {
-        const progressBar = document.getElementById('progressBar');
-        const progressDots = document.querySelectorAll('.progress-dot');
-
-        if (progressBar) {
-            progressBar.style.width = `${progress * 100}%`;
-        }
-
-        progressDots.forEach((dot, index) => {
-            const cardProgress = progress * (this.cards.length - 1);
-            dot.classList.toggle('active', index <= Math.floor(cardProgress));
-        });
-    }
-
-    /**
-     * Calculate section height for proper sticky behavior
-     */
-    calculateSectionHeight() {
-        const cardCount = this.cards.length;
-        const baseHeight = window.innerHeight;
-        this.sectionHeight = baseHeight * (cardCount + 1); // Extra height for smooth scrolling
+        const cardProgress = progress * totalCards;
+        const activeIndex = Math.min(Math.floor(cardProgress), totalCards - 1);
         
-        this.container.style.height = `${this.sectionHeight}px`;
+        this.cards.forEach((card, index) => {
+            card.classList.remove('active', 'stacked');
+            
+            if (index === activeIndex) {
+                card.classList.add('active');
+            } else if (index < activeIndex) {
+                card.classList.add('stacked');
+            }
+            
+            // Add stacking effect
+            if (index < activeIndex) {
+                const stackOffset = (activeIndex - index) * -10;
+                card.style.transform = `translateY(${stackOffset}px) scale(${0.95 - (activeIndex - index) * 0.02})`;
+                card.style.zIndex = totalCards - (activeIndex - index);
+                card.style.opacity = '0.8';
+            } else if (index === activeIndex) {
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.zIndex = totalCards + 1;
+                card.style.opacity = '1';
+            } else {
+                card.style.transform = 'translateY(100px) scale(0.9)';
+                card.style.zIndex = 1;
+                card.style.opacity = '0';
+            }
+        });
     }
 
     /**
@@ -321,17 +260,9 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             }
         });
 
-        // Progress dot navigation
-        this.container.addEventListener('click', (e) => {
-            if (e.target.classList.contains('progress-dot')) {
-                const targetIndex = parseInt(e.target.getAttribute('data-index'));
-                this.scrollToCard(targetIndex);
-            }
-        });
-
         // Window resize handler
         window.addEventListener('resize', this.debounce(() => {
-            this.calculateSectionHeight();
+            this.updateCards();
         }, 250));
     }
 
@@ -342,7 +273,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         const isActive = faqItem.classList.contains('active');
         
         // Close all other FAQs in the same card
-        const faqCard = faqItem.closest('.faq-card');
+        const faqCard = faqItem.closest('.card');
         faqCard.querySelectorAll('.faq-item.active').forEach(item => {
             if (item !== faqItem) {
                 item.classList.remove('active');
@@ -354,50 +285,17 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Scroll to specific card
-     */
-    scrollToCard(cardIndex) {
-        if (cardIndex < 0 || cardIndex >= this.cards.length) return;
-
-        this.isScrolling = true;
-        const targetProgress = cardIndex / (this.cards.length - 1);
-        const containerRect = this.container.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const targetScroll = window.pageYOffset + containerRect.top + (targetProgress * (containerRect.height - viewportHeight));
-
-        window.scrollTo({
-            top: targetScroll,
-            behavior: 'smooth'
-        });
-
-        setTimeout(() => {
-            this.isScrolling = false;
-        }, 1000);
-    }
-
-    /**
      * Initialize animations
      */
     initializeAnimations() {
         if (window.AnimationController) {
             this.animationController = new window.AnimationController();
             
-            // Animate header on load
-            const header = this.container.querySelector('.mehr-erfahren-header');
-            if (header) {
-                this.animationController.animateEntrance([header], 'slideUp', { startDelay: 200 });
+            // Animate intro section
+            const introSection = this.container.querySelector('.intro-section');
+            if (introSection) {
+                this.animationController.animateSection(introSection, 'welcome');
             }
-
-            // Set initial positions for cards
-            this.cards.forEach((card, index) => {
-                if (index === 0) {
-                    card.style.transform = 'translateY(0%) scale(1)';
-                    card.style.opacity = '1';
-                } else {
-                    card.style.transform = 'translateY(100%) scale(0.95)';
-                    card.style.opacity = '0.7';
-                }
-            });
         }
     }
 
@@ -416,10 +314,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         return {
             sectionType: 'mehrErfahren',
             config: this.config,
-            currentCardIndex: this.currentCardIndex,
-            totalCards: this.cards.length,
-            sectionHeight: this.sectionHeight,
-            isInSection: this.isInSection || false
+            totalCards: this.cards.length
         };
     }
 
@@ -427,12 +322,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
-        if (this.scrollHandler) {
-            window.removeEventListener('scroll', this.scrollHandler);
-        }
-        
-        if (this.observer) {
-            this.observer.disconnect();
+        if (this.handleScroll) {
+            window.removeEventListener('scroll', this.handleScroll);
         }
 
         if (this.animationController) {
@@ -440,6 +331,14 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         }
 
         super.destroy();
+    }
+
+    /**
+     * Reinitialize section
+     */
+    reinitialize() {
+        this.destroy();
+        this.initializeMehrErfahren();
     }
 
     /**
