@@ -57,18 +57,19 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
 
     /**
      * Create individual card HTML based on type
+     * Note: No inline styles for positioning - handled by CSS nth-child
      */
     createCardHTML(card, index) {
-        const topOffset = 100 + (index * 30); // Progressive offset for stacking
-        const zIndex = 10 - index;
+        // Add card number for visual reference (1-based index)
+        const cardNumber = index + 1;
         
         switch (card.type) {
             case 'about':
-                return this.createAboutCard(card, topOffset, zIndex);
+                return this.createAboutCard(card, cardNumber);
             case 'benefits':
-                return this.createBenefitsCard(card, topOffset, zIndex);
+                return this.createBenefitsCard(card, cardNumber);
             case 'faq':
-                return this.createFAQCard(card, topOffset, zIndex);
+                return this.createFAQCard(card, cardNumber);
             default:
                 return '';
         }
@@ -77,9 +78,10 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create About card HTML
      */
-    createAboutCard(card, topOffset, zIndex) {
+    createAboutCard(card, cardNumber) {
         return `
-            <div class="card card-about" style="top: ${topOffset}px; z-index: ${zIndex};">
+            <div class="card card-about card-${cardNumber}">
+                <span class="card-number">${cardNumber}</span>
                 <div class="card-content">
                     <div class="card-header">
                         <div class="card-icon">
@@ -90,7 +92,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                     <p>${card.text || 'Beschreibung...'}</p>
                 </div>
                 <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Image'}" 
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/1e1e1e/ff6b35?text=About'}" 
                          alt="${card.title || 'About'}" 
                          loading="lazy">
                 </div>
@@ -101,7 +103,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create Benefits card HTML
      */
-    createBenefitsCard(card, topOffset, zIndex) {
+    createBenefitsCard(card, cardNumber) {
         const benefitsHTML = (card.benefits || []).map(benefit => `
             <li>
                 <span class="benefit-emoji">${benefit.emoji || '✓'}</span>
@@ -110,7 +112,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         `).join('');
 
         return `
-            <div class="card card-benefits" style="top: ${topOffset}px; z-index: ${zIndex};">
+            <div class="card card-benefits card-${cardNumber}">
+                <span class="card-number">${cardNumber}</span>
                 <div class="card-content">
                     <div class="card-header">
                         <div class="card-icon">
@@ -123,7 +126,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                     </ul>
                 </div>
                 <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Benefits'}" 
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/1e1e1e/ff6b35?text=Benefits'}" 
                          alt="${card.title || 'Benefits'}" 
                          loading="lazy">
                 </div>
@@ -134,7 +137,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     /**
      * Create FAQ card HTML
      */
-    createFAQCard(card, topOffset, zIndex) {
+    createFAQCard(card, cardNumber) {
         const faqsHTML = (card.faqs || []).map((faq, index) => `
             <div class="faq-item ${index === 0 ? 'active' : ''}" data-faq-index="${index}">
                 <div class="faq-question">
@@ -150,7 +153,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         `).join('');
 
         return `
-            <div class="card card-faq" style="top: ${topOffset}px; z-index: ${zIndex};">
+            <div class="card card-faq card-${cardNumber}">
+                <span class="card-number">${cardNumber}</span>
                 <div class="card-content">
                     <div class="card-header">
                         <div class="card-icon">
@@ -163,7 +167,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                     </div>
                 </div>
                 <div class="card-image">
-                    <img src="${card.imageUrl || 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=FAQ'}" 
+                    <img src="${card.imageUrl || 'https://placehold.co/350x250/1e1e1e/ff6b35?text=FAQ'}" 
                          alt="${card.title || 'FAQ'}" 
                          loading="lazy">
                 </div>
@@ -234,12 +238,12 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             });
         }
 
-        // Animate cards on scroll
+        // Animate cards with stagger effect
         const cards = this.container.querySelectorAll('.card');
-        this.animationController.animateOnScroll(Array.from(cards), {
-            animationType: 'slideUp',
-            threshold: 0.2,
-            staggerDelay: 150
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('animate-in');
+            }, 200 + (index * 150));
         });
     }
 
