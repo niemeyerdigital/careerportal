@@ -215,7 +215,13 @@ if (document.readyState === 'loading') {
             eval(processCode);
             console.log('✅ Process section loaded');
             
-            // 8. Initialize sections that exist on the page
+            // 8. Load footer section
+            const footerResponse = await fetch(BASE_URL + 'sections/footerSection.js');
+            const footerCode = await footerResponse.text();
+            eval(footerCode);
+            console.log('✅ Footer section loaded');
+            
+            // 9. Initialize sections that exist on the page
             if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
                 new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
                 console.log('🎉 Welcome section initialized successfully!');
@@ -229,6 +235,11 @@ if (document.readyState === 'loading') {
             if (window.ProcessSection && document.getElementById('process-section') && window.PROCESS_CONFIG) {
                 new window.ProcessSection(window.PROCESS_CONFIG, 'process-section');
                 console.log('🎉 Process section initialized successfully!');
+            }
+            
+            if (window.FooterSection && document.getElementById('footer-section') && window.FOOTER_CONFIG) {
+                new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+                console.log('🎉 Footer section initialized successfully!');
             }
             
         } catch (error) {
@@ -257,6 +268,7 @@ window.debugCareerPortal = function() {
         'WelcomeSection',
         'MehrErfahrenSection',
         'ProcessSection',
+        'FooterSection',
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -274,15 +286,18 @@ window.debugCareerPortal = function() {
     const welcomeElement = document.getElementById('welcome-section');
     const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
     const processElement = document.getElementById('process-section');
+    const footerElement = document.getElementById('footer-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Process Section Element: ${processElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Welcome Config:', window.WELCOME_CONFIG);
     console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
     console.log('Process Config:', window.PROCESS_CONFIG);
+    console.log('Footer Config:', window.FOOTER_CONFIG);
 };
 
 // Function to manually reinitialize sections
@@ -313,6 +328,15 @@ window.reinitializeProcessSection = function() {
     }
 };
 
+window.reinitializeFooterSection = function() {
+    if (window.FooterSection && window.FOOTER_CONFIG) {
+        return new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+    } else {
+        console.error('FooterSection class or FOOTER_CONFIG not available');
+        return false;
+    }
+};
+
 // Debug helper for Mehr Erfahren specifically
 window.debugMehrErfahren = function() {
     console.log('=== Mehr Erfahren Debug Info ===');
@@ -326,6 +350,10 @@ window.debugMehrErfahren = function() {
             .filter(([key, value]) => key.includes('Card') && value && value.enabled)
             .map(([key]) => key);
         console.log('Enabled cards:', enabledCards);
+        
+        // Check CTA configuration
+        console.log('CTA Headline:', window.MEHR_ERFAHREN_CONFIG.ctaHeadline);
+        console.log('CTA Button:', window.MEHR_ERFAHREN_CONFIG.ctaButtonText);
     }
 };
 
@@ -340,5 +368,20 @@ window.debugProcess = function() {
         console.log('Number of cards:', window.PROCESS_CONFIG.cards ? window.PROCESS_CONFIG.cards.length : 0);
         console.log('Show emoji containers:', window.PROCESS_CONFIG.showEmojiContainers);
         console.log('Show emoji background:', window.PROCESS_CONFIG.showEmojiBackground);
+    }
+};
+
+// Debug helper for Footer section
+window.debugFooter = function() {
+    console.log('=== Footer Section Debug Info ===');
+    console.log('FooterSection loaded:', !!window.FooterSection);
+    console.log('Container found:', !!document.getElementById('footer-section'));
+    console.log('Config:', window.FOOTER_CONFIG);
+    
+    if (window.FOOTER_CONFIG && window.FOOTER_CONFIG.socialMedia) {
+        const enabledSocial = Object.entries(window.FOOTER_CONFIG.socialMedia)
+            .filter(([_, settings]) => settings.enabled)
+            .map(([platform]) => platform);
+        console.log('Enabled social platforms:', enabledSocial);
     }
 };
