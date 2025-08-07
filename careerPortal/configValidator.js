@@ -33,12 +33,28 @@ window.ConfigValidator = {
         },
         mehrErfahren: {
             required: ['companyPlaceholder'],
-            optional: ['aboutCard', 'benefitsCard', 'faqCard'],
+            optional: ['aboutCard', 'benefitsCard', 'faqCard', 'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'ctaButtonLink', 'ctaButtonType', 'onCTAClick'],
             types: {
                 companyPlaceholder: 'string',
                 aboutCard: 'object',
                 benefitsCard: 'object',
-                faqCard: 'object'
+                faqCard: 'object',
+                ctaHeadline: 'string',
+                ctaSubtext: 'string',
+                ctaButtonText: 'string',
+                ctaButtonLink: 'string',
+                ctaButtonType: 'string',
+                onCTAClick: 'function'
+            },
+            enums: {
+                ctaButtonType: ['MainButton1', 'MainButton2', 'MainButton3']
+            },
+            defaults: {
+                ctaHeadline: 'Klingt gut?',
+                ctaSubtext: 'Lass uns gemeinsam durchstarten!',
+                ctaButtonText: 'Jetzt bewerben',
+                ctaButtonLink: '#bewerbung',
+                ctaButtonType: 'MainButton1'
             },
             subSchemas: {
                 aboutCard: {
@@ -74,6 +90,19 @@ window.ConfigValidator = {
                         faqs: 'object'
                     }
                 }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate CTA subtext length (should be under 12 words)
+                if (config.ctaSubtext) {
+                    const wordCount = config.ctaSubtext.trim().split(/\s+/).length;
+                    if (wordCount > 12) {
+                        errors.push(`CTA subtext should be under 12 words (currently ${wordCount} words)`);
+                    }
+                }
+                
+                return errors;
             }
         },
         process: {
@@ -168,6 +197,12 @@ window.ConfigValidator = {
             }
         }
 
+        // Run custom validation if exists
+        if (schema.customValidation && typeof schema.customValidation === 'function') {
+            const customErrors = schema.customValidation(config);
+            errors.push(...customErrors);
+        }
+
         // Special validations for welcome section
         if (sectionType === 'welcome') {
             if (config.mainAsset === 'video' && !config.videoId) {
@@ -232,6 +267,11 @@ window.ConfigValidator = {
             },
             mehrErfahren: {
                 companyPlaceholder: 'UNTERNEHMEN',
+                ctaHeadline: 'Klingt gut?',
+                ctaSubtext: 'Lass uns gemeinsam durchstarten!',
+                ctaButtonText: 'Jetzt bewerben',
+                ctaButtonLink: '#bewerbung',
+                ctaButtonType: 'MainButton1',
                 aboutCard: {
                     enabled: true,
                     order: 1,
@@ -256,21 +296,32 @@ window.ConfigValidator = {
                     imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image',
                     faqs: []
                 }
+            },
+            process: {
+                showEmojiContainers: true,
+                showEmojiBackground: true
             }
         };
 
         const sectionDefaults = defaults[sectionType] || {};
+        
+        // Apply schema defaults if they exist
+        const schema = this.schemas[sectionType];
+        if (schema && schema.defaults) {
+            Object.assign(sectionDefaults, schema.defaults);
+        }
+        
         return { ...sectionDefaults, ...config };
     },
 
     /**
      * Sanitize configuration values
      */
-    sanitize(config) {
+    sanitize(config, sectionType) {
         const sanitized = { ...config };
 
         // Sanitize URLs
-        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'imageUrl'];
+        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -285,7 +336,9 @@ window.ConfigValidator = {
         }
 
         // Sanitize text fields (remove script tags, etc.)
-        const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 'secondaryText', 'companyPlaceholder', 'title', 'text'];
+        const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 
+                           'secondaryText', 'companyPlaceholder', 'title', 'text',
+                           'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -335,6 +388,19 @@ window.ConfigValidator = {
             });
         }
 
+        // Sanitize process cards
+        if (sectionType === 'process' && sanitized.cards && Array.isArray(sanitized.cards)) {
+            sanitized.cards = sanitized.cards.map(card => ({
+                ...card,
+                title: card.title
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .trim(),
+                text: card.text
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .trim()
+            }));
+        }
+
         return sanitized;
     },
 
@@ -346,7 +412,7 @@ window.ConfigValidator = {
         let processedConfig = this.applyDefaults(config, sectionType);
         
         // 2. Sanitize
-        processedConfig = this.sanitize(processedConfig);
+        processedConfig = this.sanitize(processedConfig, sectionType);
         
         // 3. Validate
         const validation = this.validate(processedConfig, sectionType);
