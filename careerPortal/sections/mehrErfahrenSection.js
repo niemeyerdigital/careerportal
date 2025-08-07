@@ -1,12 +1,14 @@
 /**
  * Mehr Erfahren Section
  * Sticky scroll cards section with About, Benefits, and FAQ cards
+ * Now includes bottom CTA with fade-up animation
  */
 
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.cards = [];
+        this.ctaObserver = null;
         this.initializeMehrErfahren();
     }
 
@@ -22,6 +24,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         this.createMehrErfahrenHTML();
         this.setupEventHandlers();
         this.initializeAnimations();
+        this.setupCTAObserver();
     }
 
     /**
@@ -34,6 +37,15 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         // Create cards array from config
         const cards = this.buildCardsArray();
         
+        // CTA configuration with defaults
+        const ctaConfig = {
+            headline: this.config.ctaHeadline || "Klingt gut?",
+            subtext: this.config.ctaSubtext || "Lass uns gemeinsam durchstarten!",
+            buttonText: this.config.ctaButtonText || "Jetzt bewerben",
+            buttonLink: this.config.ctaButtonLink || "#bewerbung",
+            buttonType: this.config.ctaButtonType || "MainButton1"
+        };
+        
         // Generate HTML
         this.container.innerHTML = `
             <div class="mehr-wrapper">
@@ -44,9 +56,125 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                     <div class="mehr-cards-wrapper" id="mehr-cards-vertical">
                         ${cards.map(card => this.generateCardHTML(card)).join('')}
                     </div>
+                    
+                    <!-- Bottom CTA Section -->
+                    <div class="mehr-bottom-cta" id="mehr-cta-section">
+                        <h2 class="mehr-cta-headline">${ctaConfig.headline}</h2>
+                        <p class="mehr-cta-subtext">${ctaConfig.subtext}</p>
+                        <div class="mehr-cta-button-wrapper" id="mehr-cta-button-container">
+                            <!-- Button will be created here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
+        
+        // Setup CTA button after HTML is created
+        this.setupCTAButton(ctaConfig);
+    }
+
+    /**
+     * Setup CTA button using ButtonManager
+     */
+    setupCTAButton(ctaConfig) {
+        const buttonContainer = document.getElementById('mehr-cta-button-container');
+        if (!buttonContainer) return;
+
+        // Check if ButtonManager is available
+        if (window.ButtonManager) {
+            const buttonManager = new window.ButtonManager();
+            
+            // Create the CTA button
+            const ctaButton = buttonManager.createButton(
+                ctaConfig.buttonType,
+                {
+                    text: ctaConfig.buttonText,
+                    href: ctaConfig.buttonLink,
+                    icon: 'fas fa-arrow-right',
+                    id: 'mehrCTABtn'
+                }
+            );
+            
+            buttonContainer.appendChild(ctaButton);
+            
+            // Add click handler
+            ctaButton.addEventListener('click', (e) => {
+                this.handleCTAClick(e, ctaConfig);
+            });
+        } else {
+            // Fallback if ButtonManager not loaded
+            buttonContainer.innerHTML = `
+                <div data-title="${ctaConfig.buttonType}">
+                    <a href="${ctaConfig.buttonLink}" id="mehrCTABtn">
+                        ${ctaConfig.buttonText} <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Handle CTA button click
+     */
+    handleCTAClick(event, ctaConfig) {
+        // Track the click if analytics is available
+        if (window.gtag) {
+            window.gtag('event', 'click', {
+                event_category: 'CTA',
+                event_label: 'Mehr Erfahren Bottom CTA',
+                value: ctaConfig.buttonText
+            });
+        }
+
+        // Custom click handler
+        if (this.config.onCTAClick && typeof this.config.onCTAClick === 'function') {
+            this.config.onCTAClick(event);
+        }
+    }
+
+    /**
+     * Setup intersection observer for CTA animation
+     */
+    setupCTAObserver() {
+        if (!('IntersectionObserver' in window)) {
+            // Fallback: show CTA immediately if IntersectionObserver not supported
+            const ctaSection = document.getElementById('mehr-cta-section');
+            if (ctaSection) {
+                ctaSection.classList.add('visible');
+            }
+            return;
+        }
+
+        const ctaSection = document.getElementById('mehr-cta-section');
+        if (!ctaSection) return;
+
+        // Create observer for CTA section
+        this.ctaObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class to trigger animation
+                    entry.target.classList.add('visible');
+                    
+                    // Stagger animations for elements
+                    const headline = entry.target.querySelector('.mehr-cta-headline');
+                    const subtext = entry.target.querySelector('.mehr-cta-subtext');
+                    const button = entry.target.querySelector('.mehr-cta-button-wrapper');
+                    
+                    if (headline) headline.classList.add('fade-up-1');
+                    if (subtext) subtext.classList.add('fade-up-2');
+                    if (button) button.classList.add('fade-up-3');
+                    
+                    // Stop observing after animation triggers
+                    this.ctaObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        // Start observing
+        this.ctaObserver.observe(ctaSection);
     }
 
     /**
@@ -279,7 +407,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             enabledCards: enabledCards.length,
             cardTypes: enabledCards.map(c => c.type),
             isVisible: this.isInViewport(this.container),
-            hasAccordions: this.container.querySelectorAll('.mehr-accordion-item').length > 0
+            hasAccordions: this.container.querySelectorAll('.mehr-accordion-item').length > 0,
+            ctaVisible: this.container.querySelector('.mehr-bottom-cta.visible') !== null
         };
     }
 
@@ -329,6 +458,12 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         cards.forEach(card => {
             card.replaceWith(card.cloneNode(true));
         });
+
+        // Cleanup CTA observer
+        if (this.ctaObserver) {
+            this.ctaObserver.disconnect();
+            this.ctaObserver = null;
+        }
 
         super.destroy();
     }
