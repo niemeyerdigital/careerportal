@@ -143,6 +143,62 @@ window.ConfigValidator = {
                 
                 return errors;
             }
+        },
+        footer: {
+            required: ['businessName', 'streetAddress', 'zipCode', 'city', 'copyrightYear'],
+            optional: ['logoUrl', 'websiteUrl', 'socialMedia', 'impressumUrl', 'datenschutzUrl', 'onSocialClick'],
+            types: {
+                logoUrl: 'string',
+                businessName: 'string',
+                streetAddress: 'string',
+                zipCode: 'string',
+                city: 'string',
+                websiteUrl: 'string',
+                socialMedia: 'object',
+                impressumUrl: 'string',
+                datenschutzUrl: 'string',
+                copyrightYear: 'string',
+                onSocialClick: 'function'
+            },
+            defaults: {
+                logoUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                websiteUrl: '#',
+                impressumUrl: '#',
+                datenschutzUrl: '#',
+                copyrightYear: new Date().getFullYear().toString()
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate social media configuration
+                if (config.socialMedia) {
+                    for (const [platform, settings] of Object.entries(config.socialMedia)) {
+                        if (typeof settings !== 'object') {
+                            errors.push(`socialMedia.${platform} must be an object`);
+                            continue;
+                        }
+                        
+                        if (!settings.hasOwnProperty('enabled')) {
+                            errors.push(`socialMedia.${platform}.enabled is required`);
+                        }
+                        
+                        if (settings.enabled && !settings.url) {
+                            errors.push(`socialMedia.${platform}.url is required when enabled`);
+                        }
+                        
+                        if (settings.enabled && !settings.icon) {
+                            errors.push(`socialMedia.${platform}.icon is required when enabled`);
+                        }
+                    }
+                }
+                
+                // Validate copyright year format
+                if (config.copyrightYear && !/^\d{4}$/.test(config.copyrightYear)) {
+                    errors.push('copyrightYear should be a 4-digit year string');
+                }
+                
+                return errors;
+            }
         }
     },
 
@@ -300,6 +356,30 @@ window.ConfigValidator = {
             process: {
                 showEmojiContainers: true,
                 showEmojiBackground: true
+            },
+            footer: {
+                logoUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                websiteUrl: '#',
+                impressumUrl: '#',
+                datenschutzUrl: '#',
+                copyrightYear: new Date().getFullYear().toString(),
+                socialMedia: {
+                    linkedin: {
+                        enabled: false,
+                        url: '#',
+                        icon: 'fab fa-linkedin-in'
+                    },
+                    facebook: {
+                        enabled: false,
+                        url: '#',
+                        icon: 'fab fa-facebook-f'
+                    },
+                    instagram: {
+                        enabled: false,
+                        url: '#',
+                        icon: 'fab fa-instagram'
+                    }
+                }
             }
         };
 
@@ -321,7 +401,8 @@ window.ConfigValidator = {
         const sanitized = { ...config };
 
         // Sanitize URLs
-        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl'];
+        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
+                          'websiteUrl', 'impressumUrl', 'datenschutzUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -338,7 +419,8 @@ window.ConfigValidator = {
         // Sanitize text fields (remove script tags, etc.)
         const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
-                           'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline'];
+                           'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
+                           'businessName', 'streetAddress', 'city', 'zipCode'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -399,6 +481,16 @@ window.ConfigValidator = {
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim()
             }));
+        }
+
+        // Sanitize footer social media URLs
+        if (sectionType === 'footer' && sanitized.socialMedia) {
+            for (const [platform, settings] of Object.entries(sanitized.socialMedia)) {
+                if (settings.url && typeof settings.url === 'string') {
+                    // Basic URL sanitization
+                    settings.url = settings.url.trim();
+                }
+            }
         }
 
         return sanitized;
