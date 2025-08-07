@@ -35,7 +35,45 @@ window.ConfigValidator = {
             required: ['companyPlaceholder'],
             optional: ['aboutCard', 'benefitsCard', 'faqCard'],
             types: {
-                companyPlaceholder: 'string'
+                companyPlaceholder: 'string',
+                aboutCard: 'object',
+                benefitsCard: 'object',
+                faqCard: 'object'
+            },
+            subSchemas: {
+                aboutCard: {
+                    required: ['enabled', 'order', 'icon', 'title', 'text', 'imageUrl'],
+                    types: {
+                        enabled: 'boolean',
+                        order: 'number',
+                        icon: 'string',
+                        title: 'string',
+                        text: 'string',
+                        imageUrl: 'string'
+                    }
+                },
+                benefitsCard: {
+                    required: ['enabled', 'order', 'icon', 'title', 'imageUrl', 'benefits'],
+                    types: {
+                        enabled: 'boolean',
+                        order: 'number',
+                        icon: 'string',
+                        title: 'string',
+                        imageUrl: 'string',
+                        benefits: 'object'
+                    }
+                },
+                faqCard: {
+                    required: ['enabled', 'order', 'icon', 'title', 'imageUrl', 'faqs'],
+                    types: {
+                        enabled: 'boolean',
+                        order: 'number',
+                        icon: 'string',
+                        title: 'string',
+                        imageUrl: 'string',
+                        faqs: 'object'
+                    }
+                }
             }
         }
     },
@@ -75,19 +113,62 @@ window.ConfigValidator = {
                 }
 
                 // Enum checking
-                if (schema.enums[field] && !schema.enums[field].includes(value)) {
+                if (schema.enums && schema.enums[field] && !schema.enums[field].includes(value)) {
                     errors.push(`Field '${field}' should be one of: ${schema.enums[field].join(', ')}`);
+                }
+
+                // Sub-schema validation for mehrErfahren cards
+                if (schema.subSchemas && schema.subSchemas[field] && typeof value === 'object') {
+                    const subSchema = schema.subSchemas[field];
+                    for (const subField of subSchema.required) {
+                        if (!value.hasOwnProperty(subField)) {
+                            errors.push(`${field}.${subField} is required`);
+                        }
+                    }
                 }
             }
         }
 
-        // Special validations
-        if (config.mainAsset === 'video' && !config.videoId) {
-            errors.push('videoId is required when mainAsset is "video"');
+        // Special validations for welcome section
+        if (sectionType === 'welcome') {
+            if (config.mainAsset === 'video' && !config.videoId) {
+                errors.push('videoId is required when mainAsset is "video"');
+            }
+
+            if (config.mainAsset === 'image' && !config.mainImageLink) {
+                errors.push('mainImageLink is required when mainAsset is "image"');
+            }
         }
 
-        if (config.mainAsset === 'image' && !config.mainImageLink) {
-            errors.push('mainImageLink is required when mainAsset is "image"');
+        // Special validations for mehrErfahren section
+        if (sectionType === 'mehrErfahren') {
+            // Check if at least one card is enabled
+            const hasEnabledCard = 
+                (config.aboutCard && config.aboutCard.enabled) ||
+                (config.benefitsCard && config.benefitsCard.enabled) ||
+                (config.faqCard && config.faqCard.enabled);
+
+            if (!hasEnabledCard) {
+                errors.push('At least one card must be enabled in mehrErfahren section');
+            }
+
+            // Validate benefits array
+            if (config.benefitsCard && config.benefitsCard.enabled && config.benefitsCard.benefits) {
+                if (!Array.isArray(config.benefitsCard.benefits)) {
+                    errors.push('benefitsCard.benefits must be an array');
+                } else if (config.benefitsCard.benefits.length === 0) {
+                    errors.push('benefitsCard.benefits cannot be empty');
+                }
+            }
+
+            // Validate FAQs array
+            if (config.faqCard && config.faqCard.enabled && config.faqCard.faqs) {
+                if (!Array.isArray(config.faqCard.faqs)) {
+                    errors.push('faqCard.faqs must be an array');
+                } else if (config.faqCard.faqs.length === 0) {
+                    errors.push('faqCard.faqs cannot be empty');
+                }
+            }
         }
 
         return {
@@ -118,14 +199,14 @@ window.ConfigValidator = {
                     icon: 'fas fa-building',
                     title: 'Über Uns',
                     text: 'Beschreibungstext...',
-                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image'
+                    imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image'
                 },
                 benefitsCard: {
                     enabled: true,
                     order: 2,
                     icon: 'fas fa-star',
                     title: 'Deine Vorteile',
-                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                    imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image',
                     benefits: []
                 },
                 faqCard: {
@@ -133,7 +214,7 @@ window.ConfigValidator = {
                     order: 3,
                     icon: 'fas fa-question-circle',
                     title: 'Häufige Fragen',
-                    imageUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
+                    imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image',
                     faqs: []
                 }
             }
@@ -150,7 +231,7 @@ window.ConfigValidator = {
         const sanitized = { ...config };
 
         // Sanitize URLs
-        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink'];
+        const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'imageUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -165,13 +246,54 @@ window.ConfigValidator = {
         }
 
         // Sanitize text fields (remove script tags, etc.)
-        const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 'secondaryText'];
+        const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 'secondaryText', 'companyPlaceholder', 'title', 'text'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim();
             }
+        }
+
+        // Recursively sanitize card objects
+        if (sectionType === 'mehrErfahren') {
+            ['aboutCard', 'benefitsCard', 'faqCard'].forEach(cardType => {
+                if (sanitized[cardType]) {
+                    // Sanitize card fields
+                    if (sanitized[cardType].title) {
+                        sanitized[cardType].title = sanitized[cardType].title
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                    if (sanitized[cardType].text) {
+                        sanitized[cardType].text = sanitized[cardType].text
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+
+                    // Sanitize benefits
+                    if (sanitized[cardType].benefits && Array.isArray(sanitized[cardType].benefits)) {
+                        sanitized[cardType].benefits = sanitized[cardType].benefits.map(benefit => ({
+                            ...benefit,
+                            text: benefit.text
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                .trim()
+                        }));
+                    }
+
+                    // Sanitize FAQs
+                    if (sanitized[cardType].faqs && Array.isArray(sanitized[cardType].faqs)) {
+                        sanitized[cardType].faqs = sanitized[cardType].faqs.map(faq => ({
+                            question: faq.question
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                .trim(),
+                            answer: faq.answer
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                .trim()
+                        }));
+                    }
+                }
+            });
         }
 
         return sanitized;
