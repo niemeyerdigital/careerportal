@@ -75,6 +75,45 @@ window.ConfigValidator = {
                     }
                 }
             }
+        },
+        process: {
+            required: ['sectionHeadline', 'cards'],
+            optional: ['showEmojiContainers', 'showEmojiBackground'],
+            types: {
+                sectionHeadline: 'string',
+                showEmojiContainers: 'boolean',
+                showEmojiBackground: 'boolean',
+                cards: 'object'
+            },
+            defaults: {
+                showEmojiContainers: true,
+                showEmojiBackground: true
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate cards array
+                if (!Array.isArray(config.cards)) {
+                    errors.push('cards must be an array');
+                } else if (config.cards.length === 0) {
+                    errors.push('cards array cannot be empty');
+                } else {
+                    // Validate each card
+                    config.cards.forEach((card, index) => {
+                        if (!card.emoji) errors.push(`Card ${index + 1}: emoji is required`);
+                        if (!card.title) errors.push(`Card ${index + 1}: title is required`);
+                        if (!card.text) errors.push(`Card ${index + 1}: text is required`);
+                        if (!card.emojiContainerColor) errors.push(`Card ${index + 1}: emojiContainerColor is required`);
+                        
+                        // Validate color format (basic check)
+                        if (card.emojiContainerColor && !card.emojiContainerColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+                            errors.push(`Card ${index + 1}: emojiContainerColor must be a valid hex color`);
+                        }
+                    });
+                }
+                
+                return errors;
+            }
         }
     },
 
