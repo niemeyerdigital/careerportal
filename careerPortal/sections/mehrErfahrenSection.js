@@ -6,12 +6,12 @@
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
-        this.activeAccordionIndex = 0;
+        this.cards = [];
         this.initializeMehrErfahren();
     }
 
     /**
-     * Initialize the Mehr Erfahren section
+     * Initialize Mehr Erfahren section specific functionality
      */
     initializeMehrErfahren() {
         if (!this.container) {
@@ -20,201 +20,242 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         }
 
         this.createMehrErfahrenHTML();
-        this.setupAccordions();
+        this.setupEventHandlers();
         this.initializeAnimations();
     }
 
     /**
-     * Create the HTML structure
+     * Create the HTML structure for Mehr Erfahren section
      */
     createMehrErfahrenHTML() {
-        const { companyPlaceholder, aboutCard, benefitsCard, faqCard } = this.config;
-
-        // Sort cards by order
-        const cards = [];
-        if (aboutCard?.enabled) cards.push({ ...aboutCard, type: 'about' });
-        if (benefitsCard?.enabled) cards.push({ ...benefitsCard, type: 'benefits' });
-        if (faqCard?.enabled) cards.push({ ...faqCard, type: 'faq' });
+        // Update headline with company placeholder
+        const mainHeadline = `Wieso ${this.config.companyPlaceholder}?`;
         
-        cards.sort((a, b) => (a.order || 0) - (b.order || 0));
-
-        const cardsHTML = cards.map((card, index) => this.createCardHTML(card, index)).join('');
-
+        // Create cards array from config
+        const cards = this.buildCardsArray();
+        
+        // Generate HTML
         this.container.innerHTML = `
-            <div class="mehr-erfahren-wrapper">
-                <div class="static-header">
-                    <div class="static-header-content">
-                        <h1>Warum <span class="company-highlight">${companyPlaceholder || 'UNTERNEHMEN'}</span>?</h1>
-                        <p>Entdecke, was uns besonders macht</p>
+            <div class="mehr-wrapper">
+                <div class="mehr-container">
+                    <h1 class="mehr-headline">${mainHeadline}</h1>
+                    <p class="mehr-subheadline">Ziemlich viele gute Gründe.</p>
+                    
+                    <div class="mehr-cards-wrapper" id="mehr-cards-vertical">
+                        ${cards.map(card => this.generateCardHTML(card)).join('')}
                     </div>
                 </div>
-                <div class="sticky-wrapper">
-                    ${cardsHTML}
-                </div>
             </div>
         `;
     }
 
     /**
-     * Create individual card HTML based on type
-     * Note: No inline styles, no classes for positioning - pure CSS nth-child
+     * Build cards array from config
      */
-    createCardHTML(card, index) {
+    buildCardsArray() {
+        const cards = [];
+        
+        if (this.config.aboutCard && this.config.aboutCard.enabled) {
+            cards.push({
+                order: this.config.aboutCard.order,
+                type: 'about',
+                data: this.config.aboutCard
+            });
+        }
+        
+        if (this.config.benefitsCard && this.config.benefitsCard.enabled) {
+            cards.push({
+                order: this.config.benefitsCard.order,
+                type: 'benefits',
+                data: this.config.benefitsCard
+            });
+        }
+        
+        if (this.config.faqCard && this.config.faqCard.enabled) {
+            cards.push({
+                order: this.config.faqCard.order,
+                type: 'faq',
+                data: this.config.faqCard
+            });
+        }
+        
+        // Sort cards by order
+        cards.sort((a, b) => a.order - b.order);
+        this.cards = cards;
+        
+        return cards;
+    }
+
+    /**
+     * Generate HTML for a single card
+     */
+    generateCardHTML(card) {
+        let contentHTML = '';
+        
         switch (card.type) {
             case 'about':
-                return this.createAboutCard(card, index);
+                contentHTML = this.generateAboutCardContent(card.data);
+                break;
             case 'benefits':
-                return this.createBenefitsCard(card, index);
+                contentHTML = this.generateBenefitsCardContent(card.data);
+                break;
             case 'faq':
-                return this.createFAQCard(card, index);
-            default:
-                return '';
+                contentHTML = this.generateFAQCardContent(card.data);
+                break;
         }
-    }
-
-    /**
-     * Create About card HTML - Test Replica Structure
-     */
-    createAboutCard(card, index) {
+        
         return `
-            <div class="card">
-                <span class="card-number">${index + 1}</span>
-                <div class="card-icon">
-                    <i class="${card.icon || 'fas fa-building'}"></i>
+            <div class="mehr-card" data-card-type="${card.type}">
+                <div class="mehr-card-content">
+                    <i class="mehr-card-icon ${card.data.icon}"></i>
+                    <h2>${card.data.title}</h2>
+                    ${contentHTML}
                 </div>
-                <h2>${card.title || 'Über Uns'}</h2>
-                <p>${card.text || 'Beschreibung...'}</p>
+                <div class="mehr-card-image">
+                    <img src="${card.data.imageUrl}" alt="${card.data.title}">
+                </div>
             </div>
         `;
     }
 
     /**
-     * Create Benefits card HTML - Test Replica Structure
+     * Generate About card content
      */
-    createBenefitsCard(card, index) {
-        const benefitsHTML = (card.benefits || []).slice(0, 4).map(benefit => `
-            <li>
-                <span class="benefit-emoji">${benefit.emoji || '✓'}</span>
-                <span>${benefit.text || ''}</span>
-            </li>
-        `).join('');
+    generateAboutCardContent(data) {
+        return `<p>${data.text}</p>`;
+    }
 
+    /**
+     * Generate Benefits card content with scrolling list
+     */
+    generateBenefitsCardContent(data) {
+        const benefitsList = data.benefits.map(benefit => 
+            `<li>${benefit.emoji} ${benefit.text}</li>`
+        ).join('');
+        
         return `
-            <div class="card">
-                <span class="card-number">${index + 1}</span>
-                <div class="card-icon">
-                    <i class="${card.icon || 'fas fa-star'}"></i>
-                </div>
-                <h2>${card.title || 'Deine Vorteile'}</h2>
-                <ul class="card-features">
-                    ${benefitsHTML}
+            <div class="mehr-bullet-list-container">
+                <ul class="mehr-bullet-list">
+                    ${benefitsList}
+                </ul>
+                <ul class="mehr-bullet-list" aria-hidden="true">
+                    ${benefitsList}
                 </ul>
             </div>
         `;
     }
 
     /**
-     * Create FAQ card HTML - Test Replica Structure
+     * Generate FAQ card content with accordions
      */
-    createFAQCard(card, index) {
-        const faqsHTML = (card.faqs || []).slice(0, 3).map((faq, faqIndex) => `
-            <div class="faq-item ${faqIndex === 0 ? 'active' : ''}" data-faq-index="${faqIndex}">
-                <div class="faq-question">
-                    <span>${faq.question || 'Frage...'}</span>
-                    <i class="faq-icon fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <div class="faq-answer-content">
-                        <p>${faq.answer || 'Antwort...'}</p>
-                    </div>
+    generateFAQCardContent(data) {
+        const faqItems = data.faqs.map((faq, index) => `
+            <div class="mehr-accordion-item" data-faq-index="${index}">
+                <button class="mehr-accordion-header">
+                    <span>${faq.question}</span>
+                    <span class="mehr-accordion-icon">+</span>
+                </button>
+                <div class="mehr-accordion-content">
+                    <p>${faq.answer}</p>
                 </div>
             </div>
         `).join('');
-
+        
         return `
-            <div class="card">
-                <span class="card-number">${index + 1}</span>
-                <div class="card-icon">
-                    <i class="${card.icon || 'fas fa-question-circle'}"></i>
-                </div>
-                <h2>${card.title || 'Häufige Fragen'}</h2>
-                <div class="faq-container">
-                    ${faqsHTML}
-                </div>
+            <div class="mehr-accordion-container">
+                ${faqItems}
             </div>
         `;
     }
 
     /**
-     * Setup accordion functionality for FAQ
+     * Setup event handlers
      */
-    setupAccordions() {
-        const faqItems = this.container.querySelectorAll('.faq-item');
-        
-        faqItems.forEach((item, index) => {
-            const question = item.querySelector('.faq-question');
-            
-            question.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.toggleAccordion(index);
+    setupEventHandlers() {
+        // Card click animations
+        const cards = this.container.querySelectorAll('.mehr-card');
+        cards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger card animation if clicking accordion
+                if (!e.target.closest('.mehr-accordion-header')) {
+                    this.animateCardClick(card);
+                }
+            });
+        });
+
+        // Accordion functionality
+        const accordionHeaders = this.container.querySelectorAll('.mehr-accordion-header');
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleAccordion(header);
             });
         });
     }
 
     /**
+     * Animate card click
+     */
+    animateCardClick(card) {
+        card.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            card.style.transform = '';
+        }, 300);
+    }
+
+    /**
      * Toggle accordion item
      */
-    toggleAccordion(clickedIndex) {
-        const faqItems = this.container.querySelectorAll('.faq-item');
+    toggleAccordion(header) {
+        const accordionItem = header.parentElement;
+        const wasActive = accordionItem.classList.contains('active');
         
-        faqItems.forEach((item, index) => {
-            if (index === clickedIndex) {
-                // Toggle clicked item
-                const isActive = item.classList.contains('active');
-                item.classList.toggle('active');
-                
-                // Update icon rotation
-                const icon = item.querySelector('.faq-icon');
-                if (icon) {
-                    icon.style.transform = isActive ? 'rotate(0deg)' : 'rotate(180deg)';
-                }
-            } else {
-                // Close all other items
-                item.classList.remove('active');
-                const icon = item.querySelector('.faq-icon');
-                if (icon) {
-                    icon.style.transform = 'rotate(0deg)';
-                }
-            }
+        // Close all accordion items
+        this.container.querySelectorAll('.mehr-accordion-item').forEach(item => {
+            item.classList.remove('active');
         });
+        
+        // Toggle current item
+        if (!wasActive) {
+            accordionItem.classList.add('active');
+        }
+
+        // Track accordion interaction
+        if (window.gtag) {
+            const question = header.querySelector('span').textContent;
+            window.gtag('event', 'accordion_toggle', {
+                event_category: 'FAQ',
+                event_label: question,
+                value: wasActive ? 0 : 1
+            });
+        }
     }
 
     /**
      * Initialize animations
      */
     initializeAnimations() {
-        if (!window.AnimationController) {
-            console.warn('AnimationController not loaded, skipping animations');
-            return;
-        }
-
-        this.animationController = new window.AnimationController();
-
-        // Animate header
-        const header = this.container.querySelector('.static-header');
-        if (header) {
-            this.animationController.animateEntrance([header], 'slideUp', {
-                startDelay: 100
-            });
-        }
-
-        // Animate cards with stagger effect
-        const cards = this.container.querySelectorAll('.card');
+        // Cards fade in on load
+        const cards = this.container.querySelectorAll('.mehr-card');
         cards.forEach((card, index) => {
             setTimeout(() => {
-                card.classList.add('animate-in');
-            }, 200 + (index * 150));
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200 * (index + 1));
         });
+
+        // Observe for scroll animations
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => observer.observe(card));
+        }
     }
 
     /**
@@ -229,28 +270,66 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      * Get section metrics
      */
     getMetrics() {
-        const enabledCards = [];
-        if (this.config.aboutCard?.enabled) enabledCards.push('about');
-        if (this.config.benefitsCard?.enabled) enabledCards.push('benefits');
-        if (this.config.faqCard?.enabled) enabledCards.push('faq');
-
+        const enabledCards = this.cards.filter(card => card.data.enabled);
+        
         return {
             sectionType: 'mehrErfahren',
-            companyName: this.config.companyPlaceholder,
-            enabledCards: enabledCards,
-            benefitsCount: this.config.benefitsCard?.benefits?.length || 0,
-            faqCount: this.config.faqCard?.faqs?.length || 0,
-            isVisible: this.isInViewport(this.container)
+            config: this.config,
+            totalCards: this.cards.length,
+            enabledCards: enabledCards.length,
+            cardTypes: enabledCards.map(c => c.type),
+            isVisible: this.isInViewport(this.container),
+            hasAccordions: this.container.querySelectorAll('.mehr-accordion-item').length > 0
         };
+    }
+
+    /**
+     * Validate configuration
+     */
+    validateConfig() {
+        if (!this.config.companyPlaceholder) {
+            console.error('Mehr Erfahren section: companyPlaceholder is required');
+            return false;
+        }
+
+        // Check at least one card is enabled
+        const hasEnabledCard = 
+            (this.config.aboutCard && this.config.aboutCard.enabled) ||
+            (this.config.benefitsCard && this.config.benefitsCard.enabled) ||
+            (this.config.faqCard && this.config.faqCard.enabled);
+
+        if (!hasEnabledCard) {
+            console.error('Mehr Erfahren section: At least one card must be enabled');
+            return false;
+        }
+
+        return super.validateConfig();
+    }
+
+    /**
+     * Handle responsive updates
+     */
+    onResize() {
+        const breakpoint = this.getCurrentBreakpoint();
+        
+        // Adjust card layout for mobile
+        if (breakpoint === 'mobile') {
+            this.container.classList.add('mobile-view');
+        } else {
+            this.container.classList.remove('mobile-view');
+        }
     }
 
     /**
      * Cleanup
      */
     destroy() {
-        if (this.animationController) {
-            this.animationController.destroy();
-        }
+        // Remove event listeners
+        const cards = this.container.querySelectorAll('.mehr-card');
+        cards.forEach(card => {
+            card.replaceWith(card.cloneNode(true));
+        });
+
         super.destroy();
     }
 
@@ -263,28 +342,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Validate configuration
-     */
-    validateConfig() {
-        if (!this.config.companyPlaceholder) {
-            console.warn('Mehr Erfahren section: companyPlaceholder not provided');
-        }
-
-        const hasAtLeastOneCard = 
-            this.config.aboutCard?.enabled || 
-            this.config.benefitsCard?.enabled || 
-            this.config.faqCard?.enabled;
-
-        if (!hasAtLeastOneCard) {
-            console.error('Mehr Erfahren section: At least one card must be enabled');
-            return false;
-        }
-
-        return super.validateConfig();
-    }
-
-    /**
-     * Static creation method
+     * Static factory method
      */
     static create(containerId, config) {
         return new MehrErfahrenSection(config, containerId);
