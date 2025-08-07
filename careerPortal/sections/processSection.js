@@ -183,6 +183,7 @@ window.ProcessSection = class ProcessSection extends window.BaseSec {
     setupEventHandlers() {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
+        const track = document.getElementById('carouselTrack');
 
         if (prevBtn) {
             prevBtn.addEventListener('click', () => this.prevSlide());
@@ -190,6 +191,61 @@ window.ProcessSection = class ProcessSection extends window.BaseSec {
 
         if (nextBtn) {
             nextBtn.addEventListener('click', () => this.nextSlide());
+        }
+
+        // Prevent touch scrolling/dragging on the carousel
+        if (track) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            let isDragging = false;
+
+            // Touch events for swipe detection (without visual dragging)
+            track.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                isDragging = true;
+                // Prevent default to stop scrolling
+                e.preventDefault();
+            }, { passive: false });
+
+            track.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                // Prevent the visual drag effect
+                e.preventDefault();
+                e.stopPropagation();
+                touchEndX = e.touches[0].clientX;
+            }, { passive: false });
+
+            track.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                // Only navigate if swipe is significant
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swiped left - go to next slide
+                        this.nextSlide();
+                    } else {
+                        // Swiped right - go to previous slide
+                        this.prevSlide();
+                    }
+                }
+                
+                touchStartX = 0;
+                touchEndX = 0;
+            });
+
+            // Prevent mouse drag on desktop
+            track.addEventListener('dragstart', (e) => {
+                e.preventDefault();
+            });
+
+            // Prevent context menu on long press
+            track.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
         }
 
         // Handle keyboard navigation
