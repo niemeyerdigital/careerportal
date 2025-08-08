@@ -1,223 +1,387 @@
 /**
  * Career Portal Loader - Main Entry Point
- * (with static setBaseURL helper for CSP boot code)
+ * Dynamically loads required modules and initializes sections
  */
 
 class CareerPortalLoader {
-  // --- NEW: default base URL lives on the class so we can override it early
-  static BASE_URL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
+    constructor() {
+        this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
+        this.loadedModules = new Map();
+        this.initializationQueue = [];
+    }
 
-  // --- NEW: public static setter used by your tracking code
-  static setBaseURL(url) {
-    if (typeof url === 'string' && url.trim()) {
-      CareerPortalLoader.BASE_URL = url.trim();
-      // Update a live instance if one exists
-      if (window.CareerPortalLoaderInstance) {
-        window.CareerPortalLoaderInstance.baseURL = CareerPortalLoader.BASE_URL;
-      }
-      console.log('🔧 CareerPortalLoader baseURL set to:', CareerPortalLoader.BASE_URL);
-    } else {
-      console.warn('setBaseURL expected a non-empty string. Ignored.');
-    }
-  }
+    /**
+     * Load a JavaScript module dynamically
+     */
+    async loadModule(path) {
+        if (this.loadedModules.has(path)) {
+            return this.loadedModules.get(path);
+        }
 
-  // --- (optional) getter
-  static getBaseURL() {
-    return CareerPortalLoader.BASE_URL;
-  }
+        try {
+            const response = await fetch(this.baseURL + path);
+            const code = await response.text();
+            
+            // Create a script element and execute it
+            const script = document.createElement('script');
+            script.textContent = code;
+            document.head.appendChild(script);
+            
+            this.loadedModules.set(path, true);
+            return true;
+        } catch (error) {
+            console.error(`Failed to load module: ${path}`, error);
+            return false;
+        }
+    }
 
-  constructor() {
-    // --- CHANGED: read from static (and allow global override variable)
-    this.baseURL = window.CAREER_PORTAL_BASE_URL || CareerPortalLoader.BASE_URL;
-    this.loadedModules = new Map();
-    this.initializationQueue = [];
-    this.coreLoaded = false;
-  }
+    /**
+     * Initialize a specific section
+     */
+    async initializeSection(sectionType, config, containerId) {
+        try {
+            // Load base section first
+            await this.loadModule('sections/baseSec.js');
+            
+            // Load required UI components
+            await Promise.all([
+                this.loadModule('ui/components/videoWistia.js'),
+                this.loadModule('ui/components/buttonManager.js'),
+                this.loadModule('ui/components/badgeComponent.js'),
+                this.loadModule('ui/animations/slideUp.js'),
+                this.loadModule('ui/animations/animationController.js')
+            ]);
 
-  /* -----------------------------------------------------------
-   * Low-level loader
-   * --------------------------------------------------------- */
-  async loadModule(path) {
-    const key = String(path);
-    if (this.loadedModules.has(key)) return this.loadedModules.get(key);
+            // Load config validator
+            await this.loadModule('configValidator.js');
 
-    const url = this.baseURL + key.replace(/^\//, '');
-    const resp = await fetch(url, { cache: 'no-store' });
-    if (!resp.ok) {
-      throw new Error(`Failed to load module: ${key} (${resp.status})`);
-    }
-    const code = await resp.text();
-    // eslint-disable-next-line no-eval
-    eval(code);
-    this.loadedModules.set(key, true);
-    console.log(`✅ Loaded: ${key}`);
-    return true;
-  }
+            // Load section-specific module
+            await this.loadModule(`sections/${sectionType}Section.js`);
 
-  async loadCoreOnce() {
-    if (this.coreLoaded) return;
-    await this.loadModule('baseSec.js');
-    await Promise.all([
-      this.loadModule('ui/components/videoWistia.js'),
-      this.loadModule('ui/components/buttonManager.js'),
-      this.loadModule('ui/components/badgeComponent.js'),
-      this.loadModule('ui/animations/slideUp.js'),
-      this.loadModule('ui/animations/animationController.js')
-    ]);
-    await this.loadModule('configValidator.js');
-    this.coreLoaded = true;
-    console.log('🧩 Core modules ready');
-  }
+            // Validate configuration
+            if (window.ConfigValidator) {
+                const validatedConfig = window.ConfigValidator.validate(config, sectionType);
+                if (!validatedConfig.isValid) {
+                    console.error(`Invalid config for ${sectionType}:`, validatedConfig.errors);
+                    return false;
+                }
+            }
 
-  sectionTypeToFile(sectionType) {
-    return `sections/${sectionType}Section.js`;
-  }
-  sectionTypeToClassName(sectionType) {
-    switch (sectionType) {
-      case 'welcome': return 'WelcomeSection';
-      case 'mehrErfahren': return 'MehrErfahrenSection';
-      case 'process': return 'ProcessSection';
-      case 'footer': return 'FooterSection';
-      case 'positions': return 'PositionsSection';
-      default: return null;
-    }
-  }
-  sectionTypeToConfigName(sectionType) {
-    switch (sectionType) {
-      case 'welcome': return 'WELCOME_CONFIG';
-      case 'mehrErfahren': return 'MEHR_ERFAHREN_CONFIG';
-      case 'process': return 'PROCESS_CONFIG';
-      case 'footer': return 'FOOTER_CONFIG';
-      case 'positions': return 'POSITIONS_CONFIG';
-      default: return null;
-    }
-  }
+            // Initialize the section
+            const sectionClass = window[`${this.capitalize(sectionType)}Section`];
+            if (sectionClass) {
+                new sectionClass(config, containerId);
+                return true;
+            } else {
+                console.error(`Section class ${sectionType}Section not found`);
+                return false;
+            }
 
-  async loadSection(sectionType) {
-    const file = this.sectionTypeToFile(sectionType);
-    await this.loadModule(file);
-  }
+        } catch (error) {
+            console.error(`Failed to initialize ${sectionType} section:`, error);
+            return false;
+        }
+    }
 
-  initializeSection(sectionType, configObjOrName, containerId) {
-    const className = this.sectionTypeToClassName(sectionType);
-    if (!className || !window[className]) {
-      console.error(`[Loader] Section class missing for type "${sectionType}"`);
-      return null;
+    /**
+     * Queue section for initialization (useful when DOM isn't ready)
+     */
+    queueSection(sectionType, config, containerId) {
+        this.initializationQueue.push({ sectionType, config, containerId });
     }
-    let config = null;
-    if (typeof configObjOrName === 'string' && configObjOrName.trim()) {
-      config = window[configObjOrName] || window[this.sectionTypeToConfigName(sectionType)];
-    } else if (configObjOrName && typeof configObjOrName === 'object') {
-      config = configObjOrName;
-    } else {
-      config = window[this.sectionTypeToConfigName(sectionType)];
-    }
-    if (!config) {
-      console.warn(`[Loader] No config found for "${sectionType}". Proceeding with empty config.`);
-      config = {};
-    }
-    if (window.ConfigValidator?.validate) {
-      const errors = window.ConfigValidator.validate(sectionType, config);
-      if (errors?.length) {
-        console.group(`[Loader] Config validation errors for "${sectionType}"`);
-        errors.forEach(e => console.error('•', e));
-        console.groupEnd();
-      }
-    }
-    let container = null;
-    if (containerId) container = document.getElementById(containerId);
-    if (!container) container = document.getElementById(`${sectionType}-section`);
-    if (!container) container = document.querySelector(`[data-career-section="${sectionType}"]`);
-    if (!container) {
-      console.error(`[Loader] Container for section "${sectionType}" not found`);
-      return null;
-    }
-    const instance = new window[className](
-      config,
-      container.id || this.ensureElementId(container, `${sectionType}-section`)
-    );
-    console.log(`🎯 Initialized section "${sectionType}"`, { container: container.id, config });
-    return instance;
-  }
 
-  ensureElementId(el, fallbackId) {
-    if (el.id) return el.id;
-    let id = fallbackId; let i = 1;
-    while (document.getElementById(id)) id = `${fallbackId}-${i++}`;
-    el.id = id;
-    return el.id;
-  }
+    /**
+     * Process all queued sections
+     */
+    async processQueue() {
+        for (const item of this.initializationQueue) {
+            await this.initializeSection(item.sectionType, item.config, item.containerId);
+        }
+        this.initializationQueue = [];
+    }
 
-  async autoInitialize() {
-    await this.loadCoreOnce();
-    const nodes = Array.from(document.querySelectorAll('[data-career-section]'));
-    if (!nodes.length) {
-      console.info('[Loader] No [data-career-section] nodes found; nothing to initialize.');
-      return;
-    }
-    const uniqueTypes = Array.from(new Set(
-      nodes.map(n => n.getAttribute('data-career-section')?.trim()).filter(Boolean)
-    ));
-    await Promise.all(uniqueTypes.map(t => this.loadSection(t)));
-    nodes.forEach(node => {
-      const type = node.getAttribute('data-career-section')?.trim();
-      const cfgName = (node.getAttribute('data-config') || '').trim();
-      const id = this.ensureElementId(node, `${type}-section`);
-      this.initializeSection(type, cfgName || undefined, id);
-    });
-    console.log('🚀 Auto-initialization complete');
-  }
+    /**
+     * Auto-initialize sections based on data attributes
+     */
+    async autoInitialize() {
+        const sections = document.querySelectorAll('[data-career-section]');
+        
+        for (const section of sections) {
+            const sectionType = section.getAttribute('data-career-section');
+            const configName = section.getAttribute('data-config') || `${sectionType.toUpperCase()}_CONFIG`;
+            const config = window[configName];
 
-  async manualBoot() {
-    await this.loadCoreOnce();
-    const toLoad = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions'];
-    for (const type of toLoad) {
-      try { await this.loadSection(type); }
-      catch (e) { console.warn(`[Loader] Failed loading section "${type}"`, e); }
+            if (config) {
+                await this.initializeSection(sectionType, config, section.id);
+            } else {
+                console.warn(`Config ${configName} not found for section ${sectionType}`);
+            }
+        }
     }
-    if (document.getElementById('welcome-section') || document.querySelector('[data-career-section="welcome"]')) {
-      this.initializeSection('welcome', 'WELCOME_CONFIG', 'welcome-section');
+
+    /**
+     * Utility function to capitalize first letter
+     */
+    capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    if (document.getElementById('mehr-erfahren-section') || document.querySelector('[data-career-section="mehrErfahren"]')) {
-      this.initializeSection('mehrErfahren', 'MEHR_ERFAHREN_CONFIG', 'mehr-erfahren-section');
+
+    /**
+     * Set custom base URL for loading modules
+     */
+    setBaseURL(url) {
+        this.baseURL = url.endsWith('/') ? url : url + '/';
     }
-    if (document.getElementById('process-section') || document.querySelector('[data-career-section="process"]')) {
-      this.initializeSection('process', 'PROCESS_CONFIG', 'process-section');
-    }
-    if (document.getElementById('footer-section') || document.querySelector('[data-career-section="footer"]')) {
-      this.initializeSection('footer', 'FOOTER_CONFIG', 'footer-section');
-    }
-    if (document.getElementById('positions-section') || document.querySelector('[data-career-section="positions"]')) {
-      this.initializeSection('positions', 'POSITIONS_CONFIG', 'positions-section');
-    }
-    console.log('🧭 Manual boot complete');
-  }
 }
 
-/* Globals */
-window.CareerPortalLoader = CareerPortalLoader;
+// Create global loader instance
+window.CareerPortalLoader = new CareerPortalLoader();
 
-// --- NEW: legacy/alias helpers your code might call -------------------
-window.setCareerPortalBaseURL = function(url){ CareerPortalLoader.setBaseURL(url); };
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.CareerPortalLoader.autoInitialize();
+    });
+} else {
+    // DOM is already ready
+    window.CareerPortalLoader.autoInitialize();
+}
 
-// Boot helper (unchanged)
-window.careerPortalStart = async function (mode = 'auto') {
-  try {
-    const loader = new CareerPortalLoader();
-    window.CareerPortalLoaderInstance = loader;
-    if (mode === 'manual') {
-      await loader.manualBoot();
-    } else {
-      await loader.autoInitialize();
+// ====================================================================
+// MANUAL INITIALIZATION FOR CLICKFUNNELS (CSP WORKAROUND)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    console.log('🚀 Loading Career Portal via fetch method...');
+    
+    // Load modules sequentially via fetch to avoid CSP issues
+    async function loadCareerPortal() {
+        try {
+            // 1. Load and execute loader.js (already loaded, so skip)
+            console.log('✅ Loader already loaded');
+            
+            // Set the base URL
+            if (window.CareerPortalLoader) {
+                window.CareerPortalLoader.setBaseURL(BASE_URL);
+                console.log('✅ Base URL set to:', BASE_URL);
+            }
+            
+            // 2. Load and execute config validator
+            const validatorResponse = await fetch(BASE_URL + 'configValidator.js');
+            const validatorCode = await validatorResponse.text();
+            eval(validatorCode);
+            console.log('✅ Config validator loaded');
+            
+            // 3. Load base section
+            const baseSecResponse = await fetch(BASE_URL + 'sections/baseSec.js');
+            const baseSecCode = await baseSecResponse.text();
+            eval(baseSecCode);
+            console.log('✅ Base section loaded');
+            
+            // 4. Load UI components
+            const components = [
+                'ui/components/videoWistia.js',
+                'ui/components/buttonManager.js',
+                'ui/components/badgeComponent.js',
+                'ui/animations/slideUp.js',
+                'ui/animations/animationController.js'
+            ];
+            
+            for (const component of components) {
+                const response = await fetch(BASE_URL + component);
+                const code = await response.text();
+                eval(code);
+                console.log('✅ Loaded:', component);
+            }
+            
+            // 5. Load welcome section
+            const welcomeResponse = await fetch(BASE_URL + 'sections/welcomeSection.js');
+            const welcomeCode = await welcomeResponse.text();
+            eval(welcomeCode);
+            console.log('✅ Welcome section loaded');
+            
+            // 6. Load mehr erfahren section
+            const mehrErfahrenResponse = await fetch(BASE_URL + 'sections/mehrErfahrenSection.js');
+            const mehrErfahrenCode = await mehrErfahrenResponse.text();
+            eval(mehrErfahrenCode);
+            console.log('✅ Mehr Erfahren section loaded');
+            
+            // 7. Load process section
+            const processResponse = await fetch(BASE_URL + 'sections/processSection.js');
+            const processCode = await processResponse.text();
+            eval(processCode);
+            console.log('✅ Process section loaded');
+            
+            // 8. Load footer section
+            const footerResponse = await fetch(BASE_URL + 'sections/footerSection.js');
+            const footerCode = await footerResponse.text();
+            eval(footerCode);
+            console.log('✅ Footer section loaded');
+            
+            // 9. Initialize sections that exist on the page
+            if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
+                new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
+                console.log('🎉 Welcome section initialized successfully!');
+            }
+            
+            if (window.MehrErfahrenSection && document.getElementById('mehr-erfahren-section') && window.MEHR_ERFAHREN_CONFIG) {
+                new window.MehrErfahrenSection(window.MEHR_ERFAHREN_CONFIG, 'mehr-erfahren-section');
+                console.log('🎉 Mehr Erfahren section initialized successfully!');
+            }
+            
+            if (window.ProcessSection && document.getElementById('process-section') && window.PROCESS_CONFIG) {
+                new window.ProcessSection(window.PROCESS_CONFIG, 'process-section');
+                console.log('🎉 Process section initialized successfully!');
+            }
+            
+            if (window.FooterSection && document.getElementById('footer-section') && window.FOOTER_CONFIG) {
+                new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+                console.log('🎉 Footer section initialized successfully!');
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to load Career Portal:', error);
+        }
     }
-  } catch (err) {
-    console.error('[Loader] Startup error', err);
-  }
+    
+    // Start loading when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadCareerPortal);
+    } else {
+        loadCareerPortal();
+    }
+})();
+
+// ====================================================================
+// DEBUG HELPER FUNCTIONS
+// ====================================================================
+
+// Function to check if all components loaded correctly
+window.debugCareerPortal = function() {
+    const components = [
+        'CareerPortalLoader',
+        'ConfigValidator', 
+        'BaseSec',
+        'WelcomeSection',
+        'MehrErfahrenSection',
+        'ProcessSection',
+        'FooterSection',
+        'VideoWistia',
+        'ButtonManager',
+        'BadgeComponent',
+        'SlideUpAnimation',
+        'AnimationController'
+    ];
+    
+    console.log('=== Career Portal Debug Info ===');
+    components.forEach(component => {
+        const loaded = !!window[component];
+        console.log(`${component}: ${loaded ? '✅ Loaded' : '❌ Missing'}`);
+    });
+    
+    // Check sections
+    const welcomeElement = document.getElementById('welcome-section');
+    const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
+    const processElement = document.getElementById('process-section');
+    const footerElement = document.getElementById('footer-section');
+    
+    console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Process Section Element: ${processElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
+    
+    // Check configs
+    console.log('Welcome Config:', window.WELCOME_CONFIG);
+    console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
+    console.log('Process Config:', window.PROCESS_CONFIG);
+    console.log('Footer Config:', window.FOOTER_CONFIG);
 };
 
-// Debug helpers (unchanged)
-window.debugWelcome = function () { /* ... keep your existing debug code ... */ };
-window.debugMehr = function () { /* ... */ };
-window.debugProcess = function () { /* ... */ };
-window.debugPositions = function () { /* ... */ };
-window.debugFooter = function () { /* ... */ };
+// Function to manually reinitialize sections
+window.reinitializeWelcomeSection = function() {
+    if (window.WelcomeSection && window.WELCOME_CONFIG) {
+        return new window.WelcomeSection(WELCOME_CONFIG, 'welcome-section');
+    } else {
+        console.error('WelcomeSection class or WELCOME_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeMehrErfahrenSection = function() {
+    if (window.MehrErfahrenSection && window.MEHR_ERFAHREN_CONFIG) {
+        return new window.MehrErfahrenSection(MEHR_ERFAHREN_CONFIG, 'mehr-erfahren-section');
+    } else {
+        console.error('MehrErfahrenSection class or MEHR_ERFAHREN_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeProcessSection = function() {
+    if (window.ProcessSection && window.PROCESS_CONFIG) {
+        return new window.ProcessSection(PROCESS_CONFIG, 'process-section');
+    } else {
+        console.error('ProcessSection class or PROCESS_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeFooterSection = function() {
+    if (window.FooterSection && window.FOOTER_CONFIG) {
+        return new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+    } else {
+        console.error('FooterSection class or FOOTER_CONFIG not available');
+        return false;
+    }
+};
+
+// Debug helper for Mehr Erfahren specifically
+window.debugMehrErfahren = function() {
+    console.log('=== Mehr Erfahren Debug Info ===');
+    console.log('MehrErfahrenSection loaded:', !!window.MehrErfahrenSection);
+    console.log('Container found:', !!document.getElementById('mehr-erfahren-section'));
+    console.log('Config:', window.MEHR_ERFAHREN_CONFIG);
+    
+    if (window.MEHR_ERFAHREN_CONFIG) {
+        // Check enabled cards
+        const enabledCards = Object.entries(window.MEHR_ERFAHREN_CONFIG)
+            .filter(([key, value]) => key.includes('Card') && value && value.enabled)
+            .map(([key]) => key);
+        console.log('Enabled cards:', enabledCards);
+        
+        // Check CTA configuration
+        console.log('CTA Headline:', window.MEHR_ERFAHREN_CONFIG.ctaHeadline);
+        console.log('CTA Button:', window.MEHR_ERFAHREN_CONFIG.ctaButtonText);
+    }
+};
+
+// Debug helper for Process section
+window.debugProcess = function() {
+    console.log('=== Process Section Debug Info ===');
+    console.log('ProcessSection loaded:', !!window.ProcessSection);
+    console.log('Container found:', !!document.getElementById('process-section'));
+    console.log('Config:', window.PROCESS_CONFIG);
+    
+    if (window.PROCESS_CONFIG) {
+        console.log('Number of cards:', window.PROCESS_CONFIG.cards ? window.PROCESS_CONFIG.cards.length : 0);
+        console.log('Show emoji containers:', window.PROCESS_CONFIG.showEmojiContainers);
+        console.log('Show emoji background:', window.PROCESS_CONFIG.showEmojiBackground);
+    }
+};
+
+// Debug helper for Footer section
+window.debugFooter = function() {
+    console.log('=== Footer Section Debug Info ===');
+    console.log('FooterSection loaded:', !!window.FooterSection);
+    console.log('Container found:', !!document.getElementById('footer-section'));
+    console.log('Config:', window.FOOTER_CONFIG);
+    
+    if (window.FOOTER_CONFIG && window.FOOTER_CONFIG.socialMedia) {
+        const enabledSocial = Object.entries(window.FOOTER_CONFIG.socialMedia)
+            .filter(([_, settings]) => settings.enabled)
+            .map(([platform]) => platform);
+        console.log('Enabled social platforms:', enabledSocial);
+    }
+};
