@@ -699,6 +699,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             }
         }
 
+        // Prevent body scroll
+        this.lockBodyScroll();
+
         // Show modal
         const modal = document.getElementById('modal');
         if (modal) {
@@ -719,6 +722,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         if (modalCard) {
             modalCard.style.transform = '';
         }
+        
+        // Restore body scroll
+        this.unlockBodyScroll();
     }
 
     /**
@@ -742,6 +748,34 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             li.innerHTML = `<i class="fa-light fa-circle-small" aria-hidden="true"></i><span>${item}</span>`;
             ul.appendChild(li);
         });
+    }
+
+    /**
+     * Lock body scroll when modal is open
+     */
+    lockBodyScroll() {
+        // Store current scroll position
+        this.scrollPosition = window.pageYOffset;
+        
+        // Apply styles to prevent scrolling
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.scrollPosition}px`;
+        document.body.style.width = '100%';
+    }
+
+    /**
+     * Unlock body scroll when modal is closed
+     */
+    unlockBodyScroll() {
+        // Remove scroll lock styles
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, this.scrollPosition || 0);
     }
 
     /**
@@ -912,6 +946,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
+        // Ensure body scroll is unlocked if modal was open
+        this.unlockBodyScroll();
+        
         // Remove event listeners
         const modal = document.getElementById('modal');
         if (modal) {
