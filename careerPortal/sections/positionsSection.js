@@ -755,27 +755,72 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      */
     lockBodyScroll() {
         // Store current scroll position
-        this.scrollPosition = window.pageYOffset;
+        this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Apply styles to prevent scrolling
+        // Create or update viewport meta for mobile
+        let viewportMeta = document.querySelector('meta[name="viewport"]');
+        if (viewportMeta) {
+            this.originalViewport = viewportMeta.content;
+            viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        }
+        
+        // Apply styles to prevent scrolling - enhanced for mobile
+        document.documentElement.style.overflow = 'hidden';
+        document.documentElement.style.height = '100%';
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${this.scrollPosition}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
         document.body.style.width = '100%';
+        document.body.style.height = '100%';
+        
+        // iOS specific fixes
+        document.body.style.touchAction = 'none';
+        document.body.style.webkitOverflowScrolling = 'touch';
+        
+        // Add class to body for additional CSS control
+        document.body.classList.add('modal-open');
+        
+        // Ensure modal can scroll
+        const modalCard = document.getElementById('modal-card');
+        if (modalCard) {
+            modalCard.style.overflowY = 'auto';
+            modalCard.style.webkitOverflowScrolling = 'touch';
+            modalCard.style.touchAction = 'pan-y';
+        }
     }
 
     /**
      * Unlock body scroll when modal is closed
      */
     unlockBodyScroll() {
-        // Remove scroll lock styles
+        // Restore viewport meta
+        let viewportMeta = document.querySelector('meta[name="viewport"]');
+        if (viewportMeta && this.originalViewport) {
+            viewportMeta.content = this.originalViewport;
+        }
+        
+        // Remove all scroll lock styles
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.height = '';
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
         document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.touchAction = '';
+        document.body.style.webkitOverflowScrolling = '';
+        
+        // Remove class
+        document.body.classList.remove('modal-open');
         
         // Restore scroll position
-        window.scrollTo(0, this.scrollPosition || 0);
+        if (this.scrollPosition) {
+            window.scrollTo(0, this.scrollPosition);
+        }
     }
 
     /**
