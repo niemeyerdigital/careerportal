@@ -199,7 +199,33 @@ window.ConfigValidator = {
                 
                 return errors;
             }
+        },
+        positions: {
+            required: ['items'],
+            optional: [],
+            types: {
+                items: 'object' // array
+            },
+            customValidation: (config) => {
+                const errors = [];
+                if (!Array.isArray(config.items)) {
+                errors.push('items must be an array');
+                } else {
+                config.items.forEach((c, idx) => {
+                    if (!c.id) errors.push(`items[${idx}].id is required`);
+                    if (!c.status) errors.push(`items[${idx}].status is required`);
+                    if (!c.region) errors.push(`items[${idx}].region is required`);
+                    if (!c.datum) errors.push(`items[${idx}].datum is required (dd.mm.yyyy)`);
+                    if (!c.position) errors.push(`items[${idx}].position is required`);
+                });
+                }
+                return errors;
+            },
+            defaults: {
+                items: []
+            }
         }
+
     },
 
     /**
