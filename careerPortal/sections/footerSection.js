@@ -66,6 +66,11 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                     <!-- Website Link -->
                     <a href="${config.websiteUrl}" class="footer-website-link">Unsere Website</a>
 
+                    <!-- Scroll to Top Button -->
+                    <button class="footer-scroll-top" id="footerScrollTop" aria-label="Nach oben scrollen">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+
                     <!-- Social Media Icons -->
                     ${socialIconsHTML}
 
@@ -73,7 +78,7 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                     <div class="footer-employer-badge">
                         <div class="footer-employer-badge-text">
                             Employer Branding Maßnahmen erstellt und betreut durch 
-                            <span class="footer-employer-badge-company">Niemeyer Digital GmbH</span>
+                            <a href="https://www.niemeyerdigital.de" target="_blank" class="footer-employer-badge-company">Niemeyer Digital GmbH</a>
                         </div>
                     </div>
 
@@ -128,6 +133,23 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                 this.trackWebsiteClick();
             });
         }
+
+        // Track Niemeyer Digital click
+        const niemeyerLink = this.container.querySelector('.footer-employer-badge-company');
+        if (niemeyerLink) {
+            niemeyerLink.addEventListener('click', (e) => {
+                this.trackNiemeyerClick();
+            });
+        }
+
+        // Setup scroll to top button
+        const scrollTopBtn = this.container.querySelector('#footerScrollTop');
+        if (scrollTopBtn) {
+            scrollTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.scrollToTop();
+            });
+        }
     }
 
     /**
@@ -172,6 +194,39 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                 value: 1
             });
         }
+    }
+
+    /**
+     * Track Niemeyer Digital click
+     */
+    trackNiemeyerClick() {
+        if (window.gtag) {
+            window.gtag('event', 'click', {
+                event_category: 'External',
+                event_label: 'Footer - Niemeyer Digital GmbH',
+                value: 1
+            });
+        }
+    }
+
+    /**
+     * Scroll to top functionality
+     */
+    scrollToTop() {
+        // Track scroll to top click
+        if (window.gtag) {
+            window.gtag('event', 'click', {
+                event_category: 'Navigation',
+                event_label: 'Footer - Scroll to Top',
+                value: 1
+            });
+        }
+
+        // Smooth scroll to top
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     }
 
     /**
