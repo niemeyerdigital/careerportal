@@ -67,9 +67,11 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                     <a href="${config.websiteUrl}" class="footer-website-link">Unsere Website</a>
 
                     <!-- Scroll to Top Button -->
-                    <button class="footer-scroll-top" id="footerScrollTop" aria-label="Nach oben scrollen">
-                        Hier geht's wieder nach oben
-                    </button>
+                    <div class="footer-scroll-top-wrapper">
+                        <button class="footer-scroll-top" id="footerScrollTop" aria-label="Nach oben scrollen">
+                            Hier geht's wieder nach oben
+                        </button>
+                    </div>
 
                     <!-- Social Media Icons -->
                     ${socialIconsHTML}
