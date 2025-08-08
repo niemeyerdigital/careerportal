@@ -1,364 +1,937 @@
 /**
- * Positions Section (SectionPositions)
- * Light, filterable job list (grid/list) + details modal
- * - Targets ClickFunnels containers:
- *   div[data-title='SectionPositions'] and div[data-title='RowPositions']
- * - Uses your root CSS variables (Inter, brand oranges, etc.)
- * - Zero React. Vanilla JS, extends BaseSec (like your other sections)
+ * Positions Section
+ * Job listings with filtering, search, and modal details
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
-  constructor(config, containerId) {
-    super(config, containerId);
-    this.state = {
-      view: 'grid',
-      search: '',
-      bereich: '',
-      art: '',
-      region: '',
-      zeitraum: 'Alle',
-      active: null
-    };
-    this.activeData = [];
-    this.filtered = [];
-    this.initializePositions();
-  }
-
-  initializePositions() {
-    if (!this.container) return;
-    // Normalize + filter enabled cards only (status === 'on')
-    this.activeData = (this.config.items || []).filter(c => c.status === 'on');
-    this.render();
-    this.setupEvents();
-  }
-
-  // ---------- Render ----------
-  render() {
-    const html = `
-      <div class="positions-wrapper">
-        <div class="positions-container">
-          <!-- Header -->
-          <header class="positions-header">
-            <div>
-              <h1 class="positions-title">Karriereportal</h1>
-              <p class="positions-sub">Finde die passende Position und bewirb dich direkt.</p>
-            </div>
-
-            <div class="positions-view view-switcher">
-              <span class="switcher-label">Ansicht</span>
-              <button class="switcher-btn" data-view="grid" aria-pressed="${this.state.view==='grid'}"> 
-                <i class="fa-light fa-grid-2"></i> Grid
-              </button>
-              <button class="switcher-btn" data-view="list" aria-pressed="${this.state.view==='list'}">
-                <i class="fa-light fa-list"></i> Liste
-              </button>
-            </div>
-          </header>
-
-          <!-- Filters -->
-          <section class="positions-filters">
-            <div class="f-item">
-              <div class="f-label"><i class="fa-light fa-magnifying-glass"></i> Suche</div>
-              <input id="posSearch" class="f-input" placeholder="Titel, Bereich oder Stadt …" />
-            </div>
-            <div class="f-item">
-              <div class="f-label"><i class="fa-light fa-layer-group"></i> Bereich</div>
-              <select id="posBereich" class="f-select">
-                ${this.optionsHTML(this.unique(this.activeData.map(c=>c.area)))}
-              </select>
-            </div>
-            <div class="f-item">
-              <div class="f-label"><i class="fa-light fa-briefcase"></i> Anstellungsart</div>
-              <select id="posArt" class="f-select">
-                ${this.optionsHTML(this.unique(this.activeData.flatMap(c=>c.workCapacity)))}
-              </select>
-            </div>
-            <div class="f-item">
-              <div class="f-label"><i class="fa-light fa-location-dot"></i> Stadt</div>
-              <select id="posRegion" class="f-select">
-                ${this.optionsHTML(this.unique(this.activeData.map(c=>c.region)))}
-              </select>
-            </div>
-            <div class="f-item">
-              <div class="f-label"><i class="fa-light fa-calendar"></i> Zeitraum</div>
-              <select id="posZeitraum" class="f-select">
-                ${['Alle','Letzte 7 Tage','Letzte 30 Tage'].map(v=>`<option${v===this.state.zeitraum?' selected':''}>${v}</option>`).join('')}
-              </select>
-            </div>
-          </section>
-
-          <!-- Count -->
-          <div class="positions-count" id="posCount"></div>
-
-          <!-- Cards -->
-          <div id="posCards" class="${this.state.view==='grid' ? 'cards-grid' : 'cards-list'}"></div>
-        </div>
-      </div>
-
-      <!-- Modal -->
-      <div id="posModal" class="pos-modal" aria-hidden="true">
-        <div class="pos-modal-backdrop" data-close="modal"></div>
-        <div class="pos-modal-dialog">
-          <div class="pos-modal-header">
-            <h3 id="posModalTitle"></h3>
-            <button class="pos-close" data-close="modal" aria-label="Modal schließen"><i class="fa-light fa-xmark"></i></button>
-          </div>
-          <div class="pos-modal-tags" id="posModalTags"></div>
-          <div class="pos-modal-body" id="posModalBody"></div>
-          <div class="pos-modal-footer">
-            <div class="pos-modal-actions">
-              <div data-title="MainButton1" id="posApplyBtnWrap"></div>
-              <button class="btn-secondary" data-close="modal"><i class="fa-light fa-xmark"></i> Schließen</button>
-            </div>
-            <div class="pos-modal-meta" id="posModalMeta"></div>
-          </div>
-        </div>
-      </div>
-    `;
-    this.container.innerHTML = html;
-
-    // After root render, compute filtered+paint cards
-    this.applyFilters();
-  }
-
-  optionsHTML(values) {
-    const opts = ['Alle', ...values];
-    return opts.map(v => `<option value="${v==='Alle'?'':this.escape(v)}">${this.escape(v)}</option>`).join('');
-  }
-
-  // ---------- Filtering ----------
-  applyFilters() {
-    const { search, bereich, art, region, zeitraum } = this.state;
-    const q = (search||'').toLowerCase();
-    const within = (d) => {
-      if (zeitraum==='Alle') return true;
-      const diff = this.daysSince(d);
-      if (zeitraum==='Letzte 7 Tage') return diff<=7;
-      if (zeitraum==='Letzte 30 Tage') return diff<=30;
-      return true;
-    };
-    const ensureMWD = (t)=>t.toLowerCase().includes('(m/w/d)')?t:`${t} (m/w/d)`;
-
-    this.filtered = this.activeData
-      .filter(c => !bereich || c.area === bereich)
-      .filter(c => !art || (c.workCapacity||[]).includes(art))
-      .filter(c => !region || c.region === region)
-      .filter(c => within(c.datum))
-      .filter(c => !q || ensureMWD(c.position).toLowerCase().includes(q) || c.area.toLowerCase().includes(q) || c.region.toLowerCase().includes(q))
-      .sort((a,b)=>this.parseDE(b.datum)-this.parseDE(a.datum));
-
-    // Count
-    const countEl = this.container.querySelector('#posCount');
-    if (countEl) countEl.textContent = `${this.filtered.length} ${this.filtered.length===1?'Position':'Positionen'} gefunden`;
-
-    // Paint cards
-    const cardsEl = this.container.querySelector('#posCards');
-    cardsEl.className = this.state.view==='grid' ? 'cards-grid' : 'cards-list';
-    cardsEl.innerHTML = this.filtered.map(c=>this.cardHTML(c)).join('');
-
-    // Wire card buttons
-    cardsEl.querySelectorAll('[data-action="apply"]').forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const id = btn.getAttribute('data-id');
-        const item = this.filtered.find(x=>x.id===id);
-        if (item) window.open(item.applicationUrl,'_blank');
-      });
-    });
-    cardsEl.querySelectorAll('[data-action="quick"]').forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const id = btn.getAttribute('data-id');
-        const item = this.filtered.find(x=>x.id===id);
-        if (item) this.openModal(item);
-      });
-    });
-    cardsEl.querySelectorAll('.pos-card').forEach(card=>{
-      card.addEventListener('click', ()=>{
-        const id = card.getAttribute('data-id');
-        const item = this.filtered.find(x=>x.id===id);
-        if (item) this.openModal(item);
-      });
-    });
-  }
-
-  cardHTML(c){
-    const ensureMWD = (t)=>t.toLowerCase().includes('(m/w/d)')?t:`${t} (m/w/d)`;
-    const tags = [
-      `<span class="pill pill-accent"><i class="fa-light fa-location-dot"></i>${this.escape(c.region)}</span>`,
-      `<span class="pill"><i class="fa-light fa-layer-group"></i>${this.escape(c.area)}</span>`,
-      ...(c.workCapacity||[]).map(w=>`<span class="pill"><i class="fa-light fa-briefcase"></i>${this.escape(w)}</span>`),
-      (c.startDateVisible?`<span class="pill"><i class="fa-light fa-calendar"></i>Start: ${this.escape(c.startDate)}</span>`:'')
-    ].join('');
-
-    return `
-      <article class="pos-card" data-id="${this.escape(c.id)}">
-        <div class="pos-card-head">
-          <h3 class="pos-card-title">${this.escape(ensureMWD(c.position))}</h3>
-          <div class="pos-card-date">
-            <div>${this.escape(c.datum)}</div>
-            <div class="muted">vor ${this.daysSince(c.datum)} Tagen</div>
-          </div>
-        </div>
-        <div class="pos-card-tags">${tags}</div>
-        <div class="pos-card-actions">
-          <div data-title="MainButton1">
-            <a data-action="apply" data-id="${this.escape(c.id)}"><i class="fa-light fa-paper-plane"></i> Jetzt bewerben</a>
-          </div>
-          <button class="btn-secondary" data-action="quick" data-id="${this.escape(c.id)}"><i class="fa-light fa-eye"></i> Schnellansicht</button>
-        </div>
-      </article>
-    `;
-  }
-
-  // ---------- Modal ----------
-  openModal(item){
-    this.state.active = item;
-    const ensureMWD = (t)=>t.toLowerCase().includes('(m/w/d)')?t:`${t} (m/w/d)`;
-
-    const title = this.container.querySelector('#posModalTitle');
-    const tags = this.container.querySelector('#posModalTags');
-    const body = this.container.querySelector('#posModalBody');
-    const meta = this.container.querySelector('#posModalMeta');
-    const wrap = this.container.querySelector('#posApplyBtnWrap');
-
-    if (title) title.textContent = ensureMWD(item.position);
-
-    if (tags) {
-      tags.innerHTML = [
-        `<span class="pill pill-accent"><i class="fa-light fa-location-dot"></i>${this.escape(item.region)}</span>`,
-        ...(item.workCapacity||[]).map(w=>`<span class="pill"><i class="fa-light fa-briefcase"></i>${this.escape(w)}</span>`),
-        (item.startDateVisible?`<span class="pill"><i class="fa-light fa-calendar"></i>Start: ${this.escape(item.startDate)}</span>`:'')
-      ].join('');
+    constructor(config, containerId) {
+        super(config, containerId);
+        
+        // Initialize state
+        this.state = {
+            view: window.innerWidth < 640 ? config.defaultView?.mobile || 'grid' : config.defaultView?.desktop || 'grid',
+            search: '',
+            bereich: '',
+            art: '',
+            region: '',
+            zeitraum: 'Alle',
+            sort: 'new',
+            filtersCollapsed: true,
+            active: null
+        };
+        
+        // Data
+        this.cardsData = config.positions || [];
+        this.activeData = [];
+        this.filtered = [];
+        
+        // LocalStorage keys
+        this.PREFS_KEY = 'careerPortalPrefs_v3';
+        this.SAVED_KEY = 'careerPortalSaved_v1';
+        
+        this.initializePositions();
     }
 
-    body.innerHTML = `
-      ${this.blockHTML('Erforderliche Qualifikationen','fa-badge-check',(item.qualifications?.mandatory||[]))}
-      ${this.blockHTML('Wünschenswerte Qualifikationen','fa-stars',(item.qualifications?.optional||[]))}
-      ${this.blockHTML('Aufgaben','fa-list-check',(item.tasks||[]))}
-      ${this.blockHTML('Benefits','fa-gift',(item.benefits||[]))}
-    `;
+    /**
+     * Initialize Positions section
+     */
+    initializePositions() {
+        if (!this.container) {
+            console.error('Positions section container not found');
+            return;
+        }
 
-    if (meta) meta.textContent = `Veröffentlicht am ${item.datum} · vor ${this.daysSince(item.datum)} Tagen`;
-
-    // Insert CTA using ButtonManager if present
-    wrap.innerHTML = '';
-    if (window.ButtonManager) {
-      const bm = new window.ButtonManager();
-      const btn = bm.createButton('MainButton1', {
-        text: 'Jetzt bewerben',
-        href: item.applicationUrl,
-        icon: 'fas fa-paper-plane',
-        id: 'posApplyBtn'
-      });
-      wrap.appendChild(btn);
-    } else {
-      wrap.innerHTML = `<a class="btn-primary-fallback" href="${this.escape(item.applicationUrl)}" target="_blank">Jetzt bewerben <i class="fas fa-paper-plane"></i></a>`;
+        // Filter active positions
+        this.activeData = this.cardsData.filter(c => c.status === 'on');
+        
+        // Load preferences
+        this.loadPrefs();
+        
+        // Create HTML structure
+        this.createPositionsHTML();
+        
+        // Setup components
+        this.setupFilters();
+        this.setupEventHandlers();
+        
+        // Initial render
+        this.render();
     }
 
-    const modal = this.container.querySelector('#posModal');
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-  }
+    /**
+     * Create the HTML structure
+     */
+    createPositionsHTML() {
+        const config = this.config;
+        
+        this.container.innerHTML = `
+            <div class="positions-wrapper">
+                <div class="positions-container">
+                    <!-- Header -->
+                    <header class="positions-header">
+                        <div>
+                            <h1 class="positions-h-underline">${config.headline || 'Entdecke unsere offenen Stellen'}</h1>
+                            <p class="positions-muted">${config.subtext || 'Finde die passende Position und bewirb dich direkt.'}</p>
+                        </div>
+                        
+                        <div class="positions-view-switcher" role="group" aria-label="Ansicht umschalten">
+                            <span class="positions-vs-label">Ansicht</span>
+                            <button class="positions-chip-btn" id="view-grid" aria-pressed="false">
+                                <i class="fa-light fa-grid-2"></i> Grid
+                            </button>
+                            <button class="positions-chip-btn" id="view-list" aria-pressed="false">
+                                <i class="fa-light fa-list"></i> Liste
+                            </button>
+                            <button class="positions-chip-btn" id="view-table" aria-pressed="false">
+                                <i class="fa-light fa-table"></i> Tabelle
+                            </button>
+                        </div>
+                    </header>
 
-  blockHTML(title, icon, items){
-    if (!items || !items.length) return '';
-    return `
-      <section class="pos-block">
-        <header class="pos-block-head"><i class="fa-light ${icon}"></i><h4>${this.escape(title)}</h4></header>
-        <ul class="pos-block-list">
-          ${items.map(it=>`<li><i class="fa-light fa-circle-small"></i>${this.escape(it)}</li>`).join('')}
-        </ul>
-      </section>
-    `;
-  }
+                    <!-- Search (if enabled) -->
+                    ${config.filters?.search?.enabled ? `
+                        <section class="positions-search-row" aria-label="Suche">
+                            <div class="positions-search-head">
+                                <div class="positions-search-title">
+                                    <i class="fa-light fa-magnifying-glass"></i> Suche
+                                </div>
+                            </div>
+                            <input id="q" class="positions-search-input" 
+                                   placeholder="${config.filters.search.placeholder || 'Titel, Bereich oder Stadt …'}" />
+                        </section>
+                    ` : ''}
 
-  closeModal(){
-    const modal = this.container.querySelector('#posModal');
-    modal.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
-    this.state.active = null;
-  }
+                    <!-- Filters -->
+                    <section class="positions-filters is-collapsed" aria-label="Filter" id="filters">
+                        <div class="positions-filters-head">
+                            <div class="positions-filters-title">
+                                <i class="fa-light fa-sliders-simple"></i> Filter
+                            </div>
+                            <button class="positions-filters-toggle" id="filters-toggle" aria-expanded="false">
+                                <i class="fa-light fa-chevron-down"></i> Anzeigen
+                            </button>
+                        </div>
+                        <div class="positions-filters-grid" id="filters-grid">
+                            <!-- Filters will be added dynamically -->
+                        </div>
+                    </section>
 
-  // ---------- Events ----------
-  setupEvents(){
-    // Parent ClickFunnels containers (no body-level hooks)
-    this.attachFilterHandlers();
-    this.attachViewHandlers();
+                    <!-- Count -->
+                    <div id="count" class="positions-count"></div>
 
-    // Modal close
-    this.container.querySelectorAll('[data-close="modal"]').forEach(el=>{
-      el.addEventListener('click', ()=>this.closeModal());
-    });
+                    <!-- Results -->
+                    <section id="results" class="positions-grid" aria-live="polite"></section>
+                </div>
+            </div>
 
-    // ESC close
-    document.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape' && this.state.active) this.closeModal();
-    });
-  }
+            <!-- Modal -->
+            <div id="modal" class="positions-modal-root" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="positions-modal-backdrop" id="modal-backdrop"></div>
+                <div class="positions-modal-card" id="modal-card">
+                    <div class="positions-modal-header">
+                        <div>
+                            <div class="positions-modal-title-wrapper">
+                                <h3 id="modal-title" class="positions-modal-title"></h3>
+                                ${config.features?.savedPositions ? `
+                                    <button class="positions-modal-close" id="modal-save" aria-label="Position speichern">
+                                        <i class="fa-light fa-bookmark" style="font-size:18px;"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <div class="positions-pills" id="modal-pills"></div>
+                        </div>
+                        <button class="positions-modal-close" id="modal-close" aria-label="Modal schließen">
+                            <i class="fa-light fa-xmark" style="font-size: 18px;"></i>
+                        </button>
+                    </div>
 
-  attachFilterHandlers(){
-    const s = this.container.querySelector('#posSearch');
-    const b = this.container.querySelector('#posBereich');
-    const a = this.container.querySelector('#posArt');
-    const r = this.container.querySelector('#posRegion');
-    const z = this.container.querySelector('#posZeitraum');
+                    <div class="positions-blocks">
+                        <section class="positions-block">
+                            <header><i class="fa-light fa-badge-check"></i><h4>Erforderliche Qualifikationen</h4></header>
+                            <ul id="m-mandatory"></ul>
+                        </section>
+                        <section class="positions-block">
+                            <header><i class="fa-light fa-stars"></i><h4>Wünschenswerte Qualifikationen</h4></header>
+                            <ul id="m-optional"></ul>
+                        </section>
+                        <section class="positions-block">
+                            <header><i class="fa-light fa-list-check"></i><h4>Aufgaben</h4></header>
+                            <ul id="m-tasks"></ul>
+                        </section>
+                        <section class="positions-block">
+                            <header><i class="fa-light fa-gift"></i><h4>Benefits</h4></header>
+                            <ul id="m-benefits"></ul>
+                        </section>
+                    </div>
 
-    const set = () => {
-      this.state.search = s.value || '';
-      this.state.bereich = b.value || '';
-      this.state.art = a.value || '';
-      this.state.region = r.value || '';
-      this.state.zeitraum = z.value || 'Alle';
-      this.applyFilters();
-    };
+                    <div class="positions-modal-footer">
+                        <div data-title="MainButton1" id="m-apply-wrapper">
+                            <button class="positions-btn positions-btn-primary" id="m-apply">
+                                <i class="fa-light fa-paper-plane"></i> Jetzt bewerben
+                            </button>
+                        </div>
+                        <button class="positions-btn positions-btn-ghost" id="m-close-2">
+                            <i class="fa-light fa-xmark"></i> Schließen
+                        </button>
+                        <div class="positions-footer-meta" id="m-meta">
+                            <i class="fa-light fa-calendar" aria-hidden="true"></i><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
-    [s,b,a,r,z].forEach(el=>{
-      if (!el) return;
-      el.addEventListener('input', set);
-      el.addEventListener('change', set);
-    });
-  }
+    /**
+     * Setup filters based on config
+     */
+    setupFilters() {
+        const filtersGrid = document.getElementById('filters-grid');
+        const config = this.config;
+        
+        if (!filtersGrid) return;
+        
+        // Build filter elements based on config
+        if (config.filters?.bereich?.enabled) {
+            this.addFilterElement(filtersGrid, 'bereich', config.filters.bereich);
+        }
+        
+        if (config.filters?.art?.enabled) {
+            this.addFilterElement(filtersGrid, 'art', config.filters.art);
+        }
+        
+        if (config.filters?.region?.enabled) {
+            this.addFilterElement(filtersGrid, 'region', config.filters.region);
+        }
+        
+        if (config.filters?.zeitraum?.enabled) {
+            this.addFilterElement(filtersGrid, 'zeitraum', config.filters.zeitraum);
+        }
+        
+        if (config.filters?.sort?.enabled) {
+            this.addFilterElement(filtersGrid, 'sort', config.filters.sort);
+        }
+        
+        // Build filter options from data
+        this.buildFilterOptions();
+        
+        // Hide filters section if none enabled
+        const hasFilters = filtersGrid.children.length > 0;
+        if (!hasFilters) {
+            document.getElementById('filters').style.display = 'none';
+        }
+    }
 
-  attachViewHandlers(){
-    this.container.querySelectorAll('.switcher-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        this.state.view = btn.getAttribute('data-view');
-        this.applyFilters();
-        this.container.querySelectorAll('.switcher-btn').forEach(b=>{
-          b.classList.toggle('is-active', b===btn);
-          b.setAttribute('aria-pressed', b===btn ? 'true':'false');
+    /**
+     * Add filter element to grid
+     */
+    addFilterElement(grid, type, filterConfig) {
+        const div = document.createElement('div');
+        
+        if (type === 'zeitraum') {
+            div.innerHTML = `
+                <div class="positions-filter-label">
+                    <i class="${filterConfig.icon}" aria-hidden="true"></i>
+                    <span>${filterConfig.label}</span>
+                </div>
+                <select id="f-${type}" class="positions-control">
+                    ${filterConfig.options.map(opt => `<option>${opt}</option>`).join('')}
+                </select>
+            `;
+        } else if (type === 'sort') {
+            div.innerHTML = `
+                <div class="positions-filter-label">
+                    <i class="${filterConfig.icon}" aria-hidden="true"></i>
+                    <span>${filterConfig.label}</span>
+                </div>
+                <select id="f-${type}" class="positions-control">
+                    ${filterConfig.options.map(opt => 
+                        `<option value="${opt.value}">${opt.text}</option>`
+                    ).join('')}
+                    ${this.config.features?.savedPositions ? 
+                        '<option value="saved">Gespeicherte</option>' : ''}
+                </select>
+            `;
+        } else {
+            div.innerHTML = `
+                <div class="positions-filter-label">
+                    <i class="${filterConfig.icon}" aria-hidden="true"></i>
+                    <span>${filterConfig.label}</span>
+                </div>
+                <select id="f-${type}" class="positions-control"></select>
+            `;
+        }
+        
+        grid.appendChild(div);
+    }
+
+    /**
+     * Build filter options from data
+     */
+    buildFilterOptions() {
+        const buildOpts = (select, values) => {
+            if (!select) return;
+            select.innerHTML = '<option value="">Alle</option>';
+            Array.from(new Set(values))
+                .sort((a, b) => String(a).localeCompare(String(b), 'de'))
+                .forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v;
+                    select.appendChild(opt);
+                });
+        };
+
+        buildOpts(document.getElementById('f-bereich'), this.activeData.map(c => c.area));
+        buildOpts(document.getElementById('f-art'), this.activeData.flatMap(c => c.workCapacity));
+        buildOpts(document.getElementById('f-region'), this.activeData.map(c => c.region));
+    }
+
+    /**
+     * Setup event handlers
+     */
+    setupEventHandlers() {
+        // Search
+        const searchInput = document.getElementById('q');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                this.state.search = searchInput.value;
+                this.render();
+            });
+        }
+
+        // Filters
+        ['bereich', 'art', 'region', 'zeitraum', 'sort'].forEach(filter => {
+            const element = document.getElementById(`f-${filter}`);
+            if (element) {
+                element.addEventListener('change', () => {
+                    this.state[filter] = element.value;
+                    this.render();
+                });
+            }
         });
-      });
-    });
-  }
 
-  // ---------- Utils ----------
-  unique(arr){ return Array.from(new Set(arr || [])).filter(Boolean).sort(); }
-  escape(str){ return (str??'').toString().replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
-  parseDE(ddmmyyyy){ const [dd,mm,yy]= (ddmmyyyy||'').split('.').map(Number); return new Date(yy||1970,(mm||1)-1,dd||1).getTime(); }
-  daysSince(d){ const diff = Date.now() - this.parseDE(d); return Math.max(0, Math.floor(diff / 86400000)); }
+        // View switcher
+        ['grid', 'list', 'table'].forEach(view => {
+            const btn = document.getElementById(`view-${view}`);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    this.state.view = view;
+                    this.render();
+                });
+            }
+        });
 
-  // Optional: metrics (kept consistent with your style)
-  getMetrics(){
-    return {
-      sectionType: 'positions',
-      totalActive: this.activeData.length,
-      totalFiltered: this.filtered.length,
-      view: this.state.view,
-      isVisible: this.isInViewport(this.container)
-    };
-  }
+        // Filter toggle
+        const filtersToggle = document.getElementById('filters-toggle');
+        if (filtersToggle) {
+            filtersToggle.addEventListener('click', () => {
+                const filters = document.getElementById('filters');
+                const isCollapsed = filters.classList.contains('is-collapsed');
+                filters.classList.toggle('is-collapsed');
+                filtersToggle.innerHTML = isCollapsed
+                    ? '<i class="fa-light fa-chevron-up"></i> Ausblenden'
+                    : '<i class="fa-light fa-chevron-down"></i> Anzeigen';
+                filtersToggle.setAttribute('aria-expanded', String(isCollapsed));
+            });
+        }
 
-  // Validation hook (lightweight; full schema lives in ConfigValidator)
-  validateConfig(){
-    if (!Array.isArray(this.config.items)) {
-      console.error('Positions section: config.items must be an array');
-      return false;
+        // Modal handlers
+        this.setupModalHandlers();
     }
-    return super.validateConfig();
-  }
 
-  // Responsive tweak
-  onResize() {/* nothing special required */}
+    /**
+     * Setup modal event handlers
+     */
+    setupModalHandlers() {
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalClose = document.getElementById('modal-close');
+        const modalClose2 = document.getElementById('m-close-2');
+        const modalSave = document.getElementById('modal-save');
+
+        [modalBackdrop, modalClose, modalClose2].forEach(el => {
+            if (el) {
+                el.addEventListener('click', () => this.closeModal());
+            }
+        });
+
+        if (modalSave && this.config.features?.savedPositions) {
+            modalSave.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.state.active) {
+                    this.toggleSaved(this.state.active.id);
+                    this.updateModalSaveIcon(this.state.active.id);
+                }
+            });
+        }
+
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.state.active) {
+                this.closeModal();
+            }
+        });
+    }
+
+    /**
+     * Filter and render positions
+     */
+    render() {
+        // Sync filter values
+        Object.keys(this.state).forEach(key => {
+            const element = document.getElementById(`f-${key}`);
+            if (element) element.value = this.state[key];
+        });
+
+        // Get filtered data
+        const data = this.getFiltered();
+        
+        // Update count
+        const count = document.getElementById('count');
+        if (count) {
+            count.textContent = `${data.length} ${data.length === 1 ? 'Position' : 'Positionen'} gefunden`;
+        }
+
+        // Render results
+        const results = document.getElementById('results');
+        if (!results) return;
+
+        results.innerHTML = '';
+        results.className = `positions-${this.state.view}`;
+
+        if (this.state.view === 'table') {
+            this.renderTable(data, results);
+        } else {
+            data.forEach(card => {
+                results.appendChild(this.renderCard(card));
+            });
+        }
+
+        // Update view switcher
+        ['grid', 'list', 'table'].forEach(view => {
+            const btn = document.getElementById(`view-${view}`);
+            if (btn) {
+                btn.classList.toggle('is-active', this.state.view === view);
+                btn.setAttribute('aria-pressed', String(this.state.view === view));
+            }
+        });
+
+        // Save preferences
+        this.savePrefs();
+    }
+
+    /**
+     * Get filtered data
+     */
+    getFiltered() {
+        const { search, bereich, art, region, zeitraum, sort } = this.state;
+        const searchLower = search.trim().toLowerCase();
+
+        // Handle saved positions mode
+        if (this.config.features?.savedPositions && sort === 'saved') {
+            const savedIds = this.getSavedSet();
+            return this.cardsData
+                .filter(c => savedIds.has(c.id))
+                .filter(c => this.applyFilters(c, searchLower, bereich, art, region, zeitraum))
+                .sort((a, b) => this.parseGermanDate(b.datum) - this.parseGermanDate(a.datum));
+        }
+
+        // Normal filtering
+        let filtered = this.activeData
+            .filter(c => this.applyFilters(c, searchLower, bereich, art, region, zeitraum));
+
+        // Sorting
+        return this.sortData(filtered, sort);
+    }
+
+    /**
+     * Apply filters to a card
+     */
+    applyFilters(card, searchLower, bereich, art, region, zeitraum) {
+        // Bereich filter
+        if (bereich && card.area !== bereich) return false;
+        
+        // Art filter
+        if (art && !card.workCapacity?.includes(art)) return false;
+        
+        // Region filter
+        if (region && card.region !== region) return false;
+        
+        // Zeitraum filter
+        if (!this.withinZeitraum(card.datum, zeitraum)) return false;
+        
+        // Search filter
+        if (searchLower) {
+            const title = this.ensureMWD(card.position).toLowerCase();
+            const matches = title.includes(searchLower) || 
+                           card.area.toLowerCase().includes(searchLower) || 
+                           card.region.toLowerCase().includes(searchLower);
+            if (!matches) return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Sort data
+     */
+    sortData(arr, sortType) {
+        const copy = arr.slice();
+        switch (sortType) {
+            case 'az':
+                return copy.sort((a, b) => 
+                    this.ensureMWD(a.position).localeCompare(this.ensureMWD(b.position), 'de'));
+            case 'za':
+                return copy.sort((a, b) => 
+                    this.ensureMWD(b.position).localeCompare(this.ensureMWD(a.position), 'de'));
+            case 'old':
+                return copy.sort((a, b) => 
+                    this.parseGermanDate(a.datum) - this.parseGermanDate(b.datum));
+            case 'new':
+            default:
+                return copy.sort((a, b) => 
+                    this.parseGermanDate(b.datum) - this.parseGermanDate(a.datum));
+        }
+    }
+
+    /**
+     * Render card
+     */
+    renderCard(card) {
+        const isCompact = window.innerWidth < 640 && this.state.view === 'grid';
+        const savedMode = this.config.features?.savedPositions && this.state.sort === 'saved';
+
+        const el = document.createElement('article');
+        el.className = 'positions-card' + (isCompact ? ' compact' : '');
+        el.tabIndex = 0;
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `Details zu ${this.ensureMWD(card.position)} öffnen`);
+
+        // Header
+        const head = document.createElement('div');
+        head.className = 'positions-card-head';
+
+        const title = document.createElement('h3');
+        title.className = 'positions-card-title';
+        title.textContent = this.ensureMWD(card.position);
+        head.appendChild(title);
+
+        if (!isCompact) {
+            const meta = document.createElement('div');
+            meta.className = 'positions-card-meta';
+            meta.innerHTML = `
+                <div>${card.datum}</div>
+                <div class="italic">vor ${this.daysSince(card.datum)} Tagen</div>
+            `;
+            head.appendChild(meta);
+        }
+
+        el.appendChild(head);
+
+        // Offline notice for saved mode
+        if (savedMode && card.status === 'off') {
+            const notice = document.createElement('div');
+            notice.setAttribute('role', 'status');
+            notice.className = 'positions-offline-notice';
+            notice.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Diese Position ist nicht mehr online.';
+            el.appendChild(notice);
+        }
+
+        // Pills
+        const pills = document.createElement('div');
+        pills.className = 'positions-pills';
+        pills.appendChild(this.createPill(`<i class="fa-light fa-location-dot"></i>${card.region}`, true));
+        pills.appendChild(this.createPill(`<i class="fa-light fa-layer-group"></i>${card.area}`));
+        if (!isCompact) {
+            (card.workCapacity || []).forEach(w => 
+                pills.appendChild(this.createPill(`<i class="fa-light fa-briefcase"></i>${w}`)));
+            if (card.startDateVisible) {
+                pills.appendChild(this.createPill(`<i class="fa-light fa-calendar"></i>Start: ${card.startDate}`));
+            }
+        }
+        el.appendChild(pills);
+
+        // Actions
+        const actions = document.createElement('div');
+        actions.className = 'positions-card-actions';
+
+        const applyBtn = document.createElement('button');
+        applyBtn.className = 'positions-btn positions-btn-primary';
+        applyBtn.innerHTML = '<i class="fa-light fa-paper-plane"></i> Jetzt bewerben';
+        applyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.open(card.applicationUrl, '_blank');
+        });
+
+        const quickBtn = document.createElement('button');
+        quickBtn.className = 'positions-btn positions-btn-ghost';
+        quickBtn.innerHTML = '<i class="fa-light fa-eye"></i> Schnellansicht';
+        quickBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openModal(card);
+        });
+
+        actions.appendChild(applyBtn);
+        actions.appendChild(quickBtn);
+        el.appendChild(actions);
+
+        // Card click handler
+        el.addEventListener('click', () => this.openModal(card));
+        el.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Enter' || evt.key === ' ') {
+                evt.preventDefault();
+                this.openModal(card);
+            }
+        });
+
+        return el;
+    }
+
+    /**
+     * Render table view
+     */
+    renderTable(data, container) {
+        const wrap = document.createElement('div');
+        wrap.className = 'positions-table-wrap';
+        
+        const table = document.createElement('table');
+        table.className = 'positions-table';
+
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr>
+                <th>Titel</th>
+                <th>Bereich</th>
+                <th>Stadt</th>
+                <th>Datum</th>
+                <th>Art</th>
+                <th>Aktionen</th>
+            </tr>
+        `;
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(card => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <button class="positions-btn positions-btn-ghost" style="padding:6px 8px">
+                        ${this.ensureMWD(card.position)}
+                    </button>
+                </td>
+                <td>${card.area}</td>
+                <td>${card.region}</td>
+                <td>${card.datum}</td>
+                <td>${(card.workCapacity || []).join(', ')}</td>
+                <td>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="positions-btn positions-btn-primary btn-apply">
+                            <i class="fa-light fa-paper-plane"></i>
+                        </button>
+                        <button class="positions-btn positions-btn-ghost btn-open">
+                            <i class="fa-light fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
+            tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(card.applicationUrl, '_blank');
+            });
+            tr.querySelector('button.btn-open').addEventListener('click', () => this.openModal(card));
+            
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        wrap.appendChild(table);
+        container.appendChild(wrap);
+    }
+
+    /**
+     * Open modal
+     */
+    openModal(card) {
+        this.state.active = card;
+
+        const modalTitle = document.getElementById('modal-title');
+        const modalPills = document.getElementById('modal-pills');
+        const mMandatory = document.getElementById('m-mandatory');
+        const mOptional = document.getElementById('m-optional');
+        const mTasks = document.getElementById('m-tasks');
+        const mBenefits = document.getElementById('m-benefits');
+        const mMeta = document.getElementById('m-meta')?.querySelector('span');
+        const mApply = document.getElementById('m-apply');
+
+        if (modalTitle) modalTitle.textContent = this.ensureMWD(card.position);
+
+        if (modalPills) {
+            modalPills.innerHTML = '';
+            modalPills.appendChild(this.createPill(`<i class="fa-light fa-location-dot"></i>${card.region}`, true));
+            (card.workCapacity || []).forEach(w => 
+                modalPills.appendChild(this.createPill(`<i class="fa-light fa-briefcase"></i>${w}`)));
+            if (card.startDateVisible) {
+                modalPills.appendChild(this.createPill(`<i class="fa-light fa-calendar"></i>Start: ${card.startDate}`));
+            }
+        }
+
+        this.fillList(mMandatory, card.qualifications?.mandatory || []);
+        this.fillList(mOptional, card.qualifications?.optional || []);
+        this.fillList(mTasks, card.tasks || []);
+        this.fillList(mBenefits, card.benefits || []);
+
+        if (mMeta) {
+            mMeta.textContent = `Veröffentlicht am ${card.datum} · vor ${this.daysSince(card.datum)} Tagen`;
+        }
+
+        if (mApply) {
+            mApply.onclick = () => window.open(card.applicationUrl, '_blank');
+        }
+
+        // Update save icon if enabled
+        if (this.config.features?.savedPositions) {
+            this.updateModalSaveIcon(card.id);
+            const modalSave = document.getElementById('modal-save');
+            if (modalSave && window.innerWidth >= 768) {
+                modalSave.style.display = '';
+            }
+        }
+
+        // Show modal
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.classList.add('is-open');
+        }
+    }
+
+    /**
+     * Close modal
+     */
+    closeModal() {
+        this.state.active = null;
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.classList.remove('is-open');
+        }
+        const modalCard = document.getElementById('modal-card');
+        if (modalCard) {
+            modalCard.style.transform = '';
+        }
+    }
+
+    /**
+     * Create pill element
+     */
+    createPill(html, accent = false) {
+        const span = document.createElement('span');
+        span.className = 'positions-pill' + (accent ? ' positions-pill-accent' : '');
+        span.innerHTML = html;
+        return span;
+    }
+
+    /**
+     * Fill list with items
+     */
+    fillList(ul, items) {
+        if (!ul) return;
+        ul.innerHTML = '';
+        items.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fa-light fa-circle-small" aria-hidden="true"></i><span>${item}</span>`;
+            ul.appendChild(li);
+        });
+    }
+
+    /**
+     * Utility functions
+     */
+    ensureMWD(title) {
+        const lower = String(title || '').toLowerCase();
+        return lower.includes('(m/w/d)') ? title : title + ' (m/w/d)';
+    }
+
+    parseGermanDate(ddmmyyyy) {
+        const parts = String(ddmmyyyy || '').split('.').map(Number);
+        const dd = parts[0] || 1;
+        const mm = (parts[1] || 1) - 1;
+        const yyyy = parts[2] || new Date().getFullYear();
+        return new Date(yyyy, mm, dd);
+    }
+
+    daysSince(ddmmyyyy) {
+        const d = this.parseGermanDate(ddmmyyyy);
+        const today = new Date();
+        const ms = today.getTime() - d.getTime();
+        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+        return days < 0 ? 0 : days;
+    }
+
+    withinZeitraum(ddmmyyyy, zeitraum) {
+        if (zeitraum === 'Alle') return true;
+        const days = this.daysSince(ddmmyyyy);
+        if (zeitraum === 'Letzte 7 Tage') return days <= 7;
+        if (zeitraum === 'Letzte 30 Tage') return days <= 30;
+        return true;
+    }
+
+    /**
+     * Saved positions functionality
+     */
+    getSavedSet() {
+        if (!this.config.features?.savedPositions) return new Set();
+        try {
+            const raw = localStorage.getItem(this.SAVED_KEY);
+            const arr = raw ? JSON.parse(raw) : [];
+            return new Set(Array.isArray(arr) ? arr : []);
+        } catch (e) {
+            return new Set();
+        }
+    }
+
+    setSavedSet(set) {
+        if (!this.config.features?.savedPositions) return;
+        try {
+            localStorage.setItem(this.SAVED_KEY, JSON.stringify(Array.from(set)));
+        } catch (e) {}
+    }
+
+    isSaved(id) {
+        if (!this.config.features?.savedPositions) return false;
+        return this.getSavedSet().has(id);
+    }
+
+    toggleSaved(id) {
+        if (!this.config.features?.savedPositions) return;
+        const set = this.getSavedSet();
+        if (set.has(id)) {
+            set.delete(id);
+        } else {
+            set.add(id);
+        }
+        this.setSavedSet(set);
+        if (this.state.sort === 'saved') {
+            this.render();
+        }
+    }
+
+    updateModalSaveIcon(cardId) {
+        if (!this.config.features?.savedPositions) return;
+        const modalSave = document.getElementById('modal-save');
+        if (!modalSave) return;
+        const icon = modalSave.querySelector('i');
+        if (!icon) return;
+        
+        if (this.isSaved(cardId)) {
+            icon.className = 'fa-solid fa-bookmark';
+        } else {
+            icon.className = 'fa-light fa-bookmark';
+        }
+    }
+
+    /**
+     * Preferences
+     */
+    savePrefs() {
+        const prefs = {
+            view: this.state.view,
+            search: this.state.search,
+            bereich: this.state.bereich,
+            art: this.state.art,
+            region: this.state.region,
+            zeitraum: this.state.zeitraum,
+            sort: this.state.sort,
+            filtersCollapsed: document.getElementById('filters')?.classList.contains('is-collapsed')
+        };
+        try {
+            localStorage.setItem(this.PREFS_KEY, JSON.stringify(prefs));
+        } catch (e) {}
+    }
+
+    loadPrefs() {
+        try {
+            const raw = localStorage.getItem(this.PREFS_KEY);
+            if (!raw) return;
+            const prefs = JSON.parse(raw);
+            Object.keys(prefs).forEach(key => {
+                if (key !== 'filtersCollapsed' && prefs[key] !== undefined) {
+                    this.state[key] = prefs[key];
+                }
+            });
+        } catch (e) {}
+    }
+
+    /**
+     * Get metrics
+     */
+    getMetrics() {
+        return {
+            sectionType: 'positions',
+            config: this.config,
+            totalPositions: this.cardsData.length,
+            activePositions: this.activeData.length,
+            filteredPositions: this.filtered.length,
+            currentView: this.state.view,
+            savedEnabled: this.config.features?.savedPositions,
+            isVisible: this.isInViewport(this.container)
+        };
+    }
+
+    /**
+     * Validate configuration
+     */
+    validateConfig() {
+        if (!this.config.positions || !Array.isArray(this.config.positions)) {
+            console.error('Positions section: positions array is required');
+            return false;
+        }
+        return super.validateConfig();
+    }
+
+    /**
+     * Handle responsive updates
+     */
+    onResize() {
+        // Update default view based on screen size
+        const isMobile = window.innerWidth < 640;
+        const filters = document.getElementById('filters');
+        
+        // Collapse filters on mobile
+        if (isMobile && filters && !filters.classList.contains('is-collapsed')) {
+            filters.classList.add('is-collapsed');
+            const toggle = document.getElementById('filters-toggle');
+            if (toggle) {
+                toggle.innerHTML = '<i class="fa-light fa-chevron-down"></i> Anzeigen';
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        }
+    }
+
+    /**
+     * Cleanup
+     */
+    destroy() {
+        // Remove event listeners
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.classList.remove('is-open');
+        }
+        super.destroy();
+    }
+
+    /**
+     * Reinitialize section
+     */
+    reinitialize() {
+        this.destroy();
+        this.initializePositions();
+    }
+
+    /**
+     * Static factory method
+     */
+    static create(containerId, config) {
+        return new PositionsSection(config, containerId);
+    }
 };
