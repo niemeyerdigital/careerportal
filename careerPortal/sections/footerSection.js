@@ -68,7 +68,7 @@ window.FooterSection = class FooterSection extends window.BaseSec {
 
                     <!-- Scroll to Top Button -->
                     <button class="footer-scroll-top" id="footerScrollTop" aria-label="Nach oben scrollen">
-                        <i class="fas fa-chevron-up"></i>
+                        Hier geht's wieder nach oben
                     </button>
 
                     <!-- Social Media Icons -->
