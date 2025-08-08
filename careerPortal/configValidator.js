@@ -144,6 +144,133 @@ window.ConfigValidator = {
                 return errors;
             }
         },
+        positions: {
+            required: ['headline', 'subtext', 'positions'],
+            optional: ['defaultView', 'features', 'filters'],
+            types: {
+                headline: 'string',
+                subtext: 'string',
+                defaultView: 'object',
+                features: 'object',
+                filters: 'object',
+                positions: 'object'
+            },
+            defaults: {
+                headline: 'Entdecke unsere offenen Stellen',
+                subtext: 'Finde die passende Position und bewirb dich direkt.',
+                defaultView: {
+                    desktop: 'grid',
+                    mobile: 'grid'
+                },
+                features: {
+                    savedPositions: true
+                },
+                filters: {
+                    search: {
+                        enabled: true,
+                        placeholder: 'Titel, Bereich oder Stadt …'
+                    },
+                    bereich: {
+                        enabled: true,
+                        label: 'Bereich',
+                        icon: 'fa-light fa-layer-group'
+                    },
+                    art: {
+                        enabled: true,
+                        label: 'Anstellungsart',
+                        icon: 'fa-light fa-briefcase'
+                    },
+                    region: {
+                        enabled: true,
+                        label: 'Stadt',
+                        icon: 'fa-light fa-location-dot'
+                    },
+                    zeitraum: {
+                        enabled: true,
+                        label: 'Zeitraum',
+                        icon: 'fa-light fa-calendar',
+                        options: ['Alle', 'Letzte 7 Tage', 'Letzte 30 Tage']
+                    },
+                    sort: {
+                        enabled: true,
+                        label: 'Sortierung',
+                        icon: 'fa-light fa-arrow-down-a-z',
+                        options: [
+                            { value: 'new', text: 'Neueste zuerst' },
+                            { value: 'old', text: 'Älteste zuerst' },
+                            { value: 'az', text: 'A–Z (Titel)' },
+                            { value: 'za', text: 'Z–A (Titel)' }
+                        ]
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate positions array
+                if (!Array.isArray(config.positions)) {
+                    errors.push('positions must be an array');
+                } else if (config.positions.length === 0) {
+                    errors.push('positions array cannot be empty');
+                } else {
+                    // Validate each position
+                    config.positions.forEach((position, index) => {
+                        if (!position.id) errors.push(`Position ${index + 1}: id is required`);
+                        if (!position.position) errors.push(`Position ${index + 1}: position title is required`);
+                        if (!position.area) errors.push(`Position ${index + 1}: area is required`);
+                        if (!position.region) errors.push(`Position ${index + 1}: region is required`);
+                        if (!position.datum) errors.push(`Position ${index + 1}: datum is required`);
+                        if (!position.applicationUrl) errors.push(`Position ${index + 1}: applicationUrl is required`);
+                        
+                        // Validate status
+                        if (position.status && !['on', 'off'].includes(position.status)) {
+                            errors.push(`Position ${index + 1}: status must be 'on' or 'off'`);
+                        }
+                        
+                        // Validate date format (DD.MM.YYYY)
+                        if (position.datum && !position.datum.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+                            errors.push(`Position ${index + 1}: datum must be in format DD.MM.YYYY`);
+                        }
+                    });
+                }
+                
+                // Validate default view values
+                if (config.defaultView) {
+                    const validViews = ['grid', 'list', 'table'];
+                    if (config.defaultView.desktop && !validViews.includes(config.defaultView.desktop)) {
+                        errors.push(`defaultView.desktop must be one of: ${validViews.join(', ')}`);
+                    }
+                    if (config.defaultView.mobile && !validViews.includes(config.defaultView.mobile)) {
+                        errors.push(`defaultView.mobile must be one of: ${validViews.join(', ')}`);
+                    }
+                }
+                
+                // Validate filter configuration
+                if (config.filters) {
+                    // Check zeitraum options if enabled
+                    if (config.filters.zeitraum?.enabled && config.filters.zeitraum.options) {
+                        if (!Array.isArray(config.filters.zeitraum.options)) {
+                            errors.push('filters.zeitraum.options must be an array');
+                        }
+                    }
+                    
+                    // Check sort options if enabled
+                    if (config.filters.sort?.enabled && config.filters.sort.options) {
+                        if (!Array.isArray(config.filters.sort.options)) {
+                            errors.push('filters.sort.options must be an array');
+                        } else {
+                            config.filters.sort.options.forEach((opt, i) => {
+                                if (!opt.value || !opt.text) {
+                                    errors.push(`filters.sort.options[${i}] must have value and text properties`);
+                                }
+                            });
+                        }
+                    }
+                }
+                
+                return errors;
+            }
+        },
         footer: {
             required: ['businessName', 'streetAddress', 'zipCode', 'city', 'copyrightYear'],
             optional: ['logoUrl', 'websiteUrl', 'socialMedia', 'impressumUrl', 'datenschutzUrl', 'onSocialClick'],
@@ -199,8 +326,7 @@ window.ConfigValidator = {
                 
                 return errors;
             }
-        },
-        
+        }
     },
 
     /**
@@ -302,6 +428,20 @@ window.ConfigValidator = {
             }
         }
 
+        // Special validations for positions section
+        if (sectionType === 'positions') {
+            // Check if at least one filter is enabled
+            if (config.filters) {
+                const hasEnabledFilter = Object.values(config.filters).some(filter => 
+                    filter && typeof filter === 'object' && filter.enabled
+                );
+                
+                if (!hasEnabledFilter) {
+                    console.warn('Positions section: No filters are enabled');
+                }
+            }
+        }
+
         return {
             isValid: errors.length === 0,
             errors: errors,
@@ -358,6 +498,56 @@ window.ConfigValidator = {
                 showEmojiContainers: true,
                 showEmojiBackground: true
             },
+            positions: {
+                headline: 'Entdecke unsere offenen Stellen',
+                subtext: 'Finde die passende Position und bewirb dich direkt.',
+                defaultView: {
+                    desktop: 'grid',
+                    mobile: 'grid'
+                },
+                features: {
+                    savedPositions: true
+                },
+                filters: {
+                    search: {
+                        enabled: true,
+                        placeholder: 'Titel, Bereich oder Stadt …'
+                    },
+                    bereich: {
+                        enabled: true,
+                        label: 'Bereich',
+                        icon: 'fa-light fa-layer-group'
+                    },
+                    art: {
+                        enabled: true,
+                        label: 'Anstellungsart',
+                        icon: 'fa-light fa-briefcase'
+                    },
+                    region: {
+                        enabled: true,
+                        label: 'Stadt',
+                        icon: 'fa-light fa-location-dot'
+                    },
+                    zeitraum: {
+                        enabled: true,
+                        label: 'Zeitraum',
+                        icon: 'fa-light fa-calendar',
+                        options: ['Alle', 'Letzte 7 Tage', 'Letzte 30 Tage']
+                    },
+                    sort: {
+                        enabled: true,
+                        label: 'Sortierung',
+                        icon: 'fa-light fa-arrow-down-a-z',
+                        options: [
+                            { value: 'new', text: 'Neueste zuerst' },
+                            { value: 'old', text: 'Älteste zuerst' },
+                            { value: 'az', text: 'A–Z (Titel)' },
+                            { value: 'za', text: 'Z–A (Titel)' }
+                        ]
+                    }
+                },
+                positions: []
+            },
             footer: {
                 logoUrl: 'https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image',
                 websiteUrl: '#',
@@ -403,7 +593,7 @@ window.ConfigValidator = {
 
         // Sanitize URLs
         const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
-                          'websiteUrl', 'impressumUrl', 'datenschutzUrl'];
+                          'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -421,7 +611,8 @@ window.ConfigValidator = {
         const textFields = ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
                            'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
-                           'businessName', 'streetAddress', 'city', 'zipCode'];
+                           'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
+                           'subtext', 'position', 'area', 'region'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -482,6 +673,43 @@ window.ConfigValidator = {
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim()
             }));
+        }
+
+        // Sanitize positions
+        if (sectionType === 'positions' && sanitized.positions && Array.isArray(sanitized.positions)) {
+            sanitized.positions = sanitized.positions.map(position => {
+                const cleanPosition = { ...position };
+                
+                // Sanitize text fields
+                ['position', 'area', 'region', 'startDate'].forEach(field => {
+                    if (cleanPosition[field]) {
+                        cleanPosition[field] = cleanPosition[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+                
+                // Sanitize arrays
+                ['qualifications', 'tasks', 'benefits'].forEach(field => {
+                    if (cleanPosition[field]) {
+                        if (field === 'qualifications' && typeof cleanPosition[field] === 'object') {
+                            ['mandatory', 'optional'].forEach(subField => {
+                                if (Array.isArray(cleanPosition[field][subField])) {
+                                    cleanPosition[field][subField] = cleanPosition[field][subField].map(item =>
+                                        item.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                                    );
+                                }
+                            });
+                        } else if (Array.isArray(cleanPosition[field])) {
+                            cleanPosition[field] = cleanPosition[field].map(item =>
+                                item.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                            );
+                        }
+                    }
+                });
+                
+                return cleanPosition;
+            });
         }
 
         // Sanitize footer social media URLs
