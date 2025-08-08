@@ -221,7 +221,13 @@ if (document.readyState === 'loading') {
             eval(footerCode);
             console.log('✅ Footer section loaded');
             
-            // 9. Initialize sections that exist on the page
+            // 9. Load positions section
+            const positionsResponse = await fetch(BASE_URL + 'sections/positionsSection.js');
+            const positionsCode = await positionsResponse.text();
+            eval(positionsCode);
+            console.log('✅ Positions section loaded');
+            
+            // 10. Initialize sections that exist on the page
             if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
                 new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
                 console.log('🎉 Welcome section initialized successfully!');
@@ -240,6 +246,11 @@ if (document.readyState === 'loading') {
             if (window.FooterSection && document.getElementById('footer-section') && window.FOOTER_CONFIG) {
                 new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
                 console.log('🎉 Footer section initialized successfully!');
+            }
+            
+            if (window.PositionsSection && document.getElementById('positions-section') && window.POSITIONS_CONFIG) {
+                new window.PositionsSection(window.POSITIONS_CONFIG, 'positions-section');
+                console.log('🎉 Positions section initialized successfully!');
             }
             
         } catch (error) {
@@ -269,6 +280,7 @@ window.debugCareerPortal = function() {
         'MehrErfahrenSection',
         'ProcessSection',
         'FooterSection',
+        'PositionsSection',
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -287,17 +299,20 @@ window.debugCareerPortal = function() {
     const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
     const processElement = document.getElementById('process-section');
     const footerElement = document.getElementById('footer-section');
+    const positionsElement = document.getElementById('positions-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Process Section Element: ${processElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Welcome Config:', window.WELCOME_CONFIG);
     console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
     console.log('Process Config:', window.PROCESS_CONFIG);
     console.log('Footer Config:', window.FOOTER_CONFIG);
+    console.log('Positions Config:', window.POSITIONS_CONFIG);
 };
 
 // Function to manually reinitialize sections
@@ -333,6 +348,15 @@ window.reinitializeFooterSection = function() {
         return new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
     } else {
         console.error('FooterSection class or FOOTER_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializePositionsSection = function() {
+    if (window.PositionsSection && window.POSITIONS_CONFIG) {
+        return new window.PositionsSection(window.POSITIONS_CONFIG, 'positions-section');
+    } else {
+        console.error('PositionsSection class or POSITIONS_CONFIG not available');
         return false;
     }
 };
@@ -383,5 +407,31 @@ window.debugFooter = function() {
             .filter(([_, settings]) => settings.enabled)
             .map(([platform]) => platform);
         console.log('Enabled social platforms:', enabledSocial);
+    }
+};
+
+// Debug helper for Positions section
+window.debugPositions = function() {
+    console.log('=== Positions Section Debug Info ===');
+    console.log('PositionsSection loaded:', !!window.PositionsSection);
+    console.log('Container found:', !!document.getElementById('positions-section'));
+    console.log('Config:', window.POSITIONS_CONFIG);
+    
+    if (window.POSITIONS_CONFIG) {
+        console.log('Number of positions:', window.POSITIONS_CONFIG.positions ? window.POSITIONS_CONFIG.positions.length : 0);
+        console.log('Saved positions enabled:', window.POSITIONS_CONFIG.features?.savedPositions);
+        
+        // Check active filters
+        const activeFilters = Object.entries(window.POSITIONS_CONFIG.filters || {})
+            .filter(([key, filter]) => filter && typeof filter === 'object' && filter.enabled)
+            .map(([key]) => key);
+        console.log('Active filters:', activeFilters);
+        
+        // Check active positions
+        if (window.POSITIONS_CONFIG.positions) {
+            const activePositions = window.POSITIONS_CONFIG.positions.filter(p => p.status === 'on');
+            console.log('Active positions:', activePositions.length);
+            console.log('Inactive positions:', window.POSITIONS_CONFIG.positions.length - activePositions.length);
+        }
     }
 };
