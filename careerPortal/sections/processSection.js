@@ -24,7 +24,47 @@ window.ProcessSection = class ProcessSection extends window.BaseSec {
         this.createProcessHTML();
         this.setupCarousel();
         this.setupEventHandlers();
+        this.preventPageDrag();
         this.initializeAnimations();
+    }
+
+    /**
+     * Prevent page dragging on mobile
+     */
+    preventPageDrag() {
+        // Only apply on mobile
+        if (window.innerWidth <= 768) {
+            const wrapper = this.container.querySelector('.process-wrapper');
+            const carouselWrapper = this.container.querySelector('.process-carousel-wrapper');
+            
+            if (wrapper) {
+                // Prevent horizontal scrolling on the wrapper
+                wrapper.addEventListener('touchmove', (e) => {
+                    // Allow vertical scrolling but prevent horizontal
+                    const touch = e.touches[0];
+                    const startX = this.touchStartX || touch.clientX;
+                    const diffX = Math.abs(touch.clientX - startX);
+                    const diffY = Math.abs(touch.clientY - (this.touchStartY || touch.clientY));
+                    
+                    // If horizontal movement is greater than vertical, prevent it
+                    if (diffX > diffY && diffX > 10) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                wrapper.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.touches[0].clientX;
+                    this.touchStartY = e.touches[0].clientY;
+                });
+            }
+
+            if (carouselWrapper) {
+                // Completely prevent default touch behavior on carousel wrapper
+                carouselWrapper.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+            }
+        }
     }
 
     /**
