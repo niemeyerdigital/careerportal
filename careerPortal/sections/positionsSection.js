@@ -104,8 +104,14 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                     <!-- Filters -->
                     <section class="positions-filters is-collapsed" aria-label="Filter" id="filters">
                         <div class="positions-filters-head">
-                            <div class="positions-filters-title">
-                                <i class="fa-light fa-sliders-simple"></i> Filter
+                            <div class="positions-filters-title-group">
+                                <div class="positions-filters-title">
+                                    <i class="fa-light fa-sliders-simple"></i> Filter
+                                </div>
+                                <button class="positions-filters-reset" id="filters-reset" aria-label="Filter zurücksetzen" style="display: none;">
+                                    <i class="fa-regular fa-arrows-retweet"></i>
+                                    <span>Zurücksetzen</span>
+                                </button>
                             </div>
                             <button class="positions-filters-toggle" id="filters-toggle" aria-expanded="false">
                                 <i class="fa-light fa-chevron-down"></i> Anzeigen
@@ -215,6 +221,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         // Build filter options from data
         this.buildFilterOptions();
         
+        // Check initial filter state
+        this.checkFiltersActive();
+        
         // Hide filters section if none enabled
         const hasFilters = filtersGrid.children.length > 0;
         if (!hasFilters) {
@@ -296,6 +305,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         if (searchInput) {
             searchInput.addEventListener('input', () => {
                 this.state.search = searchInput.value;
+                this.checkFiltersActive();
                 this.render();
             });
         }
@@ -306,6 +316,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             if (element) {
                 element.addEventListener('change', () => {
                     this.state[filter] = element.value;
+                    this.checkFiltersActive();
                     this.render();
                 });
             }
@@ -333,6 +344,14 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                     ? '<i class="fa-light fa-chevron-up"></i> Ausblenden'
                     : '<i class="fa-light fa-chevron-down"></i> Anzeigen';
                 filtersToggle.setAttribute('aria-expanded', String(isCollapsed));
+            });
+        }
+
+        // Reset filters button
+        const resetBtn = document.getElementById('filters-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetFilters();
             });
         }
 
@@ -748,6 +767,71 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             li.innerHTML = `<i class="fa-light fa-circle-small" aria-hidden="true"></i><span>${item}</span>`;
             ul.appendChild(li);
         });
+    }
+
+    /**
+     * Check if any filters are active and show/hide reset button
+     */
+    checkFiltersActive() {
+        const hasActiveFilters = 
+            this.state.search !== '' ||
+            this.state.bereich !== '' ||
+            this.state.art !== '' ||
+            this.state.region !== '' ||
+            this.state.zeitraum !== 'Alle' ||
+            (this.state.sort !== 'new' && this.state.sort !== '');
+
+        const resetBtn = document.getElementById('filters-reset');
+        if (resetBtn) {
+            resetBtn.style.display = hasActiveFilters ? 'flex' : 'none';
+        }
+    }
+
+    /**
+     * Reset all filters to default state
+     */
+    resetFilters() {
+        // Reset state
+        this.state.search = '';
+        this.state.bereich = '';
+        this.state.art = '';
+        this.state.region = '';
+        this.state.zeitraum = 'Alle';
+        this.state.sort = 'new';
+
+        // Reset form elements
+        const searchInput = document.getElementById('q');
+        if (searchInput) searchInput.value = '';
+
+        const fBereich = document.getElementById('f-bereich');
+        if (fBereich) fBereich.value = '';
+
+        const fArt = document.getElementById('f-art');
+        if (fArt) fArt.value = '';
+
+        const fRegion = document.getElementById('f-region');
+        if (fRegion) fRegion.value = '';
+
+        const fZeitraum = document.getElementById('f-zeitraum');
+        if (fZeitraum) fZeitraum.value = 'Alle';
+
+        const fSort = document.getElementById('f-sort');
+        if (fSort) fSort.value = 'new';
+
+        // Hide reset button
+        const resetBtn = document.getElementById('filters-reset');
+        if (resetBtn) resetBtn.style.display = 'none';
+
+        // Re-render
+        this.render();
+
+        // Track reset action
+        if (window.gtag) {
+            window.gtag('event', 'filter_reset', {
+                event_category: 'Positions',
+                event_label: 'Filters Reset'
+            });
+        }
     }
 
     /**
