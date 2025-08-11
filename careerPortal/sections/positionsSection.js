@@ -26,6 +26,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         this.activeData = [];
         this.filtered = [];
         
+        // Scroll lock state
+        this.scrollLocked = false;
+        this.scrollPosition = undefined;
+        
         // LocalStorage keys
         this.PREFS_KEY = 'careerPortalPrefs_v3';
         this.SAVED_KEY = 'careerPortalSaved_v1';
@@ -63,7 +67,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Fix table scrolling specifically for mobile
+     * Fix table scrolling specifically for mobile - simplified
      */
     fixTableScrolling() {
         // Only apply on mobile
@@ -74,43 +78,13 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             const tableWrap = this.container.querySelector('.positions-table-wrap');
             if (!tableWrap) return;
             
-            // Prevent parent containers from interfering
-            const preventScroll = (e) => {
-                if (tableWrap.contains(e.target)) {
-                    e.stopPropagation();
-                }
-            };
+            // Just ensure table can scroll horizontally
+            tableWrap.style.overflowX = 'auto';
+            tableWrap.style.overflowY = 'visible';
+            tableWrap.style.webkitOverflowScrolling = 'touch';
             
-            // Add touch event handlers to prevent vertical scroll when scrolling table
-            tableWrap.addEventListener('touchstart', (e) => {
-                this.tableScrolling = true;
-                this.startY = e.touches[0].pageY;
-                this.startX = e.touches[0].pageX;
-            }, { passive: true });
-            
-            tableWrap.addEventListener('touchmove', (e) => {
-                if (!this.tableScrolling) return;
-                
-                const deltaY = Math.abs(e.touches[0].pageY - this.startY);
-                const deltaX = Math.abs(e.touches[0].pageX - this.startX);
-                
-                // If horizontal movement is greater, prevent vertical scroll
-                if (deltaX > deltaY) {
-                    // Don't prevent default - let horizontal scroll work
-                    preventScroll(e);
-                }
-            }, { passive: true });
-            
-            tableWrap.addEventListener('touchend', () => {
-                this.tableScrolling = false;
-            });
-            
-            // Ensure table wrapper can scroll to beginning
+            // Reset scroll position
             tableWrap.scrollLeft = 0;
-            
-            // Force reflow to ensure scrolling works
-            tableWrap.style.display = 'block';
-            void tableWrap.offsetHeight; // Trigger reflow
         });
     }
 
@@ -808,12 +782,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         if (modal) {
             modal.classList.remove('is-open');
         }
-        const modalCard = document.getElementById('modal-card');
-        if (modalCard) {
-            modalCard.style.transform = '';
-        }
         
-        // Restore body scroll
+        // Always ensure scroll is unlocked when closing
         this.unlockBodyScroll();
     }
 
@@ -910,73 +880,49 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Lock body scroll when modal is open
      */
     lockBodyScroll() {
+        // Only lock if not already locked
+        if (this.scrollLocked) return;
+        
         // Store current scroll position
         this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Create or update viewport meta for mobile
-        let viewportMeta = document.querySelector('meta[name="viewport"]');
-        if (viewportMeta) {
-            this.originalViewport = viewportMeta.content;
-            viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        }
-        
-        // Apply styles to prevent scrolling - enhanced for mobile
-        document.documentElement.style.overflow = 'hidden';
-        document.documentElement.style.height = '100%';
+        // Apply minimal locking styles
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${this.scrollPosition}px`;
-        document.body.style.left = '0';
-        document.body.style.right = '0';
         document.body.style.width = '100%';
-        document.body.style.height = '100%';
-        
-        // iOS specific fixes
-        document.body.style.touchAction = 'none';
-        document.body.style.webkitOverflowScrolling = 'touch';
         
         // Add class to body for additional CSS control
         document.body.classList.add('modal-open');
         
-        // Ensure modal can scroll
-        const modalCard = document.getElementById('modal-card');
-        if (modalCard) {
-            modalCard.style.overflowY = 'auto';
-            modalCard.style.webkitOverflowScrolling = 'touch';
-            modalCard.style.touchAction = 'pan-y';
-        }
+        // Mark as locked
+        this.scrollLocked = true;
     }
 
     /**
      * Unlock body scroll when modal is closed
      */
     unlockBodyScroll() {
-        // Restore viewport meta
-        let viewportMeta = document.querySelector('meta[name="viewport"]');
-        if (viewportMeta && this.originalViewport) {
-            viewportMeta.content = this.originalViewport;
-        }
+        // Only unlock if actually locked
+        if (!this.scrollLocked) return;
         
         // Remove all scroll lock styles
-        document.documentElement.style.overflow = '';
-        document.documentElement.style.height = '';
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
         document.body.style.width = '';
-        document.body.style.height = '';
-        document.body.style.touchAction = '';
-        document.body.style.webkitOverflowScrolling = '';
         
         // Remove class
         document.body.classList.remove('modal-open');
         
         // Restore scroll position
-        if (this.scrollPosition) {
+        if (this.scrollPosition !== undefined) {
             window.scrollTo(0, this.scrollPosition);
+            this.scrollPosition = undefined;
         }
+        
+        // Mark as unlocked
+        this.scrollLocked = false;
     }
 
     /**
