@@ -1,7 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
- * Updated with improved mobile table scrolling
+ * Fixed mobile table scrolling issue
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -61,31 +61,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Initial render
         this.render();
-        
-        // Fix table scrolling on mobile after render
-        this.fixTableScrolling();
-    }
-
-    /**
-     * Fix table scrolling specifically for mobile - simplified
-     */
-    fixTableScrolling() {
-        // Only apply on mobile
-        if (window.innerWidth > 640) return;
-        
-        // Wait for next frame to ensure DOM is ready
-        requestAnimationFrame(() => {
-            const tableWrap = this.container.querySelector('.positions-table-wrap');
-            if (!tableWrap) return;
-            
-            // Just ensure table can scroll horizontally
-            tableWrap.style.overflowX = 'auto';
-            tableWrap.style.overflowY = 'visible';
-            tableWrap.style.webkitOverflowScrolling = 'touch';
-            
-            // Reset scroll position
-            tableWrap.scrollLeft = 0;
-        });
     }
 
     /**
@@ -346,7 +321,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             if (element) {
                 element.addEventListener('change', () => {
                     this.state[filter] = element.value;
-                    this.checkFiltersActive(); // Check on every change
+                    this.checkFiltersActive();
                     this.render();
                 });
             }
@@ -359,10 +334,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 btn.addEventListener('click', () => {
                     this.state.view = view;
                     this.render();
-                    // Re-apply table scrolling fix when switching to table view
-                    if (view === 'table') {
-                        setTimeout(() => this.fixTableScrolling(), 100);
-                    }
                 });
             }
         });
@@ -402,7 +373,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         const modalClose2 = document.getElementById('m-close-2');
         const modalSave = document.getElementById('modal-save');
 
-        // Use event delegation to ensure we catch all close events
         if (modalBackdrop) {
             modalBackdrop.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -445,7 +415,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         };
         document.addEventListener('keydown', this.escHandler);
         
-        // Also handle browser back button on mobile
+        // Handle browser back button on mobile
         this.popstateHandler = () => {
             if (this.state.active) {
                 this.closeModal();
@@ -486,8 +456,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
         if (this.state.view === 'table') {
             this.renderTable(data, results);
-            // Fix table scrolling after rendering
-            setTimeout(() => this.fixTableScrolling(), 100);
         } else {
             data.forEach(card => {
                 results.appendChild(this.renderCard(card));
@@ -675,15 +643,22 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view with improved mobile scrolling
+     * Render table view with fixed mobile scrolling
      */
     renderTable(data, container) {
+        // Create table wrapper div
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'positions-table-container';
+        
+        // Create the scrollable wrapper
         const wrap = document.createElement('div');
         wrap.className = 'positions-table-wrap';
         
+        // Create table element
         const table = document.createElement('table');
         table.className = 'positions-table';
 
+        // Create table header
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
@@ -697,6 +672,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         `;
         table.appendChild(thead);
 
+        // Create table body
         const tbody = document.createElement('tbody');
         data.forEach(card => {
             const tr = document.createElement('tr');
@@ -722,6 +698,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 </td>
             `;
             
+            // Add event handlers
             tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
             tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -733,13 +710,70 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         });
         table.appendChild(tbody);
 
+        // Assemble the structure
         wrap.appendChild(table);
-        container.appendChild(wrap);
+        tableContainer.appendChild(wrap);
+        container.appendChild(tableContainer);
         
-        // Ensure table can scroll to start on mobile
+        // Fix mobile scrolling after DOM insertion
         if (window.innerWidth <= 640) {
-            wrap.scrollLeft = 0;
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+                this.fixMobileTableScroll(wrap);
+            });
         }
+    }
+
+    /**
+     * Fix mobile table scrolling by ensuring proper styles and preventing conflicts
+     */
+    fixMobileTableScroll(wrapper) {
+        if (!wrapper) return;
+        
+        // Ensure the wrapper can scroll horizontally
+        wrapper.style.overflowX = 'auto';
+        wrapper.style.overflowY = 'visible';
+        wrapper.style.webkitOverflowScrolling = 'touch';
+        wrapper.style.msOverflowStyle = '-ms-autohiding-scrollbar';
+        
+        // Prevent parent containers from interfering
+        let parent = wrapper.parentElement;
+        while (parent && parent !== document.body) {
+            // Don't modify ClickFunnels main containers, only our positions containers
+            if (parent.classList.contains('positions-container') || 
+                parent.classList.contains('positions-wrapper')) {
+                parent.style.overflowX = 'visible';
+                parent.style.overflowY = 'visible';
+            }
+            parent = parent.parentElement;
+        }
+        
+        // Reset scroll position
+        wrapper.scrollLeft = 0;
+        
+        // Prevent vertical scrolling on horizontal swipe
+        let startX = 0;
+        let startY = 0;
+        let isScrolling = null;
+        
+        wrapper.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].pageX;
+            startY = e.touches[0].pageY;
+            isScrolling = null;
+        }, { passive: true });
+        
+        wrapper.addEventListener('touchmove', (e) => {
+            if (!isScrolling) {
+                const diffX = Math.abs(e.touches[0].pageX - startX);
+                const diffY = Math.abs(e.touches[0].pageY - startY);
+                isScrolling = diffX > diffY ? 'horizontal' : 'vertical';
+            }
+            
+            // Allow horizontal scrolling, prevent vertical if scrolling horizontally
+            if (isScrolling === 'horizontal') {
+                e.stopPropagation();
+            }
+        }, { passive: true });
     }
 
     /**
@@ -805,25 +839,21 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Close modal
      */
     closeModal() {
-        // Set state first
         this.state.active = null;
         
-        // Hide modal
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
         }
         
-        // Force unlock body scroll - this should ALWAYS run
-        // Use setTimeout to ensure it runs after any other handlers
         this.unlockBodyScroll();
         
-        // Double-check cleanup after a short delay
+        // Force cleanup after delay
         setTimeout(() => {
-            // Force remove any lingering styles
-            document.body.style.overflow = null;
-            document.body.style.position = null;
-            document.body.style.top = null;
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
             document.body.classList.remove('modal-open');
             document.body.removeAttribute('data-modal-open');
         }, 100);
@@ -854,7 +884,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
     /**
      * Check if any filters are active and show/hide reset button
-     * This now gets called on every filter change and on initial load
      */
     checkFiltersActive() {
         const hasActiveFilters = 
@@ -922,73 +951,50 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Lock body scroll when modal is open
      */
     lockBodyScroll() {
-        // Only lock if not already locked
         if (this.scrollLocked) return;
         
-        // Store current scroll position
         this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Apply minimal locking styles - use data attribute for safer cleanup
         document.body.setAttribute('data-modal-open', 'true');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${this.scrollPosition}px`;
         document.body.style.width = '100%';
         
-        // Add class to body for additional CSS control
         document.body.classList.add('modal-open');
         
-        // Mark as locked
         this.scrollLocked = true;
-        
-        console.log('Modal scroll locked');
     }
 
     /**
-     * Unlock body scroll when modal is closed - force cleanup
+     * Unlock body scroll when modal is closed
      */
     unlockBodyScroll() {
-        // Force unlock regardless of state to ensure cleanup
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
         
-        // Remove all scroll lock styles completely
-        document.body.style.overflow = null;
-        document.body.style.position = null;
-        document.body.style.top = null;
-        document.body.style.width = null;
-        document.body.style.height = null;
-        document.body.style.left = null;
-        document.body.style.right = null;
-        document.body.style.touchAction = null;
-        
-        // Remove any inline styles that might interfere
         if (document.body.style.removeProperty) {
             document.body.style.removeProperty('overflow');
             document.body.style.removeProperty('position');
             document.body.style.removeProperty('top');
             document.body.style.removeProperty('width');
             document.body.style.removeProperty('height');
-            document.body.style.removeProperty('left');
-            document.body.style.removeProperty('right');
-            document.body.style.removeProperty('touch-action');
         }
         
-        // Remove attribute and class
         document.body.removeAttribute('data-modal-open');
         document.body.classList.remove('modal-open');
         
-        // Restore scroll position if we have one
         if (this.scrollPosition !== undefined && this.scrollPosition !== null) {
-            // Use requestAnimationFrame to ensure DOM is ready
             requestAnimationFrame(() => {
                 window.scrollTo(0, this.scrollPosition);
                 this.scrollPosition = undefined;
             });
         }
         
-        // Mark as unlocked
         this.scrollLocked = false;
-        
-        console.log('Modal scroll unlocked');
     }
 
     /**
@@ -1140,7 +1146,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Handle responsive updates
      */
     onResize() {
-        // Update default view based on screen size
         const isMobile = window.innerWidth < 640;
         const filters = document.getElementById('filters');
         
@@ -1154,9 +1159,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             }
         }
         
-        // Re-apply table fix if in table view
+        // Re-render if in table view to fix scrolling
         if (this.state.view === 'table') {
-            this.fixTableScrolling();
+            this.render();
         }
     }
 
@@ -1164,17 +1169,14 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
-        // Force unlock body scroll if modal was open
         this.unlockBodyScroll();
         
-        // Force cleanup any lingering modal styles
-        document.body.style.overflow = null;
-        document.body.style.position = null;
-        document.body.style.top = null;
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
         document.body.classList.remove('modal-open');
         document.body.removeAttribute('data-modal-open');
         
-        // Remove event listeners
         if (this.escHandler) {
             document.removeEventListener('keydown', this.escHandler);
         }
@@ -1182,7 +1184,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             window.removeEventListener('popstate', this.popstateHandler);
         }
         
-        // Remove modal if still open
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
