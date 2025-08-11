@@ -1,6 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
+ * Updated with improved mobile table scrolling
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -56,6 +57,61 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Initial render
         this.render();
+        
+        // Fix table scrolling on mobile after render
+        this.fixTableScrolling();
+    }
+
+    /**
+     * Fix table scrolling specifically for mobile
+     */
+    fixTableScrolling() {
+        // Only apply on mobile
+        if (window.innerWidth > 640) return;
+        
+        // Wait for next frame to ensure DOM is ready
+        requestAnimationFrame(() => {
+            const tableWrap = this.container.querySelector('.positions-table-wrap');
+            if (!tableWrap) return;
+            
+            // Prevent parent containers from interfering
+            const preventScroll = (e) => {
+                if (tableWrap.contains(e.target)) {
+                    e.stopPropagation();
+                }
+            };
+            
+            // Add touch event handlers to prevent vertical scroll when scrolling table
+            tableWrap.addEventListener('touchstart', (e) => {
+                this.tableScrolling = true;
+                this.startY = e.touches[0].pageY;
+                this.startX = e.touches[0].pageX;
+            }, { passive: true });
+            
+            tableWrap.addEventListener('touchmove', (e) => {
+                if (!this.tableScrolling) return;
+                
+                const deltaY = Math.abs(e.touches[0].pageY - this.startY);
+                const deltaX = Math.abs(e.touches[0].pageX - this.startX);
+                
+                // If horizontal movement is greater, prevent vertical scroll
+                if (deltaX > deltaY) {
+                    // Don't prevent default - let horizontal scroll work
+                    preventScroll(e);
+                }
+            }, { passive: true });
+            
+            tableWrap.addEventListener('touchend', () => {
+                this.tableScrolling = false;
+            });
+            
+            // Ensure table wrapper can scroll to beginning
+            tableWrap.scrollLeft = 0;
+            
+            // Force reflow to ensure scrolling works
+            tableWrap.style.display = 'block';
+            void tableWrap.offsetHeight; // Trigger reflow
+        });
     }
 
     /**
@@ -221,7 +277,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         // Build filter options from data
         this.buildFilterOptions();
         
-        // Check initial filter state
+        // Check initial filter state (including loaded from storage)
         this.checkFiltersActive();
         
         // Hide filters section if none enabled
@@ -310,13 +366,13 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             });
         }
 
-        // Filters
+        // Filters - with real-time reset button update
         ['bereich', 'art', 'region', 'zeitraum', 'sort'].forEach(filter => {
             const element = document.getElementById(`f-${filter}`);
             if (element) {
                 element.addEventListener('change', () => {
                     this.state[filter] = element.value;
-                    this.checkFiltersActive();
+                    this.checkFiltersActive(); // Check on every change
                     this.render();
                 });
             }
@@ -329,6 +385,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 btn.addEventListener('click', () => {
                     this.state.view = view;
                     this.render();
+                    // Re-apply table scrolling fix when switching to table view
+                    if (view === 'table') {
+                        setTimeout(() => this.fixTableScrolling(), 100);
+                    }
                 });
             }
         });
@@ -396,11 +456,15 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Filter and render positions
      */
     render() {
-        // Sync filter values
+        // Sync filter values from state
         Object.keys(this.state).forEach(key => {
             const element = document.getElementById(`f-${key}`);
             if (element) element.value = this.state[key];
         });
+        
+        // Sync search input
+        const searchInput = document.getElementById('q');
+        if (searchInput) searchInput.value = this.state.search;
 
         // Get filtered data
         const data = this.getFiltered();
@@ -420,6 +484,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
         if (this.state.view === 'table') {
             this.renderTable(data, results);
+            // Fix table scrolling after rendering
+            setTimeout(() => this.fixTableScrolling(), 100);
         } else {
             data.forEach(card => {
                 results.appendChild(this.renderCard(card));
@@ -607,7 +673,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view
+     * Render table view with improved mobile scrolling
      */
     renderTable(data, container) {
         const wrap = document.createElement('div');
@@ -667,6 +733,11 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
         wrap.appendChild(table);
         container.appendChild(wrap);
+        
+        // Ensure table can scroll to start on mobile
+        if (window.innerWidth <= 640) {
+            wrap.scrollLeft = 0;
+        }
     }
 
     /**
@@ -771,6 +842,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
     /**
      * Check if any filters are active and show/hide reset button
+     * This now gets called on every filter change and on initial load
      */
     checkFiltersActive() {
         const hasActiveFilters = 
@@ -1068,6 +1140,11 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 toggle.innerHTML = '<i class="fa-light fa-chevron-down"></i> Anzeigen';
                 toggle.setAttribute('aria-expanded', 'false');
             }
+        }
+        
+        // Re-apply table fix if in table view
+        if (this.state.view === 'table') {
+            this.fixTableScrolling();
         }
     }
 
