@@ -1,7 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
- * Fixed mobile table scrolling issue
+ * Updated with improved mobile table scrolling
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -61,6 +61,31 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Initial render
         this.render();
+        
+        // Fix table scrolling on mobile after render
+        this.fixTableScrolling();
+    }
+
+    /**
+     * Fix table scrolling specifically for mobile - simplified
+     */
+    fixTableScrolling() {
+        // Only apply on mobile
+        if (window.innerWidth > 640) return;
+        
+        // Wait for next frame to ensure DOM is ready
+        requestAnimationFrame(() => {
+            const tableWrap = this.container.querySelector('.positions-table-wrap');
+            if (!tableWrap) return;
+            
+            // Just ensure table can scroll horizontally
+            tableWrap.style.overflowX = 'auto';
+            tableWrap.style.overflowY = 'visible';
+            tableWrap.style.webkitOverflowScrolling = 'touch';
+            
+            // Reset scroll position
+            tableWrap.scrollLeft = 0;
+        });
     }
 
     /**
@@ -321,7 +346,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             if (element) {
                 element.addEventListener('change', () => {
                     this.state[filter] = element.value;
-                    this.checkFiltersActive();
+                    this.checkFiltersActive(); // Check on every change
                     this.render();
                 });
             }
@@ -334,6 +359,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 btn.addEventListener('click', () => {
                     this.state.view = view;
                     this.render();
+                    // Re-apply table scrolling fix when switching to table view
+                    if (view === 'table') {
+                        setTimeout(() => this.fixTableScrolling(), 100);
+                    }
                 });
             }
         });
@@ -373,6 +402,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         const modalClose2 = document.getElementById('m-close-2');
         const modalSave = document.getElementById('modal-save');
 
+        // Use event delegation to ensure we catch all close events
         if (modalBackdrop) {
             modalBackdrop.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -415,7 +445,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         };
         document.addEventListener('keydown', this.escHandler);
         
-        // Handle browser back button on mobile
+        // Also handle browser back button on mobile
         this.popstateHandler = () => {
             if (this.state.active) {
                 this.closeModal();
@@ -456,6 +486,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
         if (this.state.view === 'table') {
             this.renderTable(data, results);
+            // Fix table scrolling after rendering
+            setTimeout(() => this.fixTableScrolling(), 100);
         } else {
             data.forEach(card => {
                 results.appendChild(this.renderCard(card));
@@ -643,18 +675,15 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view - simplified like view switcher
+     * Render table view with improved mobile scrolling
      */
     renderTable(data, container) {
-        // Create simple wrapper like view switcher
         const wrap = document.createElement('div');
         wrap.className = 'positions-table-wrap';
         
-        // Create table element
         const table = document.createElement('table');
         table.className = 'positions-table';
 
-        // Create table header
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
@@ -668,7 +697,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         `;
         table.appendChild(thead);
 
-        // Create table body
         const tbody = document.createElement('tbody');
         data.forEach(card => {
             const tr = document.createElement('tr');
@@ -694,7 +722,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 </td>
             `;
             
-            // Add event handlers
             tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
             tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -706,9 +733,13 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         });
         table.appendChild(tbody);
 
-        // Simple assembly - just like view switcher
         wrap.appendChild(table);
         container.appendChild(wrap);
+        
+        // Ensure table can scroll to start on mobile
+        if (window.innerWidth <= 640) {
+            wrap.scrollLeft = 0;
+        }
     }
 
     /**
@@ -774,21 +805,25 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Close modal
      */
     closeModal() {
+        // Set state first
         this.state.active = null;
         
+        // Hide modal
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
         }
         
+        // Force unlock body scroll - this should ALWAYS run
+        // Use setTimeout to ensure it runs after any other handlers
         this.unlockBodyScroll();
         
-        // Force cleanup after delay
+        // Double-check cleanup after a short delay
         setTimeout(() => {
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.top = '';
-            document.body.style.width = '';
+            // Force remove any lingering styles
+            document.body.style.overflow = null;
+            document.body.style.position = null;
+            document.body.style.top = null;
             document.body.classList.remove('modal-open');
             document.body.removeAttribute('data-modal-open');
         }, 100);
@@ -819,6 +854,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
     /**
      * Check if any filters are active and show/hide reset button
+     * This now gets called on every filter change and on initial load
      */
     checkFiltersActive() {
         const hasActiveFilters = 
@@ -886,50 +922,73 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Lock body scroll when modal is open
      */
     lockBodyScroll() {
+        // Only lock if not already locked
         if (this.scrollLocked) return;
         
+        // Store current scroll position
         this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
+        // Apply minimal locking styles - use data attribute for safer cleanup
         document.body.setAttribute('data-modal-open', 'true');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${this.scrollPosition}px`;
         document.body.style.width = '100%';
         
+        // Add class to body for additional CSS control
         document.body.classList.add('modal-open');
         
+        // Mark as locked
         this.scrollLocked = true;
+        
+        console.log('Modal scroll locked');
     }
 
     /**
-     * Unlock body scroll when modal is closed
+     * Unlock body scroll when modal is closed - force cleanup
      */
     unlockBodyScroll() {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.height = '';
+        // Force unlock regardless of state to ensure cleanup
         
+        // Remove all scroll lock styles completely
+        document.body.style.overflow = null;
+        document.body.style.position = null;
+        document.body.style.top = null;
+        document.body.style.width = null;
+        document.body.style.height = null;
+        document.body.style.left = null;
+        document.body.style.right = null;
+        document.body.style.touchAction = null;
+        
+        // Remove any inline styles that might interfere
         if (document.body.style.removeProperty) {
             document.body.style.removeProperty('overflow');
             document.body.style.removeProperty('position');
             document.body.style.removeProperty('top');
             document.body.style.removeProperty('width');
             document.body.style.removeProperty('height');
+            document.body.style.removeProperty('left');
+            document.body.style.removeProperty('right');
+            document.body.style.removeProperty('touch-action');
         }
         
+        // Remove attribute and class
         document.body.removeAttribute('data-modal-open');
         document.body.classList.remove('modal-open');
         
+        // Restore scroll position if we have one
         if (this.scrollPosition !== undefined && this.scrollPosition !== null) {
+            // Use requestAnimationFrame to ensure DOM is ready
             requestAnimationFrame(() => {
                 window.scrollTo(0, this.scrollPosition);
                 this.scrollPosition = undefined;
             });
         }
         
+        // Mark as unlocked
         this.scrollLocked = false;
+        
+        console.log('Modal scroll unlocked');
     }
 
     /**
@@ -1081,6 +1140,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Handle responsive updates
      */
     onResize() {
+        // Update default view based on screen size
         const isMobile = window.innerWidth < 640;
         const filters = document.getElementById('filters');
         
@@ -1094,9 +1154,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             }
         }
         
-        // Re-render if in table view
+        // Re-apply table fix if in table view
         if (this.state.view === 'table') {
-            this.render();
+            this.fixTableScrolling();
         }
     }
 
@@ -1104,14 +1164,17 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
+        // Force unlock body scroll if modal was open
         this.unlockBodyScroll();
         
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
+        // Force cleanup any lingering modal styles
+        document.body.style.overflow = null;
+        document.body.style.position = null;
+        document.body.style.top = null;
         document.body.classList.remove('modal-open');
         document.body.removeAttribute('data-modal-open');
         
+        // Remove event listeners
         if (this.escHandler) {
             document.removeEventListener('keydown', this.escHandler);
         }
@@ -1119,6 +1182,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             window.removeEventListener('popstate', this.popstateHandler);
         }
         
+        // Remove modal if still open
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
