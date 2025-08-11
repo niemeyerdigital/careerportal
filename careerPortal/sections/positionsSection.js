@@ -402,11 +402,30 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         const modalClose2 = document.getElementById('m-close-2');
         const modalSave = document.getElementById('modal-save');
 
-        [modalBackdrop, modalClose, modalClose2].forEach(el => {
-            if (el) {
-                el.addEventListener('click', () => this.closeModal());
-            }
-        });
+        // Use event delegation to ensure we catch all close events
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeModal();
+            });
+        }
+        
+        if (modalClose) {
+            modalClose.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeModal();
+            });
+        }
+        
+        if (modalClose2) {
+            modalClose2.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeModal();
+            });
+        }
 
         if (modalSave && this.config.features?.savedPositions) {
             modalSave.addEventListener('click', (e) => {
@@ -419,11 +438,20 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         }
 
         // ESC key to close modal
-        document.addEventListener('keydown', (e) => {
+        this.escHandler = (e) => {
             if (e.key === 'Escape' && this.state.active) {
                 this.closeModal();
             }
-        });
+        };
+        document.addEventListener('keydown', this.escHandler);
+        
+        // Also handle browser back button on mobile
+        this.popstateHandler = () => {
+            if (this.state.active) {
+                this.closeModal();
+            }
+        };
+        window.addEventListener('popstate', this.popstateHandler);
     }
 
     /**
@@ -777,14 +805,28 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Close modal
      */
     closeModal() {
+        // Set state first
         this.state.active = null;
+        
+        // Hide modal
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
         }
         
-        // Always ensure scroll is unlocked when closing
+        // Force unlock body scroll - this should ALWAYS run
+        // Use setTimeout to ensure it runs after any other handlers
         this.unlockBodyScroll();
+        
+        // Double-check cleanup after a short delay
+        setTimeout(() => {
+            // Force remove any lingering styles
+            document.body.style.overflow = null;
+            document.body.style.position = null;
+            document.body.style.top = null;
+            document.body.classList.remove('modal-open');
+            document.body.removeAttribute('data-modal-open');
+        }, 100);
     }
 
     /**
@@ -886,7 +928,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         // Store current scroll position
         this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Apply minimal locking styles
+        // Apply minimal locking styles - use data attribute for safer cleanup
+        document.body.setAttribute('data-modal-open', 'true');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${this.scrollPosition}px`;
@@ -897,32 +940,55 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Mark as locked
         this.scrollLocked = true;
+        
+        console.log('Modal scroll locked');
     }
 
     /**
-     * Unlock body scroll when modal is closed
+     * Unlock body scroll when modal is closed - force cleanup
      */
     unlockBodyScroll() {
-        // Only unlock if actually locked
-        if (!this.scrollLocked) return;
+        // Force unlock regardless of state to ensure cleanup
         
-        // Remove all scroll lock styles
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
+        // Remove all scroll lock styles completely
+        document.body.style.overflow = null;
+        document.body.style.position = null;
+        document.body.style.top = null;
+        document.body.style.width = null;
+        document.body.style.height = null;
+        document.body.style.left = null;
+        document.body.style.right = null;
+        document.body.style.touchAction = null;
         
-        // Remove class
+        // Remove any inline styles that might interfere
+        if (document.body.style.removeProperty) {
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('position');
+            document.body.style.removeProperty('top');
+            document.body.style.removeProperty('width');
+            document.body.style.removeProperty('height');
+            document.body.style.removeProperty('left');
+            document.body.style.removeProperty('right');
+            document.body.style.removeProperty('touch-action');
+        }
+        
+        // Remove attribute and class
+        document.body.removeAttribute('data-modal-open');
         document.body.classList.remove('modal-open');
         
-        // Restore scroll position
-        if (this.scrollPosition !== undefined) {
-            window.scrollTo(0, this.scrollPosition);
-            this.scrollPosition = undefined;
+        // Restore scroll position if we have one
+        if (this.scrollPosition !== undefined && this.scrollPosition !== null) {
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+                window.scrollTo(0, this.scrollPosition);
+                this.scrollPosition = undefined;
+            });
         }
         
         // Mark as unlocked
         this.scrollLocked = false;
+        
+        console.log('Modal scroll unlocked');
     }
 
     /**
@@ -1098,14 +1164,30 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Cleanup
      */
     destroy() {
-        // Ensure body scroll is unlocked if modal was open
+        // Force unlock body scroll if modal was open
         this.unlockBodyScroll();
         
+        // Force cleanup any lingering modal styles
+        document.body.style.overflow = null;
+        document.body.style.position = null;
+        document.body.style.top = null;
+        document.body.classList.remove('modal-open');
+        document.body.removeAttribute('data-modal-open');
+        
         // Remove event listeners
+        if (this.escHandler) {
+            document.removeEventListener('keydown', this.escHandler);
+        }
+        if (this.popstateHandler) {
+            window.removeEventListener('popstate', this.popstateHandler);
+        }
+        
+        // Remove modal if still open
         const modal = document.getElementById('modal');
         if (modal) {
             modal.classList.remove('is-open');
         }
+        
         super.destroy();
     }
 
