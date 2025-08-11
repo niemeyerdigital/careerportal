@@ -643,14 +643,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view with fixed mobile scrolling
+     * Render table view - simplified like view switcher
      */
     renderTable(data, container) {
-        // Create table wrapper div
-        const tableContainer = document.createElement('div');
-        tableContainer.className = 'positions-table-container';
-        
-        // Create the scrollable wrapper
+        // Create simple wrapper like view switcher
         const wrap = document.createElement('div');
         wrap.className = 'positions-table-wrap';
         
@@ -710,70 +706,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         });
         table.appendChild(tbody);
 
-        // Assemble the structure
+        // Simple assembly - just like view switcher
         wrap.appendChild(table);
-        tableContainer.appendChild(wrap);
-        container.appendChild(tableContainer);
-        
-        // Fix mobile scrolling after DOM insertion
-        if (window.innerWidth <= 640) {
-            // Use requestAnimationFrame to ensure DOM is ready
-            requestAnimationFrame(() => {
-                this.fixMobileTableScroll(wrap);
-            });
-        }
-    }
-
-    /**
-     * Fix mobile table scrolling by ensuring proper styles and preventing conflicts
-     */
-    fixMobileTableScroll(wrapper) {
-        if (!wrapper) return;
-        
-        // Ensure the wrapper can scroll horizontally
-        wrapper.style.overflowX = 'auto';
-        wrapper.style.overflowY = 'visible';
-        wrapper.style.webkitOverflowScrolling = 'touch';
-        wrapper.style.msOverflowStyle = '-ms-autohiding-scrollbar';
-        
-        // Prevent parent containers from interfering
-        let parent = wrapper.parentElement;
-        while (parent && parent !== document.body) {
-            // Don't modify ClickFunnels main containers, only our positions containers
-            if (parent.classList.contains('positions-container') || 
-                parent.classList.contains('positions-wrapper')) {
-                parent.style.overflowX = 'visible';
-                parent.style.overflowY = 'visible';
-            }
-            parent = parent.parentElement;
-        }
-        
-        // Reset scroll position
-        wrapper.scrollLeft = 0;
-        
-        // Prevent vertical scrolling on horizontal swipe
-        let startX = 0;
-        let startY = 0;
-        let isScrolling = null;
-        
-        wrapper.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].pageX;
-            startY = e.touches[0].pageY;
-            isScrolling = null;
-        }, { passive: true });
-        
-        wrapper.addEventListener('touchmove', (e) => {
-            if (!isScrolling) {
-                const diffX = Math.abs(e.touches[0].pageX - startX);
-                const diffY = Math.abs(e.touches[0].pageY - startY);
-                isScrolling = diffX > diffY ? 'horizontal' : 'vertical';
-            }
-            
-            // Allow horizontal scrolling, prevent vertical if scrolling horizontally
-            if (isScrolling === 'horizontal') {
-                e.stopPropagation();
-            }
-        }, { passive: true });
+        container.appendChild(wrap);
     }
 
     /**
@@ -1159,7 +1094,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             }
         }
         
-        // Re-render if in table view to fix scrolling
+        // Re-render if in table view
         if (this.state.view === 'table') {
             this.render();
         }
