@@ -82,6 +82,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             tableWrap.style.overflowX = 'auto';
             tableWrap.style.overflowY = 'visible';
             tableWrap.style.webkitOverflowScrolling = 'touch';
+            tableWrap.style.touchAction = 'pan-x';
             
             // Reset scroll position
             tableWrap.scrollLeft = 0;
