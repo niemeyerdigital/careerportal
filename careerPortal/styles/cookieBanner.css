@@ -517,7 +517,7 @@
     
     /* Use bigger root classes for mobile with !important */
     .cookie-banner-headline {
-        font-size: var(--font-3xl) !important;
+        font-size: 45px !important;
         margin-right: 50px;
     }
     
@@ -548,10 +548,10 @@
         z-index: 1;
     }
     
-    /* SMALLER cookie icon on mobile - 20% smaller (160px instead of 200px) */
+    /* SMALLER cookie icon on mobile - 20% smaller (100px instead of 200px) */
     .cookie-icon-animated,
     .cookie-icon-static {
-        font-size: 160px !important;
+        font-size: 100px !important;
     }
     
     .cookie-banner-actions {
