@@ -644,20 +644,18 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view - simple scrollable table
+     * Render table view - using the exact working logic from tester.html
      */
     renderTable(data, container) {
-        // Create simple table structure
-        const tableOuterWrapper = document.createElement('div');
-        tableOuterWrapper.className = 'positions-table-outer';
+        // Create wrapper div with overflow-x: auto (exactly like tester.html)
+        const wrap = document.createElement('div');
+        wrap.className = 'positions-table-wrap';
         
-        const scrollWrapper = document.createElement('div');
-        scrollWrapper.className = 'positions-table-scroll';
-        
-        // Create the table
+        // Create table
         const table = document.createElement('table');
         table.className = 'positions-table';
 
+        // Create thead
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
@@ -671,12 +669,13 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         `;
         table.appendChild(thead);
 
+        // Create tbody
         const tbody = document.createElement('tbody');
         data.forEach(card => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <button class="positions-table-title-btn" data-action="open" data-id="${card.id}">
+                    <button class="positions-btn positions-btn-ghost" style="padding:6px 8px" aria-label="Details öffnen">
                         ${this.ensureMWD(card.position)}
                     </button>
                 </td>
@@ -685,43 +684,35 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 <td>${card.datum}</td>
                 <td>${(card.workCapacity || []).join(', ')}</td>
                 <td>
-                    <div class="positions-table-actions">
-                        <button class="positions-btn positions-btn-primary positions-btn-sm" data-action="apply" data-url="${card.applicationUrl}">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="positions-btn positions-btn-primary btn-apply">
                             <i class="fa-light fa-paper-plane"></i>
                         </button>
-                        <button class="positions-btn positions-btn-ghost positions-btn-sm" data-action="view" data-id="${card.id}">
+                        <button class="positions-btn positions-btn-ghost btn-open">
                             <i class="fa-light fa-eye"></i>
                         </button>
                     </div>
                 </td>
-            </tr>
             `;
+            
+            // Add event listeners
+            tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
+            tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(card.applicationUrl, '_blank');
+            });
+            tr.querySelector('button.btn-open').addEventListener('click', () => this.openModal(card));
+            
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
+
+        // Assemble: wrap > table
+        wrap.appendChild(table);
         
-        // Assemble the structure
-        scrollWrapper.appendChild(table);
-        tableOuterWrapper.appendChild(scrollWrapper);
-        container.appendChild(tableOuterWrapper);
-        
-        // Add event delegation for table actions
-        tableOuterWrapper.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-action]');
-            if (!target) return;
-            
-            const action = target.dataset.action;
-            
-            if (action === 'open' || action === 'view') {
-                const id = target.dataset.id;
-                const card = this.cardsData.find(c => c.id === id);
-                if (card) this.openModal(card);
-            } else if (action === 'apply') {
-                e.stopPropagation();
-                const url = target.dataset.url;
-                if (url) window.open(url, '_blank');
-            }
-        });
+        // Clear container and set class
+        container.className = '';
+        container.appendChild(wrap);
     }
 
     /**
