@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Now includes Cookie Banner validation
+ * Now includes Cookie Banner and Thanks Section validation
  */
 
 window.ConfigValidator = {
@@ -126,6 +126,87 @@ window.ConfigValidator = {
                     if (config.advanced.reShowAfterDays && config.advanced.reShowAfterDays < 1) {
                         errors.push('advanced.reShowAfterDays must be at least 1 day');
                     }
+                }
+                
+                return errors;
+            }
+        },
+        thanks: {
+            required: ['bannerText', 'confirmationBadgeText', 'mainHeadline', 'mainDescription', 'quickActionButtonText', 'contact', 'socialMedia'],
+            optional: ['onQuickActionClick', 'onSocialClick', 'onContactClick'],
+            types: {
+                bannerText: 'string',
+                confirmationBadgeText: 'string',
+                mainHeadline: 'string',
+                mainDescription: 'string',
+                quickActionButtonText: 'string',
+                contact: 'object',
+                socialMedia: 'object',
+                onQuickActionClick: 'function',
+                onSocialClick: 'function',
+                onContactClick: 'function'
+            },
+            defaults: {
+                bannerText: "STOPP, schließe noch nicht diese Seite 👇",
+                confirmationBadgeText: "Erfolgreich übermittelt",
+                mainHeadline: "Vielen Dank für deine Anfrage!",
+                mainDescription: "Dein Formular wurde erfolgreich übermittelt.",
+                quickActionButtonText: "Schneller vorankommen",
+                contact: {
+                    showPortrait: true,
+                    portraitUrl: "https://via.placeholder.com/80x80/ff6b35/ffffff?text=MN",
+                    name: "[NAME_PLACEHOLDER]",
+                    position: "[POSITION_PLACEHOLDER]",
+                    email: "[EMAIL_PLACEHOLDER]",
+                    phone: "[PHONE_PLACEHOLDER]"
+                },
+                socialMedia: {
+                    channelName: "PLACEHOLDER",
+                    channelUrl: "#PLACEHOLDER"
+                }
+            },
+            subSchemas: {
+                contact: {
+                    required: ['name', 'position', 'email', 'phone'],
+                    optional: ['showPortrait', 'portraitUrl'],
+                    types: {
+                        showPortrait: 'boolean',
+                        portraitUrl: 'string',
+                        name: 'string',
+                        position: 'string',
+                        email: 'string',
+                        phone: 'string'
+                    }
+                },
+                socialMedia: {
+                    required: ['channelName', 'channelUrl'],
+                    types: {
+                        channelName: 'string',
+                        channelUrl: 'string'
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate email format if not a placeholder
+                if (config.contact && config.contact.email && !config.contact.email.includes('PLACEHOLDER')) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(config.contact.email)) {
+                        errors.push('contact.email must be a valid email address');
+                    }
+                }
+                
+                // Validate portrait URL if enabled
+                if (config.contact && config.contact.showPortrait && !config.contact.portraitUrl) {
+                    errors.push('contact.portraitUrl is required when showPortrait is true');
+                }
+                
+                // Validate social media URL
+                if (config.socialMedia && config.socialMedia.channelUrl && 
+                    !config.socialMedia.channelUrl.startsWith('#') && 
+                    !config.socialMedia.channelUrl.startsWith('http')) {
+                    errors.push('socialMedia.channelUrl must be a valid URL or anchor link');
                 }
                 
                 return errors;
@@ -504,6 +585,12 @@ window.ConfigValidator = {
                         for (const subField of (subSchema.required || [])) {
                             if (!value.hasOwnProperty(subField)) {
                                 errors.push(`${field}.${subField} is required`);
+                            } else if (subSchema.types && subSchema.types[subField]) {
+                                const expectedType = subSchema.types[subField];
+                                const actualType = typeof value[subField];
+                                if (actualType !== expectedType) {
+                                    errors.push(`${field}.${subField} should be ${expectedType}, got ${actualType}`);
+                                }
                             }
                         }
                     }
@@ -650,6 +737,25 @@ window.ConfigValidator = {
                     debugMode: false
                 }
             },
+            thanks: {
+                bannerText: "STOPP, schließe noch nicht diese Seite 👇",
+                confirmationBadgeText: "Erfolgreich übermittelt",
+                mainHeadline: "Vielen Dank für deine Anfrage!",
+                mainDescription: "Dein Formular wurde erfolgreich übermittelt.",
+                quickActionButtonText: "Schneller vorankommen",
+                contact: {
+                    showPortrait: true,
+                    portraitUrl: "https://via.placeholder.com/80x80/ff6b35/ffffff?text=MN",
+                    name: "[NAME_PLACEHOLDER]",
+                    position: "[POSITION_PLACEHOLDER]",
+                    email: "[EMAIL_PLACEHOLDER]",
+                    phone: "[PHONE_PLACEHOLDER]"
+                },
+                socialMedia: {
+                    channelName: "PLACEHOLDER",
+                    channelUrl: "#PLACEHOLDER"
+                }
+            },
             welcome: {
                 logoLink: 'https://placehold.co/32x32/cccccc/666666?text=Logo',
                 mainAsset: 'video',
@@ -790,7 +896,7 @@ window.ConfigValidator = {
         // Sanitize URLs
         const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
                           'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl',
-                          'privacyPolicyUrl', 'cookiePolicyUrl'];
+                          'privacyPolicyUrl', 'cookiePolicyUrl', 'portraitUrl', 'channelUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -809,12 +915,38 @@ window.ConfigValidator = {
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
                            'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
                            'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
-                           'subtext', 'position', 'area', 'region', 'description', 'label'];
+                           'subtext', 'position', 'area', 'region', 'description', 'label',
+                           'bannerText', 'confirmationBadgeText', 'mainDescription', 
+                           'quickActionButtonText', 'name', 'channelName'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim();
+            }
+        }
+
+        // Special sanitization for thanks section
+        if (sectionType === 'thanks') {
+            if (sanitized.contact) {
+                ['name', 'position', 'email', 'phone'].forEach(field => {
+                    if (sanitized.contact[field]) {
+                        sanitized.contact[field] = sanitized.contact[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+            }
+            
+            if (sanitized.socialMedia) {
+                if (sanitized.socialMedia.channelName) {
+                    sanitized.socialMedia.channelName = sanitized.socialMedia.channelName
+                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .trim();
+                }
+                if (sanitized.socialMedia.channelUrl) {
+                    sanitized.socialMedia.channelUrl = sanitized.socialMedia.channelUrl.trim();
+                }
             }
         }
 
