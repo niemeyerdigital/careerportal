@@ -515,13 +515,13 @@
         border-radius: 16px;
     }
     
-    /* LARGER headline on mobile - 1.5x */
+    /* LARGER headline on mobile - 1.8x */
     .cookie-banner-headline {
-        font-size: calc(var(--font-xl) * 2.1);
+        font-size: calc(var(--font-xl) * 2.52);
         margin-right: 50px;
     }
     
-    /* LARGER description on mobile - 1.3x more */
+    /* LARGER description on mobile - 1.3x */
     .cookie-banner-description {
         font-size: calc(var(--font-sm) * 1.82);
     }
@@ -539,6 +539,14 @@
     /* LARGER accordion content on mobile - 1.2x */
     .cookie-category-description {
         font-size: calc(var(--font-xs) * 1.56);
+    }
+    
+    /* Cookie position adjustment for mobile */
+    .cookie-banner-icon-wrapper {
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        z-index: 1;
     }
     
     /* BIGGER cookie icon on mobile - 2.5x */
