@@ -644,58 +644,19 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view - completely rebuilt for mobile with contained scrolling
+     * Render table view - simple scrollable table
      */
     renderTable(data, container) {
-        // Create outer container that stays within viewport
+        // Create simple table structure
         const tableOuterWrapper = document.createElement('div');
         tableOuterWrapper.className = 'positions-table-outer';
         
-        // Create inner scrollable container
-        const tableWrapper = document.createElement('div');
-        tableWrapper.className = 'positions-table-container';
-        
-        // Create scroll wrapper
         const scrollWrapper = document.createElement('div');
         scrollWrapper.className = 'positions-table-scroll';
-        
-        // Apply mobile-specific inline styles for contained scrolling
-        if (window.innerWidth <= 640) {
-            // Outer wrapper stays within viewport
-            tableOuterWrapper.style.cssText = `
-                position: relative;
-                width: 100%;
-                max-width: 100%;
-                overflow: hidden;
-                border-radius: 12px;
-                border: 1px solid var(--positions-border);
-                background: var(--positions-table-bg);
-                box-shadow: var(--positions-shadow);
-            `;
-            
-            // Scroll wrapper handles the scrolling
-            scrollWrapper.style.cssText = `
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                -webkit-overflow-scrolling: touch;
-                width: 100%;
-                max-width: 100%;
-                position: relative;
-                display: block;
-            `;
-        }
         
         // Create the table
         const table = document.createElement('table');
         table.className = 'positions-table';
-        if (window.innerWidth <= 640) {
-            table.style.cssText = `
-                min-width: 750px;
-                width: max-content;
-                table-layout: auto;
-                margin: 0;
-            `;
-        }
 
         const thead = document.createElement('thead');
         thead.innerHTML = `
@@ -739,22 +700,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         });
         table.appendChild(tbody);
         
-        // Assemble the structure: outer > scroll > table
+        // Assemble the structure
         scrollWrapper.appendChild(table);
         tableOuterWrapper.appendChild(scrollWrapper);
         container.appendChild(tableOuterWrapper);
-        
-        // Ensure scroll works after render
-        if (window.innerWidth <= 640) {
-            setTimeout(() => {
-                scrollWrapper.scrollLeft = 0;
-                console.log('Table scroll setup:', {
-                    scrollWidth: scrollWrapper.scrollWidth,
-                    clientWidth: scrollWrapper.clientWidth,
-                    canScroll: scrollWrapper.scrollWidth > scrollWrapper.clientWidth
-                });
-            }, 100);
-        }
         
         // Add event delegation for table actions
         tableOuterWrapper.addEventListener('click', (e) => {
