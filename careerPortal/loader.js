@@ -1,6 +1,6 @@
 /**
  * Career Portal Loader - Main Entry Point
- * Dynamically loads required modules and initializes sections
+ * Dynamically loads CSS and JavaScript modules and initializes sections
  */
 
 class CareerPortalLoader {
@@ -8,6 +8,35 @@ class CareerPortalLoader {
         this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
         this.loadedModules = new Map();
         this.initializationQueue = [];
+    }
+
+    /**
+     * Load CSS file
+     */
+    async loadCSS(path) {
+        const url = this.baseURL + path;
+        
+        // Check if already loaded
+        if (document.querySelector(`link[href="${url}"]`)) {
+            console.log(`✅ CSS already loaded: ${path}`);
+            return true;
+        }
+        
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = url;
+        
+        return new Promise((resolve, reject) => {
+            link.onload = () => {
+                console.log(`✅ CSS loaded: ${path}`);
+                resolve(true);
+            };
+            link.onerror = () => {
+                console.error(`❌ Failed to load CSS: ${path}`);
+                reject(new Error(`Failed to load CSS: ${path}`));
+            };
+            document.head.appendChild(link);
+        });
     }
 
     /**
@@ -160,7 +189,14 @@ if (document.readyState === 'loading') {
     // Load modules sequentially via fetch to avoid CSP issues
     async function loadCareerPortal() {
         try {
-            // 1. Load and execute loader.js (already loaded, so skip)
+            // 1. Load CSS first (single request to base.css which imports all other CSS)
+            const cssLink = document.createElement('link');
+            cssLink.rel = 'stylesheet';
+            cssLink.href = BASE_URL + 'styles/base.css';
+            document.head.appendChild(cssLink);
+            console.log('✅ CSS loaded via base.css');
+            
+            // 2. Load and execute loader.js (already loaded, so skip)
             console.log('✅ Loader already loaded');
             
             // Set the base URL
@@ -169,19 +205,19 @@ if (document.readyState === 'loading') {
                 console.log('✅ Base URL set to:', BASE_URL);
             }
             
-            // 2. Load and execute config validator
+            // 3. Load and execute config validator
             const validatorResponse = await fetch(BASE_URL + 'configValidator.js');
             const validatorCode = await validatorResponse.text();
             eval(validatorCode);
             console.log('✅ Config validator loaded');
             
-            // 3. Load base section
+            // 4. Load base section
             const baseSecResponse = await fetch(BASE_URL + 'sections/baseSec.js');
             const baseSecCode = await baseSecResponse.text();
             eval(baseSecCode);
             console.log('✅ Base section loaded');
             
-            // 4. Load UI components
+            // 5. Load UI components
             const components = [
                 'ui/components/videoWistia.js',
                 'ui/components/buttonManager.js',
@@ -197,37 +233,37 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 5. Load welcome section
+            // 6. Load welcome section
             const welcomeResponse = await fetch(BASE_URL + 'sections/welcomeSection.js');
             const welcomeCode = await welcomeResponse.text();
             eval(welcomeCode);
             console.log('✅ Welcome section loaded');
             
-            // 6. Load mehr erfahren section
+            // 7. Load mehr erfahren section
             const mehrErfahrenResponse = await fetch(BASE_URL + 'sections/mehrErfahrenSection.js');
             const mehrErfahrenCode = await mehrErfahrenResponse.text();
             eval(mehrErfahrenCode);
             console.log('✅ Mehr Erfahren section loaded');
             
-            // 7. Load process section
+            // 8. Load process section
             const processResponse = await fetch(BASE_URL + 'sections/processSection.js');
             const processCode = await processResponse.text();
             eval(processCode);
             console.log('✅ Process section loaded');
             
-            // 8. Load footer section
+            // 9. Load footer section
             const footerResponse = await fetch(BASE_URL + 'sections/footerSection.js');
             const footerCode = await footerResponse.text();
             eval(footerCode);
             console.log('✅ Footer section loaded');
             
-            // 9. Load positions section
+            // 10. Load positions section
             const positionsResponse = await fetch(BASE_URL + 'sections/positionsSection.js');
             const positionsCode = await positionsResponse.text();
             eval(positionsCode);
             console.log('✅ Positions section loaded');
             
-            // 10. Initialize sections that exist on the page
+            // 11. Initialize sections that exist on the page
             if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
                 new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
                 console.log('🎉 Welcome section initialized successfully!');
@@ -293,6 +329,10 @@ window.debugCareerPortal = function() {
         const loaded = !!window[component];
         console.log(`${component}: ${loaded ? '✅ Loaded' : '❌ Missing'}`);
     });
+    
+    // Check CSS
+    const cssLoaded = document.querySelector(`link[href*="styles/base.css"]`);
+    console.log(`CSS: ${cssLoaded ? '✅ Loaded' : '❌ Missing'}`);
     
     // Check sections
     const welcomeElement = document.getElementById('welcome-section');
