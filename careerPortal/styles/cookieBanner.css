@@ -517,7 +517,7 @@
     
     /* Use bigger root classes for mobile with !important */
     .cookie-banner-headline {
-        font-size: 30px !important;
+        font-size: 25px !important;
         margin-right: 50px;
     }
     
