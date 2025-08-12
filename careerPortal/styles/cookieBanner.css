@@ -108,16 +108,15 @@
     z-index: 1;
 }
 
-/* Animated cookie icon with accent color */
+/* Animated cookie icon with emoji */
 .cookie-icon-animated {
     position: relative;
     font-size: 80px;
-    color: var(--primary-color);
     animation: cookieFloat 3s ease-in-out infinite;
     opacity: 0.15;
 }
 
-.cookie-icon-animated i {
+.cookie-icon-animated .cookie-emoji {
     display: block;
     transform: rotate(-15deg);
 }
@@ -143,10 +142,9 @@
     80%, 90% { transform: scale(1.1); }
 }
 
-/* Static cookie icon */
+/* Static cookie icon with emoji */
 .cookie-icon-static {
     font-size: 80px;
-    color: var(--primary-color);
     transform: rotate(-15deg);
     opacity: 0.15;
 }
@@ -426,7 +424,7 @@
     background: #fafafa;
 }
 
-/* Collapsed cookie button - Light theme - COOKIE ONLY */
+/* Collapsed cookie button - Light theme - COOKIE EMOJI ONLY */
 .cookie-banner-collapsed {
     position: fixed;
     bottom: 20px;
@@ -480,13 +478,13 @@
     border-color: var(--primary-color);
 }
 
-.cookie-collapsed-icon {
-    color: var(--primary-color);
-    font-size: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.cookie-banner-collapsed:hover .cookie-collapsed-emoji {
     animation: wiggle 2s ease-in-out infinite;
+}
+
+.cookie-collapsed-emoji {
+    font-size: 38px;
+    line-height: 1;
 }
 
 @keyframes wiggle {
@@ -514,9 +512,20 @@
         border-radius: 16px;
     }
     
+    /* LARGER headline on mobile */
     .cookie-banner-headline {
-        font-size: calc(var(--font-lg) * 1.1);
+        font-size: calc(var(--font-xl) * 1.5);
         margin-right: 50px;
+    }
+    
+    /* LARGER description on mobile */
+    .cookie-banner-description {
+        font-size: calc(var(--font-sm) * 1.4);
+    }
+    
+    /* LARGER accordion content on mobile */
+    .cookie-category-description {
+        font-size: calc(var(--font-xs) * 1.4);
     }
     
     .cookie-icon-animated,
@@ -551,6 +560,10 @@
         left: 15px;
         width: 52px;
         height: 52px;
+    }
+    
+    .cookie-collapsed-emoji {
+        font-size: 35px;
     }
 }
 
