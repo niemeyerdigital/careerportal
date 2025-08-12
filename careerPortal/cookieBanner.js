@@ -189,15 +189,14 @@ window.CookieBannerModule = class CookieBannerModule {
             document.body.appendChild(overlay);
         }
 
-        // Add collapsed button
+        // Add collapsed button (no text, just icon)
         const collapsedBtn = document.createElement('div');
         collapsedBtn.id = 'cookie-banner-collapsed';
         collapsedBtn.className = 'cookie-banner-collapsed';
         collapsedBtn.innerHTML = `
             <div class="cookie-collapsed-icon">
-                <i class="fa-solid fa-cookie-bite"></i>
+                <i class="fa-duotone fa-solid fa-cookie"></i>
             </div>
-            <span class="cookie-collapsed-tooltip">Cookie-Einstellungen</span>
         `;
         document.body.appendChild(collapsedBtn);
     }
@@ -243,7 +242,7 @@ window.CookieBannerModule = class CookieBannerModule {
                 <div class="cookie-banner-icon-wrapper">
                     <div class="cookie-icon-animated">
                         <div class="cookie-bite"></div>
-                        <i class="fa-solid fa-cookie-bite"></i>
+                        <i class="fa-duotone fa-solid fa-cookie-bite"></i>
                     </div>
                 </div>
             `;
@@ -251,7 +250,7 @@ window.CookieBannerModule = class CookieBannerModule {
         
         return `
             <div class="cookie-banner-icon-wrapper">
-                <i class="fa-solid fa-cookie-bite cookie-icon-static"></i>
+                <i class="fa-duotone fa-solid fa-cookie-bite cookie-icon-static"></i>
             </div>
         `;
     }
@@ -369,10 +368,15 @@ window.CookieBannerModule = class CookieBannerModule {
             collapsedBtn.addEventListener('click', () => this.showBanner());
         }
 
-        // Overlay click
+        // Overlay click - DO NOT close banner on overlay click
+        // Users must make a choice
         const overlay = document.getElementById('cookie-banner-overlay');
         if (overlay) {
-            overlay.addEventListener('click', () => this.hideBanner(false));
+            overlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Do nothing - force user to make a choice
+            });
         }
     }
 
