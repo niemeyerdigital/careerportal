@@ -1,7 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
- * Updated with improved mobile table scrolling
+ * Fixed: Desktop view switcher scrolling and mobile table view
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -61,31 +61,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Initial render
         this.render();
-        
-        // Fix table scrolling on mobile after render
-        this.fixTableScrolling();
-    }
-
-    /**
-     * Fix table scrolling specifically for mobile - simplified
-     */
-    fixTableScrolling() {
-        // Only apply on mobile
-        if (window.innerWidth > 640) return;
-        
-        // Wait for next frame to ensure DOM is ready
-        requestAnimationFrame(() => {
-            const tableWrap = this.container.querySelector('.positions-table-wrap');
-            if (!tableWrap) return;
-            
-            // Just ensure table can scroll horizontally
-            tableWrap.style.overflowX = 'auto';
-            tableWrap.style.overflowY = 'visible';
-            tableWrap.style.webkitOverflowScrolling = 'touch';
-            
-            // Reset scroll position
-            tableWrap.scrollLeft = 0;
-        });
     }
 
     /**
@@ -359,10 +334,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 btn.addEventListener('click', () => {
                     this.state.view = view;
                     this.render();
-                    // Re-apply table scrolling fix when switching to table view
-                    if (view === 'table') {
-                        setTimeout(() => this.fixTableScrolling(), 100);
-                    }
                 });
             }
         });
@@ -486,8 +457,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
         if (this.state.view === 'table') {
             this.renderTable(data, results);
-            // Fix table scrolling after rendering
-            setTimeout(() => this.fixTableScrolling(), 100);
         } else {
             data.forEach(card => {
                 results.appendChild(this.renderCard(card));
@@ -675,71 +644,76 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view with improved mobile scrolling
+     * Render table view - completely rebuilt for mobile
      */
     renderTable(data, container) {
-        const wrap = document.createElement('div');
-        wrap.className = 'positions-table-wrap';
+        // Create table wrapper
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'positions-table-container';
         
-        const table = document.createElement('table');
-        table.className = 'positions-table';
-
-        const thead = document.createElement('thead');
-        thead.innerHTML = `
-            <tr>
-                <th>Titel</th>
-                <th>Bereich</th>
-                <th>Stadt</th>
-                <th>Datum</th>
-                <th>Art</th>
-                <th>Aktionen</th>
-            </tr>
+        // Create the table structure
+        const tableHTML = `
+            <div class="positions-table-scroll">
+                <table class="positions-table">
+                    <thead>
+                        <tr>
+                            <th>Titel</th>
+                            <th>Bereich</th>
+                            <th>Stadt</th>
+                            <th>Datum</th>
+                            <th>Art</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(card => `
+                            <tr data-position-id="${card.id}">
+                                <td>
+                                    <button class="positions-table-title-btn" data-action="open" data-id="${card.id}">
+                                        ${this.ensureMWD(card.position)}
+                                    </button>
+                                </td>
+                                <td>${card.area}</td>
+                                <td>${card.region}</td>
+                                <td>${card.datum}</td>
+                                <td>${(card.workCapacity || []).join(', ')}</td>
+                                <td>
+                                    <div class="positions-table-actions">
+                                        <button class="positions-btn positions-btn-primary positions-btn-sm" data-action="apply" data-url="${card.applicationUrl}">
+                                            <i class="fa-light fa-paper-plane"></i>
+                                        </button>
+                                        <button class="positions-btn positions-btn-ghost positions-btn-sm" data-action="view" data-id="${card.id}">
+                                            <i class="fa-light fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
         `;
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        data.forEach(card => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <button class="positions-btn positions-btn-ghost" style="padding:6px 8px">
-                        ${this.ensureMWD(card.position)}
-                    </button>
-                </td>
-                <td>${card.area}</td>
-                <td>${card.region}</td>
-                <td>${card.datum}</td>
-                <td>${(card.workCapacity || []).join(', ')}</td>
-                <td>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="positions-btn positions-btn-primary btn-apply">
-                            <i class="fa-light fa-paper-plane"></i>
-                        </button>
-                        <button class="positions-btn positions-btn-ghost btn-open">
-                            <i class="fa-light fa-eye"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            
-            tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
-            tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
-                e.stopPropagation();
-                window.open(card.applicationUrl, '_blank');
-            });
-            tr.querySelector('button.btn-open').addEventListener('click', () => this.openModal(card));
-            
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-
-        wrap.appendChild(table);
-        container.appendChild(wrap);
         
-        // Ensure table can scroll to start on mobile
-        if (window.innerWidth <= 640) {
-            wrap.scrollLeft = 0;
-        }
+        tableWrapper.innerHTML = tableHTML;
+        container.appendChild(tableWrapper);
+        
+        // Add event delegation for table actions
+        tableWrapper.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            
+            const action = target.dataset.action;
+            
+            if (action === 'open' || action === 'view') {
+                const id = target.dataset.id;
+                const card = this.cardsData.find(c => c.id === id);
+                if (card) this.openModal(card);
+            } else if (action === 'apply') {
+                e.stopPropagation();
+                const url = target.dataset.url;
+                if (url) window.open(url, '_blank');
+            }
+        });
     }
 
     /**
@@ -940,8 +914,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Mark as locked
         this.scrollLocked = true;
-        
-        console.log('Modal scroll locked');
     }
 
     /**
@@ -987,8 +959,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         
         // Mark as unlocked
         this.scrollLocked = false;
-        
-        console.log('Modal scroll unlocked');
     }
 
     /**
@@ -1152,11 +1122,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 toggle.innerHTML = '<i class="fa-light fa-chevron-down"></i> Anzeigen';
                 toggle.setAttribute('aria-expanded', 'false');
             }
-        }
-        
-        // Re-apply table fix if in table view
-        if (this.state.view === 'table') {
-            this.fixTableScrolling();
         }
     }
 
