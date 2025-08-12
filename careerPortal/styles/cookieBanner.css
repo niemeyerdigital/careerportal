@@ -515,29 +515,29 @@
         border-radius: 16px;
     }
     
-    /* Use bigger root classes for mobile */
+    /* Use bigger root classes for mobile with !important */
     .cookie-banner-headline {
-        font-size: var(--font-3xl);
+        font-size: var(--font-3xl) !important;
         margin-right: 50px;
     }
     
     .cookie-banner-description {
-        font-size: var(--font-lg);
+        font-size: var(--font-lg) !important;
     }
     
     /* SMALLER privacy link on mobile */
     .cookie-banner-links {
-        font-size: var(--font-xs);
+        font-size: var(--font-xs) !important;
     }
     
     /* Bigger accordion headline on mobile */
     .cookie-category-label {
-        font-size: var(--font-lg);
+        font-size: var(--font-lg) !important;
     }
     
     /* Bigger accordion content on mobile */
     .cookie-category-description {
-        font-size: var(--font-md);
+        font-size: var(--font-md) !important;
     }
     
     /* Cookie position adjustment for mobile - MUCH HIGHER AND FURTHER RIGHT */
@@ -548,10 +548,10 @@
         z-index: 1;
     }
     
-    /* BIGGER cookie icon on mobile - 2.5x */
+    /* SMALLER cookie icon on mobile - 20% smaller (160px instead of 200px) */
     .cookie-icon-animated,
     .cookie-icon-static {
-        font-size: 200px;
+        font-size: 160px !important;
     }
     
     .cookie-banner-actions {
