@@ -220,12 +220,6 @@ window.CookieBannerModule = class CookieBannerModule {
                         <a href="${this.config.banner.privacyPolicyUrl}" target="_blank" class="cookie-banner-link">
                             Datenschutzerklärung
                         </a>
-                        ${this.config.banner.cookiePolicyUrl ? `
-                            <span class="cookie-link-separator">•</span>
-                            <a href="${this.config.banner.cookiePolicyUrl}" target="_blank" class="cookie-banner-link">
-                                Cookie-Richtlinien
-                            </a>
-                        ` : ''}
                     </div>
                     <div class="cookie-categories-section">
                         ${categories}
