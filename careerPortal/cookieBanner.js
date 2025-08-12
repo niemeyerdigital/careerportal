@@ -189,14 +189,12 @@ window.CookieBannerModule = class CookieBannerModule {
             document.body.appendChild(overlay);
         }
 
-        // Add collapsed button (no text, just icon)
+        // Add collapsed button (cookie icon only, no orange container)
         const collapsedBtn = document.createElement('div');
         collapsedBtn.id = 'cookie-banner-collapsed';
         collapsedBtn.className = 'cookie-banner-collapsed';
         collapsedBtn.innerHTML = `
-            <div class="cookie-collapsed-icon">
-                <i class="fa-duotone fa-solid fa-cookie"></i>
-            </div>
+            <i class="fa-duotone fa-solid fa-cookie cookie-collapsed-icon"></i>
         `;
         document.body.appendChild(collapsedBtn);
     }
@@ -381,7 +379,7 @@ window.CookieBannerModule = class CookieBannerModule {
     }
 
     /**
-     * Toggle accordion - only one open at a time
+     * Toggle accordion - Only one open at a time
      */
     toggleAccordion(header) {
         const row = header.parentElement;
@@ -401,7 +399,7 @@ window.CookieBannerModule = class CookieBannerModule {
             }
         });
         
-        // Now toggle the clicked one (only if it wasn't already expanded)
+        // If this one wasn't expanded, expand it
         if (!isCurrentlyExpanded) {
             row.classList.add('expanded');
             if (description) description.style.display = 'block';
