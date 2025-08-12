@@ -125,13 +125,16 @@ window.CookieBannerModule = class CookieBannerModule {
     init() {
         if (this.initialized) return;
         
-        // Check if we should show the banner
+        // Always create the banner elements (including collapsed button)
+        this.createBanner();
+        this.setupEventListeners();
+        
+        // Check if we should show the full banner or just the collapsed button
         if (this.shouldShowBanner()) {
-            this.createBanner();
-            this.setupEventListeners();
             this.showBanner();
         } else {
-            // Initialize tracking if consent was already given
+            // Show collapsed button and initialize tracking
+            this.showCollapsedOnly();
             this.initializeTracking();
         }
         
@@ -471,6 +474,34 @@ window.CookieBannerModule = class CookieBannerModule {
     }
 
     /**
+     * Show collapsed button only (when preferences already set)
+     */
+    showCollapsedOnly() {
+        const banner = document.getElementById(this.bannerId);
+        const overlay = document.getElementById('cookie-banner-overlay');
+        const collapsed = document.getElementById('cookie-banner-collapsed');
+        
+        // Hide main banner and overlay
+        if (banner) {
+            banner.classList.remove('show');
+            banner.style.display = 'none';
+        }
+        if (overlay) {
+            overlay.classList.remove('show');
+            overlay.style.display = 'none';
+        }
+        
+        // Show collapsed button
+        if (collapsed) {
+            setTimeout(() => {
+                collapsed.classList.add('show');
+            }, 500);
+        }
+        
+        this.log('Showing collapsed button only (preferences already set)');
+    }
+
+    /**
      * Show banner
      */
     showBanner() {
@@ -479,6 +510,9 @@ window.CookieBannerModule = class CookieBannerModule {
         const collapsed = document.getElementById('cookie-banner-collapsed');
         
         if (banner) {
+            // Make sure banner is visible
+            banner.style.display = 'block';
+            
             // Reset toggle states
             for (const [key, state] of Object.entries(this.consentState)) {
                 const toggle = document.getElementById(`cookie-${key}-toggle`);
@@ -488,10 +522,15 @@ window.CookieBannerModule = class CookieBannerModule {
                 }
             }
             
+            // Hide collapsed button first
+            if (collapsed) collapsed.classList.remove('show');
+            
             setTimeout(() => {
                 banner.classList.add('show');
-                if (overlay) overlay.classList.add('show');
-                if (collapsed) collapsed.classList.remove('show');
+                if (overlay) {
+                    overlay.style.display = 'block';
+                    setTimeout(() => overlay.classList.add('show'), 10);
+                }
             }, this.config.banner.autoShowDelay || 100);
         }
     }
@@ -506,13 +545,22 @@ window.CookieBannerModule = class CookieBannerModule {
         
         if (banner) {
             banner.classList.remove('show');
-            if (overlay) overlay.classList.remove('show');
-            
-            if (showCollapsed && collapsed) {
-                setTimeout(() => {
-                    collapsed.classList.add('show');
-                }, 500);
-            }
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 500);
+        }
+        
+        if (overlay) {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+        
+        if (showCollapsed && collapsed) {
+            setTimeout(() => {
+                collapsed.classList.add('show');
+            }, 600);
         }
         
         if (this.config.tracking.onBannerDismissed) {
