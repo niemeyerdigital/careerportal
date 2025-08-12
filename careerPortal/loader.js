@@ -189,12 +189,24 @@ if (document.readyState === 'loading') {
     // Load modules sequentially via fetch to avoid CSP issues
     async function loadCareerPortal() {
         try {
-            // 1. Load CSS first (single request to base.css which imports all other CSS)
-            const cssLink = document.createElement('link');
-            cssLink.rel = 'stylesheet';
-            cssLink.href = BASE_URL + 'styles/base.css';
-            document.head.appendChild(cssLink);
-            console.log('✅ CSS loaded via base.css');
+            // 1. Load CSS files dynamically (more reliable than @import)
+            const cssFiles = [
+                'styles/components/buttons.css',
+                'styles/sections/welcome.css',
+                'styles/sections/mehrErfahren.css',
+                'styles/sections/process.css',
+                'styles/sections/positions.css',
+                'styles/sections/footer.css'
+            ];
+            
+            for (const cssFile of cssFiles) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = BASE_URL + cssFile;
+                document.head.appendChild(cssLink);
+                console.log(`✅ CSS loaded: ${cssFile}`);
+            }
+            console.log('✅ All CSS files loaded');
             
             // 2. Load and execute loader.js (already loaded, so skip)
             console.log('✅ Loader already loaded');
