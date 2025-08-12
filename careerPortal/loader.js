@@ -1,6 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
+ * Now includes Cookie Banner support
  */
 
 class CareerPortalLoader {
@@ -9,6 +10,7 @@ class CareerPortalLoader {
         this.loadedModules = new Map();
         this.loadedStyles = new Map();
         this.initializationQueue = [];
+        this.cookieBannerLoaded = false;
     }
 
     /**
@@ -72,6 +74,40 @@ class CareerPortalLoader {
             return true;
         } catch (error) {
             console.error(`❌ Failed to load module: ${path}`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Load cookie banner module
+     */
+    async loadCookieBanner() {
+        if (this.cookieBannerLoaded) {
+            console.log('✅ Cookie banner already loaded');
+            return true;
+        }
+
+        try {
+            console.log('🍪 Loading cookie banner module...');
+            
+            // Load cookie banner CSS
+            await this.loadCSS('styles/cookieBanner.css');
+            
+            // Load cookie banner JS
+            await this.loadModule('cookieBanner.js');
+            
+            // Initialize if config exists
+            if (window.COOKIE_BANNER_CONFIG && window.CookieBannerModule) {
+                window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                console.log('🎉 Cookie banner initialized successfully!');
+            } else {
+                console.log('ℹ️ Cookie banner module loaded, waiting for config');
+            }
+            
+            this.cookieBannerLoaded = true;
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to load cookie banner:', error);
             return false;
         }
     }
@@ -166,7 +202,12 @@ class CareerPortalLoader {
      * Auto-initialize sections based on data attributes
      */
     async autoInitialize() {
-        // First load all CSS
+        // First check and load cookie banner if config exists
+        if (window.COOKIE_BANNER_CONFIG) {
+            await this.loadCookieBanner();
+        }
+        
+        // Then load all CSS
         await this.loadAllCSS();
         
         // Then find and initialize sections
@@ -227,6 +268,63 @@ if (document.readyState === 'loading') {
 }
 
 // ====================================================================
+// COOKIE BANNER STANDALONE LOADER (FOR FUNNEL HEADER)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    // Only load cookie banner if config exists and loader hasn't already handled it
+    if (window.COOKIE_BANNER_CONFIG && !window.CareerPortalLoader?.cookieBannerLoaded) {
+        console.log('🍪 Loading Cookie Banner (standalone)...');
+        
+        async function loadCookieBanner() {
+            try {
+                // Fetch and inject CSS
+                const cssResponse = await fetch(BASE_URL + 'styles/cookieBanner.css');
+                if (!cssResponse.ok) throw new Error('Failed to load cookie banner CSS');
+                const cssText = await cssResponse.text();
+                
+                // Check if already loaded
+                if (!document.querySelector('style[data-source="cookieBanner.css"]')) {
+                    const style = document.createElement('style');
+                    style.textContent = cssText;
+                    style.setAttribute('data-source', 'cookieBanner.css');
+                    document.head.appendChild(style);
+                    console.log('✅ Cookie banner CSS loaded');
+                }
+                
+                // Fetch and execute JS
+                const jsResponse = await fetch(BASE_URL + 'cookieBanner.js');
+                if (!jsResponse.ok) throw new Error('Failed to load cookie banner JS');
+                const jsCode = await jsResponse.text();
+                
+                // Execute the code
+                eval(jsCode);
+                console.log('✅ Cookie banner JS loaded');
+                
+                // Initialize with config
+                if (window.CookieBannerModule && !window.CookieBanner) {
+                    window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                    console.log('🎉 Cookie banner initialized successfully!');
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load cookie banner:', error);
+            }
+        }
+        
+        // Load immediately for GDPR compliance
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadCookieBanner);
+        } else {
+            loadCookieBanner();
+        }
+    }
+})();
+
+// ====================================================================
 // MANUAL INITIALIZATION FOR CLICKFUNNELS (CSP WORKAROUND)
 // ====================================================================
 
@@ -271,6 +369,21 @@ if (document.readyState === 'loading') {
             if (!rootVarsExist) {
                 console.warn('⚠️ Root variables not detected. Waiting 100ms and retrying...');
                 await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // 0. Load Cookie Banner first if config exists
+            if (window.COOKIE_BANNER_CONFIG && !window.CookieBanner) {
+                console.log('🍪 Loading cookie banner...');
+                await loadCSSAsStyle(BASE_URL + 'styles/cookieBanner.css', 'cookieBanner.css');
+                
+                const cookieBannerResponse = await fetch(BASE_URL + 'cookieBanner.js');
+                const cookieBannerCode = await cookieBannerResponse.text();
+                eval(cookieBannerCode);
+                
+                if (window.CookieBannerModule) {
+                    window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                    console.log('🎉 Cookie banner initialized!');
+                }
             }
             
             // 1. Load CSS files by fetching as text and injecting as style elements
@@ -394,7 +507,8 @@ window.debugCareerPortal = function() {
         'ButtonManager',
         'BadgeComponent',
         'SlideUpAnimation',
-        'AnimationController'
+        'AnimationController',
+        'CookieBannerModule'
     ];
     
     console.log('=== Career Portal Debug Info ===');
@@ -414,6 +528,12 @@ window.debugCareerPortal = function() {
     const rootVars = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
     console.log(`Root Variables: ${rootVars ? '✅ Available' : '❌ Missing'}`);
     
+    // Check cookie banner
+    console.log(`Cookie Banner Instance: ${window.CookieBanner ? '✅ Initialized' : '❌ Not initialized'}`);
+    if (window.CookieBanner) {
+        console.log('Cookie Banner Status:', window.CookieBanner.getStatus());
+    }
+    
     // Check sections
     const welcomeElement = document.getElementById('welcome-section');
     const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
@@ -428,11 +548,55 @@ window.debugCareerPortal = function() {
     console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
+    console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
     console.log('Welcome Config:', window.WELCOME_CONFIG);
     console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
     console.log('Process Config:', window.PROCESS_CONFIG);
     console.log('Footer Config:', window.FOOTER_CONFIG);
     console.log('Positions Config:', window.POSITIONS_CONFIG);
+};
+
+// Debug helper for Cookie Banner
+window.debugCookieBanner = function() {
+    console.log('=== Cookie Banner Debug Info ===');
+    console.log('CookieBannerModule loaded:', !!window.CookieBannerModule);
+    console.log('CookieBanner instance:', !!window.CookieBanner);
+    
+    if (window.CookieBanner) {
+        const status = window.CookieBanner.getStatus();
+        console.log('Initialized:', status.initialized);
+        console.log('Consent State:', status.consentState);
+        console.log('FB Pixel Ready:', status.fbPixelReady);
+        console.log('Config:', status.config);
+        
+        // Check localStorage
+        console.log('Preferences Set:', localStorage.getItem('cookiePreferencesSet'));
+        console.log('Essential Consent:', localStorage.getItem('cookie_consent_essential'));
+        console.log('Analytics Consent:', localStorage.getItem('cookie_consent_analytics'));
+        console.log('Marketing Consent:', localStorage.getItem('cookie_consent_marketing'));
+    } else {
+        console.log('Cookie Banner not initialized');
+    }
+};
+
+// Reset cookie preferences
+window.resetCookiePreferences = function() {
+    if (window.CookieBanner) {
+        window.CookieBanner.resetPreferences();
+        console.log('✅ Cookie preferences reset');
+    } else {
+        console.error('❌ Cookie banner not initialized');
+    }
+};
+
+// Manually trigger cookie banner
+window.showCookieBanner = function() {
+    if (window.CookieBanner) {
+        window.CookieBanner.showBanner();
+        console.log('✅ Cookie banner shown');
+    } else {
+        console.error('❌ Cookie banner not initialized');
+    }
 };
 
 // Function to manually reinitialize sections
