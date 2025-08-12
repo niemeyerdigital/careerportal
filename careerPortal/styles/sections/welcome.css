@@ -1,0 +1,408 @@
+/* ====================================================================
+   3. WELCOME SECTION (SectionWelcome)
+   ==================================================================== */
+
+/* ClickFunnels overrides */
+div[data-title='SectionWelcome'] {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    position: relative !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    min-height: 80vh !important;
+}
+
+div[data-title='RowWelcome'] {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+div[data-title='RowWelcome'] .container {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+div[data-title='RowWelcome'] .row {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+div[data-title='RowWelcome'] [class*='col-'] {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+.welcome-wrapper {
+    background: linear-gradient(180deg, var(--primary-bg) 0%, var(--primary-bg) 55%, #ffffff 55%, #ffffff 100%);
+    min-height: 80vh;
+    width: 100vw;
+    margin-top: -80px !important;
+    margin-left: calc(-50vw + 50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px 80px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    height: 80vh;
+    background: radial-gradient(ellipse 60% 100% at center top, 
+        rgba(255, 107, 53, 0.4) 0%, 
+        rgba(255, 107, 53, 0.25) 20%, 
+        rgba(255, 107, 53, 0.15) 40%, 
+        rgba(255, 107, 53, 0.08) 60%,
+        rgba(255, 107, 53, 0.03) 80%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.welcome-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+/* Tick Tac Badge */
+.welcome-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 12px 20px;
+    margin-bottom: 32px;
+    transition: all 0.3s ease;
+}
+
+.welcome-badge:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px var(--shadow-medium);
+}
+
+.welcome-badge-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.welcome-badge-text {
+    font-family: var(--font-family);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--primary-text);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Main Headline */
+.welcome-headline {
+    font-family: var(--font-family);
+    font-size: clamp(var(--font-3xl), 8vw, var(--font-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--heading-text);
+    margin: 0 0 24px 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--primary-text) 0%, var(--secondary-text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Subtext */
+.welcome-subtext {
+    font-family: var(--font-family);
+    font-size: clamp(var(--font-lg), 3vw, var(--font-xl));
+    font-weight: 400;
+    color: var(--secondary-text);
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+}
+
+/* CTA Button Container */
+.welcome-cta {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Secondary Link Button */
+.welcome-secondary-link {
+    font-family: var(--font-family);
+    font-size: var(--font-md);
+    font-weight: 500;
+    color: var(--primary-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+    padding: 8px 0;
+}
+
+.welcome-secondary-link:hover {
+    color: var(--primary-color);
+    text-decoration-color: var(--primary-color);
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.welcome-secondary-link:active {
+    transform: translateY(0);
+}
+
+/* Media Container */
+.welcome-media {
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    position: relative;
+    z-index: 3;
+    transform: translateY(20px); /* Slight overlap effect */
+}
+
+.welcome-video-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 10px 40px rgba(255, 107, 53, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--primary-color);
+}
+
+
+
+.welcome-video-responsive {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    overflow: hidden;
+}
+
+.welcome-image-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 10px 40px rgba(255, 107, 53, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--primary-color);
+}
+
+.welcome-video-wrapper:hover,
+.welcome-image-wrapper:hover {
+    border-color: var(--primary-color);
+}
+
+.welcome-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* Wistia Player Styling */
+.wistia_responsive_padding {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.wistia_responsive_wrapper {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.wistia_embed {
+    border-radius: 20px !important;
+}
+
+/* Welcome Section Mobile Optimizations */
+@media (max-width: 768px) {
+    .welcome-wrapper {
+        padding: 15px 15px 60px 15px;
+        min-height: 70vh;
+        margin-top: -30px !important;
+        background: linear-gradient(180deg, var(--primary-bg) 0%, var(--primary-bg) 60%, #ffffff 60%, #ffffff 100%);
+    }
+    
+    .welcome-wrapper::before {
+        height: 70vh;
+        width: 140%;
+    }
+    
+    .welcome-badge {
+        gap: 8px;
+        padding: 10px 16px;
+        margin-bottom: 24px;
+    }
+    
+    .welcome-badge-logo {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .welcome-badge-text {
+        font-size: var(--font-xs);
+    }
+    
+    .welcome-headline {
+        margin-bottom: 20px;
+    }
+    
+    .welcome-subtext {
+        margin-bottom: 32px;
+    }
+    
+    .welcome-cta {
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+    
+    .welcome-secondary-link {
+        font-size: var(--font-sm);
+    }
+    
+    .welcome-media {
+        margin-top: 30px;
+        transform: translateY(10px);
+    }
+    
+    .welcome-video-wrapper,
+    .welcome-image-wrapper {
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 8px 30px rgba(255, 107, 53, 0.1);
+        border: 1px solid var(--primary-color);
+    }
+    
+    .welcome-video-wrapper:hover,
+    .welcome-image-wrapper:hover {
+        transform: none;
+    }
+    
+    .wistia_responsive_padding,
+    .wistia_responsive_wrapper,
+    .wistia_embed {
+        border-radius: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-wrapper {
+        padding: 10px 10px 40px 10px;
+        min-height: 60vh;
+        background: linear-gradient(180deg, var(--primary-bg) 0%, var(--primary-bg) 65%, #ffffff 65%, #ffffff 100%);
+    }
+    
+    .welcome-wrapper::before {
+        height: 60vh;
+        width: 150%;
+    }
+    
+    .welcome-cta {
+        gap: 10px;
+    }
+    
+    .welcome-secondary-link {
+        font-size: var(--font-xs);
+    }
+    
+    .welcome-media {
+        margin-top: 20px;
+    }
+    
+    .welcome-video-wrapper,
+    .welcome-image-wrapper {
+        border-radius: 12px;
+        border: 1px solid var(--primary-color);
+    }
+    
+    .wistia_responsive_padding,
+    .wistia_responsive_wrapper,
+    .wistia_embed {
+        border-radius: 12px !important;
+    }
+}
+
+/* Animation for welcome elements */
+.welcome-badge {
+    animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+.welcome-headline {
+    animation: slideUp 0.6s ease-out 0.4s both;
+}
+
+.welcome-subtext {
+    animation: slideUp 0.6s ease-out 0.6s both;
+}
+
+.welcome-cta {
+    animation: slideUp 0.6s ease-out 0.8s both;
+}
+
+.welcome-media {
+    animation: slideUp 0.8s ease-out 1s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

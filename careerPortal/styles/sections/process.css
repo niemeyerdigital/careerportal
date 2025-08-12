@@ -1,0 +1,520 @@
+/* ====================================================================
+   PROCESS SECTION (SectionProzess)
+   Application process steps with mobile carousel
+   ==================================================================== */
+
+/* ClickFunnels container overrides */
+div[data-title='SectionProzess'] {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    position: relative !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    min-height: 100vh !important;
+}
+
+div[data-title='RowProzess'] {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+div[data-title='RowProzess'] .container {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Main wrapper */
+.process-wrapper {
+    background: var(--primary-bg);
+    min-height: 100vh;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    padding: 90px 20px 100px 20px;
+    position: relative;
+}
+
+.process-container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Section header */
+.process-section-header {
+    text-align: center;
+    margin-bottom: 100px;
+}
+
+.process-section-header h2 {
+    font-size: var(--font-5xl);
+    font-weight: 700;
+    color: var(--heading-text);
+    text-shadow: 0 2px 20px var(--shadow-light);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 25px;
+    font-family: var(--font-family);
+}
+
+.process-section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Desktop cards wrapper */
+.process-cards-wrapper {
+    display: flex;
+    gap: 30px;
+    transition: all 0.3s ease;
+    margin-top: 50px;
+}
+
+/* Card styles */
+.process-card {
+    flex: 1;
+    background: white;
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 45px;
+    box-shadow: 0 10px 40px var(--shadow-light);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid transparent;
+    opacity: 0;
+    transform: translateY(20px);
+    min-height: 420px;
+}
+
+.process-card.has-emoji-container {
+    padding-top: 90px;
+}
+
+.process-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.process-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px var(--shadow-medium);
+    border-color: var(--primary-color);
+}
+
+.process-card h3 {
+    font-size: calc(var(--font-xl) * 1.2);
+    font-weight: 700;
+    color: var(--primary-bg);
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+    font-family: var(--font-family);
+    line-height: 1.2;
+}
+
+.process-card:hover h3 {
+    color: var(--primary-color);
+}
+
+.process-card p {
+    font-size: calc(var(--font-sm) * 1.5);
+    line-height: 1.5;
+    color: var(--accent-bg);
+    font-family: var(--font-family);
+}
+
+/* Emoji container styles */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+.process-emoji-container {
+    position: absolute;
+    top: -37px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--font-xl) * 1.5);
+    box-shadow: 0 4px 15px var(--glow-color-light);
+    background: white;
+    overflow: hidden;
+}
+
+.process-emoji-container.no-background {
+    background: transparent;
+    box-shadow: none;
+}
+
+.process-emoji-container.no-background span {
+    font-size: calc(var(--font-xl) * 2.5);
+}
+
+.process-card:hover .process-emoji-container {
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.process-emoji-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.process-emoji-container.no-background::before {
+    display: none;
+}
+
+.process-emoji-container span {
+    position: relative;
+    z-index: 2;
+}
+
+/* Mobile carousel container */
+.process-carousel-container {
+    display: none;
+    position: relative;
+}
+
+/* Carousel controls */
+.process-carousel-controls-top {
+    display: flex;
+    gap: 8px;
+    position: absolute;
+    right: 0;
+    top: -25px;
+}
+
+.process-carousel-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--glow-color-light);
+}
+
+.process-carousel-btn:hover {
+    background: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.process-carousel-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--primary-color);
+    stroke-width: 3;
+    transition: stroke 0.3s ease;
+    fill: none;
+}
+
+.process-carousel-btn svg path {
+    stroke: var(--primary-color);
+    fill: none;
+}
+
+.process-carousel-btn:hover svg {
+    stroke: white;
+}
+
+.process-carousel-btn:hover svg path {
+    stroke: white;
+}
+
+/* Carousel wrapper */
+.process-carousel-wrapper {
+    overflow: visible;
+    border-radius: 16px;
+    margin-top: 35px;
+    padding-top: 30px;
+    position: relative;
+    touch-action: pan-y pinch-zoom;
+}
+
+.process-carousel-track {
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 20px;
+    will-change: transform;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Carousel slides */
+.process-carousel-slide {
+    min-width: 100%;
+    background: white;
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px var(--shadow-light);
+    position: relative;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: auto;
+}
+
+.process-carousel-slide.has-emoji-container {
+    padding-top: 60px;
+}
+
+.process-carousel-slide .process-emoji-container {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xl);
+    box-shadow: 0 4px 15px var(--glow-color-light);
+    background: white;
+    overflow: hidden;
+}
+
+.process-carousel-slide.active .process-emoji-container {
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.process-carousel-slide .process-emoji-container.no-background {
+    background: transparent;
+    box-shadow: none;
+}
+
+.process-carousel-slide .process-emoji-container.no-background span {
+    font-size: calc(var(--font-xl) * 1.75);
+}
+
+.process-carousel-slide .process-emoji-container.no-background::before {
+    display: none;
+}
+
+.process-carousel-slide .process-emoji-container span {
+    position: relative;
+    z-index: 2;
+}
+
+.process-carousel-slide h3 {
+    font-size: calc(var(--font-xl) * 1.2);
+    font-weight: 700;
+    color: var(--primary-bg);
+    margin-bottom: 20px;
+    font-family: var(--font-family);
+    line-height: 1.2;
+}
+
+.process-carousel-slide p {
+    font-size: calc(var(--font-sm) * 1.5);
+    line-height: 1.5;
+    color: var(--accent-bg);
+    font-family: var(--font-family);
+}
+
+/* Indicators */
+.process-carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.process-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.process-indicator.active {
+    width: 24px;
+    border-radius: 4px;
+    background: var(--primary-color);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .process-wrapper {
+        padding: 80px 15px 100px 15px;
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .process-container {
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    .process-section-header {
+        display: block;
+        margin-bottom: 60px;
+        margin-top: 0;
+    }
+
+    .process-section-header h2 {
+        font-size: calc(var(--font-3xl) * 1.69);
+    }
+
+    .process-cards-wrapper {
+        display: none;
+    }
+
+    .process-carousel-container {
+        display: block;
+    }
+
+    .process-carousel-wrapper {
+        margin-top: 70px;
+        padding-top: 40px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        position: relative;
+        touch-action: none;
+    }
+
+    .process-carousel-track {
+        touch-action: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .process-carousel-slide {
+        padding: 40px 35px;
+        min-height: 250px;
+    }
+
+    .process-carousel-slide.has-emoji-container {
+        padding-top: 80px;
+    }
+
+    /* Mobile emoji container adjustments */
+    .process-carousel-slide .process-emoji-container {
+        width: 70px;
+        height: 70px;
+        top: -35px;
+        font-size: calc(var(--font-xl) * 2);
+        padding: 8px;
+    }
+
+    .process-carousel-slide .process-emoji-container.no-background span {
+        font-size: calc(var(--font-xl) * 3.4);
+    }
+
+    .process-carousel-slide h3,
+    .process-card h3 {
+        font-size: calc(var(--font-lg) * 1.95);
+    }
+
+    .process-carousel-slide p,
+    .process-card p {
+        font-size: calc(var(--font-xs) * 2.16);
+    }
+}
+}
+
+@media (max-width: 480px) {
+    .process-wrapper {
+        padding: 70px 10px 80px 10px;
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .process-container {
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    .process-section-header {
+        margin-bottom: 55px;
+    }
+
+    .process-section-header h2 {
+        font-size: calc(var(--font-2xl) * 1.56);
+    }
+
+    .process-carousel-wrapper {
+        margin-bottom: 25px;
+        overflow: hidden;
+        position: relative;
+        touch-action: none;
+    }
+
+    .process-carousel-track {
+        touch-action: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .process-carousel-slide {
+        padding: 30px 25px;
+        min-height: 220px;
+    }
+
+    /* Small mobile emoji container adjustments */
+    .process-carousel-slide .process-emoji-container {
+        width: 66px;
+        height: 66px;
+        top: -33px;
+        font-size: calc(var(--font-xl) * 1.85);
+        padding: 6px;
+    }
+
+    .process-carousel-slide .process-emoji-container.no-background span {
+        font-size: calc(var(--font-xl) * 3.1);
+    }
+    
+    .process-carousel-slide h3,
+    .process-card h3 {
+        font-size: calc(var(--font-md) * 2.1);
+    }
+
+    .process-carousel-slide p,
+    .process-card p {
+        font-size: calc(var(--font-xs) * 1.92);
+    }
+}

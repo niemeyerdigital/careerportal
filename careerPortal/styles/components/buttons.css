@@ -1,0 +1,126 @@
+/* ====================================================================
+   1. BUTTON COMPONENTS
+   ==================================================================== */
+
+/* MainButton1 - Primary Orange Button */
+div[data-title='MainButton1'] button, 
+div[data-title='MainButton1'] a {
+    padding: 20px 42px !important;
+    font-size: var(--font-lg) !important;
+    font-weight: 600 !important;
+    background: var(--button-primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3) !important;
+    font-family: var(--font-family) !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+div[data-title='MainButton1'] button:hover, 
+div[data-title='MainButton1'] a:hover {
+    background: var(--button-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4) !important;
+}
+
+div[data-title='MainButton1'] button:active, 
+div[data-title='MainButton1'] a:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3) !important;
+}
+
+/* MainButton2 - Light Button */
+div[data-title='MainButton2'] button, 
+div[data-title='MainButton2'] a {
+    padding: 20px 42px !important;
+    font-size: var(--font-lg) !important;
+    font-weight: 600 !important;
+    background: var(--button-light) !important;
+    color: var(--primary-bg) !important;
+    border: 2px solid var(--primary-color) !important;
+    border-radius: 50px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    font-family: var(--font-family) !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+div[data-title='MainButton2'] button:hover, 
+div[data-title='MainButton2'] a:hover {
+    background: var(--button-light-hover) !important;
+    border-color: var(--hover-color) !important;
+    color: var(--hover-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+div[data-title='MainButton2'] button:active, 
+div[data-title='MainButton2'] a:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* MainButton3 - Dark Button */
+div[data-title='MainButton3'] button, 
+div[data-title='MainButton3'] a {
+    padding: 20px 42px !important;
+    font-size: var(--font-lg) !important;
+    font-weight: 600 !important;
+    background: var(--button-dark) !important;
+    color: var(--primary-text) !important;
+    border: 2px solid var(--border-medium) !important;
+    border-radius: 50px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 20px var(--shadow-light) !important;
+    font-family: var(--font-family) !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+div[data-title='MainButton3'] button:hover, 
+div[data-title='MainButton3'] a:hover {
+    background: var(--button-dark-hover) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px var(--shadow-medium) !important;
+}
+
+div[data-title='MainButton3'] button:active, 
+div[data-title='MainButton3'] a:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 10px var(--shadow-light) !important;
+}
+
+/* Mobile Responsive for Buttons */
+@media (max-width: 768px) {
+    div[data-title='MainButton1'] button, div[data-title='MainButton1'] a,
+    div[data-title='MainButton2'] button, div[data-title='MainButton2'] a,
+    div[data-title='MainButton3'] button, div[data-title='MainButton3'] a {
+        padding: 18px 36px !important;
+        font-size: var(--font-md) !important;
+        border-radius: 40px !important;
+    }
+}
