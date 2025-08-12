@@ -188,11 +188,11 @@ window.CookieBannerModule = class CookieBannerModule {
             document.body.appendChild(overlay);
         }
 
-        // Add collapsed button (cookie icon only, no orange container)
+        // Add collapsed button (cookie emoji only)
         const collapsedBtn = document.createElement('div');
         collapsedBtn.id = 'cookie-banner-collapsed';
         collapsedBtn.className = 'cookie-banner-collapsed';
-        collapsedBtn.innerHTML = '<i class="fa-duotone fa-solid fa-cookie cookie-collapsed-icon"></i>';
+        collapsedBtn.innerHTML = '<span class="cookie-collapsed-emoji">🍪</span>';
         document.body.appendChild(collapsedBtn);
     }
 
@@ -237,7 +237,7 @@ window.CookieBannerModule = class CookieBannerModule {
                 <div class="cookie-banner-icon-wrapper">
                     <div class="cookie-icon-animated">
                         <div class="cookie-bite"></div>
-                        <i class="fa-duotone fa-solid fa-cookie-bite"></i>
+                        <span class="cookie-emoji">🍪</span>
                     </div>
                 </div>
             `;
@@ -245,7 +245,7 @@ window.CookieBannerModule = class CookieBannerModule {
         
         return `
             <div class="cookie-banner-icon-wrapper">
-                <i class="fa-duotone fa-solid fa-cookie-bite cookie-icon-static"></i>
+                <span class="cookie-icon-static">🍪</span>
             </div>
         `;
     }
