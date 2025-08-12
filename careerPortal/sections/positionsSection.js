@@ -644,33 +644,42 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view - completely rebuilt for mobile
+     * Render table view - completely rebuilt for mobile with contained scrolling
      */
     renderTable(data, container) {
-        // Create table wrapper with explicit scroll container
+        // Create outer container that stays within viewport
+        const tableOuterWrapper = document.createElement('div');
+        tableOuterWrapper.className = 'positions-table-outer';
+        
+        // Create inner scrollable container
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'positions-table-container';
         
-        // Add inline styles to force scrolling on mobile
-        if (window.innerWidth <= 640) {
-            tableWrapper.style.cssText = `
-                position: relative;
-                width: 100%;
-                margin: 0 -20px;
-                padding: 0;
-                overflow: visible;
-            `;
-        }
-        
-        // Create scroll wrapper with forced styles
+        // Create scroll wrapper
         const scrollWrapper = document.createElement('div');
         scrollWrapper.className = 'positions-table-scroll';
+        
+        // Apply mobile-specific inline styles for contained scrolling
         if (window.innerWidth <= 640) {
+            // Outer wrapper stays within viewport
+            tableOuterWrapper.style.cssText = `
+                position: relative;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
+                border-radius: 12px;
+                border: 1px solid var(--positions-border);
+                background: var(--positions-table-bg);
+                box-shadow: var(--positions-shadow);
+            `;
+            
+            // Scroll wrapper handles the scrolling
             scrollWrapper.style.cssText = `
                 overflow-x: auto !important;
                 overflow-y: hidden !important;
                 -webkit-overflow-scrolling: touch;
-                width: calc(100% + 40px);
+                width: 100%;
+                max-width: 100%;
                 position: relative;
                 display: block;
             `;
@@ -684,6 +693,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
                 min-width: 750px;
                 width: max-content;
                 table-layout: auto;
+                margin: 0;
             `;
         }
 
@@ -729,21 +739,16 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         });
         table.appendChild(tbody);
         
-        // Assemble the structure
+        // Assemble the structure: outer > scroll > table
         scrollWrapper.appendChild(table);
-        tableWrapper.appendChild(scrollWrapper);
-        container.appendChild(tableWrapper);
+        tableOuterWrapper.appendChild(scrollWrapper);
+        container.appendChild(tableOuterWrapper);
         
-        // Force enable horizontal scrolling on mobile after render
+        // Ensure scroll works after render
         if (window.innerWidth <= 640) {
             setTimeout(() => {
-                // Reset scroll position
                 scrollWrapper.scrollLeft = 0;
-                // Ensure scroll is working
-                scrollWrapper.style.overflowX = 'auto';
-                scrollWrapper.style.webkitOverflowScrolling = 'touch';
-                // Log for debugging
-                console.log('Table scroll enabled:', {
+                console.log('Table scroll setup:', {
                     scrollWidth: scrollWrapper.scrollWidth,
                     clientWidth: scrollWrapper.clientWidth,
                     canScroll: scrollWrapper.scrollWidth > scrollWrapper.clientWidth
@@ -752,7 +757,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         }
         
         // Add event delegation for table actions
-        tableWrapper.addEventListener('click', (e) => {
+        tableOuterWrapper.addEventListener('click', (e) => {
             const target = e.target.closest('[data-action]');
             if (!target) return;
             
