@@ -34,7 +34,6 @@ window.CookieBannerModule = class CookieBannerModule {
                 headline: "Mehr Relevanz, mehr Möglichkeiten",
                 description: "Wir nutzen Cookies, um unsere Karriereseite optimal für dich zu gestalten. Einige sind essenziell, andere verbessern dein Nutzungserlebnis.",
                 privacyPolicyUrl: "#datenschutz",
-                cookiePolicyUrl: "#cookie-richtlinien",
                 position: "bottom-left",
                 showOverlay: true,
                 animation: "slide",
@@ -173,7 +172,7 @@ window.CookieBannerModule = class CookieBannerModule {
         // Create container
         const container = document.createElement('div');
         container.id = this.bannerId;
-        container.className = `cookie-banner-module cookie-position-${this.config.banner.position}`;
+        container.className = 'cookie-banner-module cookie-position-' + this.config.banner.position;
         
         // Build HTML
         container.innerHTML = this.getBannerHTML();
@@ -193,9 +192,7 @@ window.CookieBannerModule = class CookieBannerModule {
         const collapsedBtn = document.createElement('div');
         collapsedBtn.id = 'cookie-banner-collapsed';
         collapsedBtn.className = 'cookie-banner-collapsed';
-        collapsedBtn.innerHTML = `
-            <i class="fa-duotone fa-solid fa-cookie cookie-collapsed-icon"></i>
-        `;
+        collapsedBtn.innerHTML = '<i class="fa-duotone fa-solid fa-cookie cookie-collapsed-icon"></i>';
         document.body.appendChild(collapsedBtn);
     }
 
@@ -446,7 +443,7 @@ window.CookieBannerModule = class CookieBannerModule {
         // Read current toggle states
         for (const key of Object.keys(this.config.categories)) {
             if (!this.config.categories[key].required) {
-                const toggle = document.getElementById(`cookie-${key}-toggle`);
+                const toggle = document.getElementById('cookie-' + key + '-toggle');
                 if (toggle) {
                     this.consentState[key] = toggle.checked;
                 }
@@ -519,7 +516,7 @@ window.CookieBannerModule = class CookieBannerModule {
             
             // Reset toggle states
             for (const [key, state] of Object.entries(this.consentState)) {
-                const toggle = document.getElementById(`cookie-${key}-toggle`);
+                const toggle = document.getElementById('cookie-' + key + '-toggle');
                 if (toggle && !this.config.categories[key].required) {
                     toggle.checked = state;
                     this.updateToggleVisual(toggle.parentElement, state);
@@ -542,7 +539,9 @@ window.CookieBannerModule = class CookieBannerModule {
     /**
      * Hide banner
      */
-    hideBanner(showCollapsed = true) {
+    hideBanner(showCollapsed) {
+        if (showCollapsed === undefined) showCollapsed = true;
+        
         const banner = document.getElementById(this.bannerId);
         const overlay = document.getElementById('cookie-banner-overlay');
         const collapsed = document.getElementById('cookie-banner-collapsed');
@@ -579,7 +578,7 @@ window.CookieBannerModule = class CookieBannerModule {
         const state = {};
         
         for (const key of Object.keys(this.config.categories)) {
-            const stored = localStorage.getItem(`cookie_consent_${key}`);
+            const stored = localStorage.getItem('cookie_consent_' + key);
             if (stored !== null) {
                 state[key] = stored === 'true';
             } else if (this.config.categories[key].required) {
@@ -597,7 +596,7 @@ window.CookieBannerModule = class CookieBannerModule {
      */
     saveConsentState() {
         for (const [key, value] of Object.entries(this.consentState)) {
-            localStorage.setItem(`cookie_consent_${key}`, value);
+            localStorage.setItem('cookie_consent_' + key, value);
         }
         
         localStorage.setItem('cookiePreferencesSet', 'true');
@@ -681,10 +680,12 @@ window.CookieBannerModule = class CookieBannerModule {
     /**
      * Track event (public method for other modules)
      */
-    trackEvent(eventName, parameters = {}) {
+    trackEvent(eventName, parameters) {
+        if (!parameters) parameters = {};
+        
         // Only track if we have consent
         if (!this.consentState.marketing) {
-            this.log(`Event '${eventName}' not tracked - no marketing consent`);
+            this.log('Event ' + eventName + ' not tracked - no marketing consent');
             return;
         }
         
@@ -708,9 +709,9 @@ window.CookieBannerModule = class CookieBannerModule {
                 } else {
                     fbq('track', fbEvent, parameters);
                 }
-                this.log(`FB Pixel event tracked: ${eventName}`, parameters);
+                this.log('FB Pixel event tracked: ' + eventName, parameters);
             } catch (error) {
-                console.error(`Failed to track event ${eventName}:`, error);
+                console.error('Failed to track event ' + eventName + ':', error);
             }
         }
         
@@ -718,9 +719,9 @@ window.CookieBannerModule = class CookieBannerModule {
         if (window.gtag && this.consentState.analytics) {
             try {
                 gtag('event', eventName, parameters);
-                this.log(`GA event tracked: ${eventName}`, parameters);
+                this.log('GA event tracked: ' + eventName, parameters);
             } catch (error) {
-                console.error(`Failed to track GA event ${eventName}:`, error);
+                console.error('Failed to track GA event ' + eventName + ':', error);
             }
         }
     }
@@ -740,7 +741,7 @@ window.CookieBannerModule = class CookieBannerModule {
             this.consentState[category] = value;
             this.saveConsentState();
             this.initializeTracking();
-            this.log(`Consent updated: ${category} = ${value}`);
+            this.log('Consent updated: ' + category + ' = ' + value);
         }
     }
 
@@ -752,7 +753,7 @@ window.CookieBannerModule = class CookieBannerModule {
         localStorage.removeItem('cookiePreferencesDate');
         
         for (const key of Object.keys(this.config.categories)) {
-            localStorage.removeItem(`cookie_consent_${key}`);
+            localStorage.removeItem('cookie_consent_' + key);
         }
         
         this.consentState = this.loadConsentState();
@@ -762,9 +763,11 @@ window.CookieBannerModule = class CookieBannerModule {
     /**
      * Debug logging
      */
-    log(...args) {
+    log() {
         if (this.config.advanced.debugMode) {
-            console.log('[CookieBanner]', ...args);
+            const args = Array.prototype.slice.call(arguments);
+            args.unshift('[CookieBanner]');
+            console.log.apply(console, args);
         }
     }
 
