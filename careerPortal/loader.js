@@ -7,36 +7,43 @@ class CareerPortalLoader {
     constructor() {
         this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
         this.loadedModules = new Map();
+        this.loadedStyles = new Map();
         this.initializationQueue = [];
     }
 
     /**
-     * Load CSS file
+     * Load CSS file by fetching as text and injecting as style element
      */
     async loadCSS(path) {
         const url = this.baseURL + path;
         
         // Check if already loaded
-        if (document.querySelector(`link[href="${url}"]`)) {
+        if (this.loadedStyles.has(path)) {
             console.log(`✅ CSS already loaded: ${path}`);
             return true;
         }
         
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = url;
-        
-        return new Promise((resolve, reject) => {
-            link.onload = () => {
-                console.log(`✅ CSS loaded: ${path}`);
-                resolve(true);
-            };
-            link.onerror = () => {
-                console.error(`❌ Failed to load CSS: ${path}`);
-                reject(new Error(`Failed to load CSS: ${path}`));
-            };
-            document.head.appendChild(link);
-        });
+        try {
+            // Fetch CSS as text
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const cssText = await response.text();
+            
+            // Create and inject style element
+            const style = document.createElement('style');
+            style.textContent = cssText;
+            style.setAttribute('data-source', path);
+            document.head.appendChild(style);
+            
+            this.loadedStyles.set(path, true);
+            console.log(`✅ CSS loaded: ${path}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to load CSS: ${path}`, error);
+            return false;
+        }
     }
 
     /**
@@ -49,19 +56,44 @@ class CareerPortalLoader {
 
         try {
             const response = await fetch(this.baseURL + path);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const code = await response.text();
             
             // Create a script element and execute it
             const script = document.createElement('script');
             script.textContent = code;
+            script.setAttribute('data-source', path);
             document.head.appendChild(script);
             
             this.loadedModules.set(path, true);
+            console.log(`✅ Module loaded: ${path}`);
             return true;
         } catch (error) {
-            console.error(`Failed to load module: ${path}`, error);
+            console.error(`❌ Failed to load module: ${path}`, error);
             return false;
         }
+    }
+
+    /**
+     * Load all required CSS files
+     */
+    async loadAllCSS() {
+        const cssFiles = [
+            'styles/components/buttons.css',
+            'styles/sections/welcome.css',
+            'styles/sections/mehrErfahren.css',
+            'styles/sections/process.css',
+            'styles/sections/positions.css',
+            'styles/sections/footer.css'
+        ];
+        
+        console.log('📦 Loading CSS files...');
+        for (const cssFile of cssFiles) {
+            await this.loadCSS(cssFile);
+        }
+        console.log('✅ All CSS files loaded');
     }
 
     /**
@@ -100,6 +132,7 @@ class CareerPortalLoader {
             const sectionClass = window[`${this.capitalize(sectionType)}Section`];
             if (sectionClass) {
                 new sectionClass(config, containerId);
+                console.log(`🎉 ${this.capitalize(sectionType)} section initialized successfully!`);
                 return true;
             } else {
                 console.error(`Section class ${sectionType}Section not found`);
@@ -133,6 +166,10 @@ class CareerPortalLoader {
      * Auto-initialize sections based on data attributes
      */
     async autoInitialize() {
+        // First load all CSS
+        await this.loadAllCSS();
+        
+        // Then find and initialize sections
         const sections = document.querySelectorAll('[data-career-section]');
         
         for (const section of sections) {
@@ -161,6 +198,19 @@ class CareerPortalLoader {
     setBaseURL(url) {
         this.baseURL = url.endsWith('/') ? url : url + '/';
     }
+
+    /**
+     * Check if root variables are available
+     */
+    checkRootVariables() {
+        const testVar = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+        if (!testVar) {
+            console.warn('⚠️ Root variables not found. Ensure they are defined in the funnel header.');
+            return false;
+        }
+        console.log('✅ Root variables detected');
+        return true;
+    }
 }
 
 // Create global loader instance
@@ -186,10 +236,44 @@ if (document.readyState === 'loading') {
     
     console.log('🚀 Loading Career Portal via fetch method...');
     
+    // Helper function to load CSS as text and inject as style
+    async function loadCSSAsStyle(url, filename) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const cssText = await response.text();
+            
+            // Check if style already exists
+            if (document.querySelector(`style[data-source="${filename}"]`)) {
+                console.log(`✅ CSS already loaded: ${filename}`);
+                return true;
+            }
+            
+            const style = document.createElement('style');
+            style.textContent = cssText;
+            style.setAttribute('data-source', filename);
+            document.head.appendChild(style);
+            console.log(`✅ CSS loaded: ${filename}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to load CSS: ${filename}`, error);
+            return false;
+        }
+    }
+    
     // Load modules sequentially via fetch to avoid CSP issues
     async function loadCareerPortal() {
         try {
-            // 1. Load CSS files dynamically (more reliable than @import)
+            // Check for root variables first
+            const rootVarsExist = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            if (!rootVarsExist) {
+                console.warn('⚠️ Root variables not detected. Waiting 100ms and retrying...');
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // 1. Load CSS files by fetching as text and injecting as style elements
             const cssFiles = [
                 'styles/components/buttons.css',
                 'styles/sections/welcome.css',
@@ -199,12 +283,9 @@ if (document.readyState === 'loading') {
                 'styles/sections/footer.css'
             ];
             
+            console.log('📦 Loading CSS files...');
             for (const cssFile of cssFiles) {
-                const cssLink = document.createElement('link');
-                cssLink.rel = 'stylesheet';
-                cssLink.href = BASE_URL + cssFile;
-                document.head.appendChild(cssLink);
-                console.log(`✅ CSS loaded: ${cssFile}`);
+                await loadCSSAsStyle(BASE_URL + cssFile, cssFile);
             }
             console.log('✅ All CSS files loaded');
             
@@ -245,37 +326,17 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 6. Load welcome section
-            const welcomeResponse = await fetch(BASE_URL + 'sections/welcomeSection.js');
-            const welcomeCode = await welcomeResponse.text();
-            eval(welcomeCode);
-            console.log('✅ Welcome section loaded');
+            // 6. Load all section modules
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions'];
             
-            // 7. Load mehr erfahren section
-            const mehrErfahrenResponse = await fetch(BASE_URL + 'sections/mehrErfahrenSection.js');
-            const mehrErfahrenCode = await mehrErfahrenResponse.text();
-            eval(mehrErfahrenCode);
-            console.log('✅ Mehr Erfahren section loaded');
+            for (const section of sections) {
+                const response = await fetch(BASE_URL + `sections/${section}Section.js`);
+                const code = await response.text();
+                eval(code);
+                console.log(`✅ ${section} section loaded`);
+            }
             
-            // 8. Load process section
-            const processResponse = await fetch(BASE_URL + 'sections/processSection.js');
-            const processCode = await processResponse.text();
-            eval(processCode);
-            console.log('✅ Process section loaded');
-            
-            // 9. Load footer section
-            const footerResponse = await fetch(BASE_URL + 'sections/footerSection.js');
-            const footerCode = await footerResponse.text();
-            eval(footerCode);
-            console.log('✅ Footer section loaded');
-            
-            // 10. Load positions section
-            const positionsResponse = await fetch(BASE_URL + 'sections/positionsSection.js');
-            const positionsCode = await positionsResponse.text();
-            eval(positionsCode);
-            console.log('✅ Positions section loaded');
-            
-            // 11. Initialize sections that exist on the page
+            // 7. Initialize sections that exist on the page
             if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
                 new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
                 console.log('🎉 Welcome section initialized successfully!');
@@ -343,8 +404,15 @@ window.debugCareerPortal = function() {
     });
     
     // Check CSS
-    const cssLoaded = document.querySelector(`link[href*="styles/base.css"]`);
-    console.log(`CSS: ${cssLoaded ? '✅ Loaded' : '❌ Missing'}`);
+    const cssStyles = document.querySelectorAll('style[data-source]');
+    console.log(`CSS Styles Loaded: ${cssStyles.length} files`);
+    cssStyles.forEach(style => {
+        console.log(`  - ${style.getAttribute('data-source')}`);
+    });
+    
+    // Check root variables
+    const rootVars = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+    console.log(`Root Variables: ${rootVars ? '✅ Available' : '❌ Missing'}`);
     
     // Check sections
     const welcomeElement = document.getElementById('welcome-section');
