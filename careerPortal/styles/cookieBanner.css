@@ -580,7 +580,7 @@
 @media (prefers-reduced-motion: reduce) {
     .cookie-icon-animated,
     .cookie-bite,
-    .cookie-collapsed-icon i {
+    .cookie-collapsed-icon {
         animation: none;
     }
     
@@ -597,20 +597,26 @@
     }
 }
 
-/* Dark mode override - Keep light theme but adjust shadows */
-@media (prefers-color-scheme: dark) {
+/* Dark mode adjustments (if needed) */
+@media (prefers-color-scheme: light) {
     .cookie-banner-container {
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
-                    0 2px 10px rgba(0, 0, 0, 0.2),
-                    0 0 60px var(--glow-color-light);
+        background: #ffffff;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
+                    0 0 120px rgba(255, 107, 53, 0.1);
     }
     
-    .cookie-banner-collapsed {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    .cookie-banner-headline {
+        background: linear-gradient(135deg, #1a1a1a 0%, var(--primary-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
-    .cookie-banner-collapsed:hover {
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
-                    0 0 30px var(--glow-color-light);
+    .cookie-categories-section {
+        background: rgba(0, 0, 0, 0.02);
+    }
+    
+    .cookie-toggle-slider {
+        background: #333333;
     }
 }
