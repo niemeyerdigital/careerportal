@@ -647,55 +647,109 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      * Render table view - completely rebuilt for mobile
      */
     renderTable(data, container) {
-        // Create table wrapper
+        // Create table wrapper with explicit scroll container
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'positions-table-container';
         
-        // Create the table structure
-        const tableHTML = `
-            <div class="positions-table-scroll">
-                <table class="positions-table">
-                    <thead>
-                        <tr>
-                            <th>Titel</th>
-                            <th>Bereich</th>
-                            <th>Stadt</th>
-                            <th>Datum</th>
-                            <th>Art</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.map(card => `
-                            <tr data-position-id="${card.id}">
-                                <td>
-                                    <button class="positions-table-title-btn" data-action="open" data-id="${card.id}">
-                                        ${this.ensureMWD(card.position)}
-                                    </button>
-                                </td>
-                                <td>${card.area}</td>
-                                <td>${card.region}</td>
-                                <td>${card.datum}</td>
-                                <td>${(card.workCapacity || []).join(', ')}</td>
-                                <td>
-                                    <div class="positions-table-actions">
-                                        <button class="positions-btn positions-btn-primary positions-btn-sm" data-action="apply" data-url="${card.applicationUrl}">
-                                            <i class="fa-light fa-paper-plane"></i>
-                                        </button>
-                                        <button class="positions-btn positions-btn-ghost positions-btn-sm" data-action="view" data-id="${card.id}">
-                                            <i class="fa-light fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
+        // Add inline styles to force scrolling on mobile
+        if (window.innerWidth <= 640) {
+            tableWrapper.style.cssText = `
+                position: relative;
+                width: 100%;
+                margin: 0 -20px;
+                padding: 0;
+                overflow: visible;
+            `;
+        }
         
-        tableWrapper.innerHTML = tableHTML;
+        // Create scroll wrapper with forced styles
+        const scrollWrapper = document.createElement('div');
+        scrollWrapper.className = 'positions-table-scroll';
+        if (window.innerWidth <= 640) {
+            scrollWrapper.style.cssText = `
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                width: calc(100% + 40px);
+                position: relative;
+                display: block;
+            `;
+        }
+        
+        // Create the table
+        const table = document.createElement('table');
+        table.className = 'positions-table';
+        if (window.innerWidth <= 640) {
+            table.style.cssText = `
+                min-width: 750px;
+                width: max-content;
+                table-layout: auto;
+            `;
+        }
+
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr>
+                <th>Titel</th>
+                <th>Bereich</th>
+                <th>Stadt</th>
+                <th>Datum</th>
+                <th>Art</th>
+                <th>Aktionen</th>
+            </tr>
+        `;
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(card => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <button class="positions-table-title-btn" data-action="open" data-id="${card.id}">
+                        ${this.ensureMWD(card.position)}
+                    </button>
+                </td>
+                <td>${card.area}</td>
+                <td>${card.region}</td>
+                <td>${card.datum}</td>
+                <td>${(card.workCapacity || []).join(', ')}</td>
+                <td>
+                    <div class="positions-table-actions">
+                        <button class="positions-btn positions-btn-primary positions-btn-sm" data-action="apply" data-url="${card.applicationUrl}">
+                            <i class="fa-light fa-paper-plane"></i>
+                        </button>
+                        <button class="positions-btn positions-btn-ghost positions-btn-sm" data-action="view" data-id="${card.id}">
+                            <i class="fa-light fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        
+        // Assemble the structure
+        scrollWrapper.appendChild(table);
+        tableWrapper.appendChild(scrollWrapper);
         container.appendChild(tableWrapper);
+        
+        // Force enable horizontal scrolling on mobile after render
+        if (window.innerWidth <= 640) {
+            setTimeout(() => {
+                // Reset scroll position
+                scrollWrapper.scrollLeft = 0;
+                // Ensure scroll is working
+                scrollWrapper.style.overflowX = 'auto';
+                scrollWrapper.style.webkitOverflowScrolling = 'touch';
+                // Log for debugging
+                console.log('Table scroll enabled:', {
+                    scrollWidth: scrollWrapper.scrollWidth,
+                    clientWidth: scrollWrapper.clientWidth,
+                    canScroll: scrollWrapper.scrollWidth > scrollWrapper.clientWidth
+                });
+            }, 100);
+        }
         
         // Add event delegation for table actions
         tableWrapper.addEventListener('click', (e) => {
