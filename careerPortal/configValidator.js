@@ -1,6 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
+ * Now includes Cookie Banner validation
  */
 
 window.ConfigValidator = {
@@ -8,6 +9,128 @@ window.ConfigValidator = {
      * Section schemas define required and optional fields
      */
     schemas: {
+        cookieBanner: {
+            required: [],
+            optional: ['facebook', 'banner', 'categories', 'buttons', 'tracking', 'advanced'],
+            types: {
+                facebook: 'object',
+                banner: 'object',
+                categories: 'object',
+                buttons: 'object',
+                tracking: 'object',
+                advanced: 'object'
+            },
+            subSchemas: {
+                facebook: {
+                    required: ['pixelId', 'enabled'],
+                    optional: ['events'],
+                    types: {
+                        pixelId: 'string',
+                        enabled: 'boolean',
+                        events: 'object'
+                    }
+                },
+                banner: {
+                    required: [],
+                    optional: ['headline', 'description', 'privacyPolicyUrl', 'cookiePolicyUrl', 'position', 'showOverlay', 'animation', 'autoShowDelay', 'iconType'],
+                    types: {
+                        headline: 'string',
+                        description: 'string',
+                        privacyPolicyUrl: 'string',
+                        cookiePolicyUrl: 'string',
+                        position: 'string',
+                        showOverlay: 'boolean',
+                        animation: 'string',
+                        autoShowDelay: 'number',
+                        iconType: 'string'
+                    },
+                    enums: {
+                        position: ['bottom-left', 'bottom-right', 'center'],
+                        animation: ['slide', 'fade', 'pop'],
+                        iconType: ['animated', 'static', 'none']
+                    }
+                },
+                categories: {
+                    customValidation: (categories) => {
+                        const errors = [];
+                        let hasEssential = false;
+                        
+                        for (const [key, category] of Object.entries(categories)) {
+                            if (!category.label) {
+                                errors.push(`categories.${key}.label is required`);
+                            }
+                            if (!category.description) {
+                                errors.push(`categories.${key}.description is required`);
+                            }
+                            if (category.required === true) {
+                                hasEssential = true;
+                            }
+                        }
+                        
+                        if (!hasEssential) {
+                            errors.push('At least one category must be marked as required (essential)');
+                        }
+                        
+                        return errors;
+                    }
+                },
+                buttons: {
+                    customValidation: (buttons) => {
+                        const errors = [];
+                        
+                        if (!buttons.acceptAll || !buttons.acceptAll.text) {
+                            errors.push('buttons.acceptAll.text is required');
+                        }
+                        if (!buttons.saveSettings || !buttons.saveSettings.text) {
+                            errors.push('buttons.saveSettings.text is required');
+                        }
+                        
+                        // Check button styles
+                        const validStyles = ['primary', 'secondary', 'tertiary'];
+                        for (const [key, button] of Object.entries(buttons)) {
+                            if (button.style && !validStyles.includes(button.style)) {
+                                errors.push(`buttons.${key}.style must be one of: ${validStyles.join(', ')}`);
+                            }
+                        }
+                        
+                        return errors;
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate Facebook Pixel ID format if enabled
+                if (config.facebook && config.facebook.enabled && config.facebook.pixelId) {
+                    // Basic check for pixel ID format (should be numeric)
+                    if (!/^\d{15,16}$/.test(config.facebook.pixelId.replace(/\s/g, ''))) {
+                        console.warn('Facebook Pixel ID format may be incorrect');
+                    }
+                }
+                
+                // Validate URLs
+                if (config.banner) {
+                    if (config.banner.privacyPolicyUrl && !config.banner.privacyPolicyUrl.startsWith('http') && !config.banner.privacyPolicyUrl.startsWith('#')) {
+                        errors.push('banner.privacyPolicyUrl must be a valid URL or anchor link');
+                    }
+                    if (config.banner.cookiePolicyUrl && !config.banner.cookiePolicyUrl.startsWith('http') && !config.banner.cookiePolicyUrl.startsWith('#')) {
+                        errors.push('banner.cookiePolicyUrl must be a valid URL or anchor link');
+                    }
+                }
+                
+                // Validate advanced settings
+                if (config.advanced) {
+                    if (config.advanced.cookieLifetime && config.advanced.cookieLifetime < 1) {
+                        errors.push('advanced.cookieLifetime must be at least 1 day');
+                    }
+                    if (config.advanced.reShowAfterDays && config.advanced.reShowAfterDays < 1) {
+                        errors.push('advanced.reShowAfterDays must be at least 1 day');
+                    }
+                }
+                
+                return errors;
+            }
+        },
         welcome: {
             required: ['workAt', 'companyName', 'mainHeadline', 'subText', 'ctaText', 'buttonType'],
             optional: ['logoLink', 'mainAsset', 'videoId', 'mainImageLink', 'ctaLink', 'secondaryText', 'secondaryTarget'],
@@ -368,12 +491,20 @@ window.ConfigValidator = {
                     errors.push(`Field '${field}' should be one of: ${schema.enums[field].join(', ')}`);
                 }
 
-                // Sub-schema validation for mehrErfahren cards
+                // Sub-schema validation
                 if (schema.subSchemas && schema.subSchemas[field] && typeof value === 'object') {
                     const subSchema = schema.subSchemas[field];
-                    for (const subField of subSchema.required) {
-                        if (!value.hasOwnProperty(subField)) {
-                            errors.push(`${field}.${subField} is required`);
+                    
+                    // Check for custom validation in sub-schema
+                    if (subSchema.customValidation && typeof subSchema.customValidation === 'function') {
+                        const subErrors = subSchema.customValidation(value);
+                        errors.push(...subErrors);
+                    } else {
+                        // Standard sub-schema validation
+                        for (const subField of (subSchema.required || [])) {
+                            if (!value.hasOwnProperty(subField)) {
+                                errors.push(`${field}.${subField} is required`);
+                            }
                         }
                     }
                 }
@@ -454,6 +585,71 @@ window.ConfigValidator = {
      */
     applyDefaults(config, sectionType) {
         const defaults = {
+            cookieBanner: {
+                facebook: {
+                    pixelId: null,
+                    enabled: false,
+                    events: {
+                        pageView: true,
+                        viewContent: true,
+                        search: true,
+                        lead: true,
+                        completeRegistration: true
+                    }
+                },
+                banner: {
+                    headline: "Mehr Relevanz, mehr Möglichkeiten",
+                    description: "Wir nutzen Cookies, um unsere Karriereseite optimal für dich zu gestalten.",
+                    privacyPolicyUrl: "#datenschutz",
+                    position: "bottom-left",
+                    showOverlay: true,
+                    animation: "slide",
+                    autoShowDelay: 500,
+                    iconType: "animated"
+                },
+                categories: {
+                    essential: {
+                        label: "Essenziell",
+                        description: "Diese Cookies sind für den Betrieb der Webseite erforderlich.",
+                        required: true
+                    },
+                    analytics: {
+                        label: "Analyse",
+                        description: "Diese Cookies helfen uns, die Nutzung der Seite zu verstehen.",
+                        defaultEnabled: false
+                    },
+                    marketing: {
+                        label: "Marketing",
+                        description: "Diese Cookies ermöglichen personalisierte Werbung.",
+                        defaultEnabled: false
+                    }
+                },
+                buttons: {
+                    acceptAll: {
+                        text: "Ja, alle zustimmen",
+                        style: "primary"
+                    },
+                    saveSettings: {
+                        text: "Einstellung speichern",
+                        style: "secondary"
+                    },
+                    decline: {
+                        text: "Nur Essenzielle",
+                        style: "tertiary",
+                        enabled: false
+                    }
+                },
+                tracking: {
+                    onConsentGiven: true,
+                    onBannerDismissed: true,
+                    onSettingsChanged: true
+                },
+                advanced: {
+                    cookieLifetime: 365,
+                    reShowAfterDays: null,
+                    debugMode: false
+                }
+            },
             welcome: {
                 logoLink: 'https://placehold.co/32x32/cccccc/666666?text=Logo',
                 mainAsset: 'video',
@@ -593,7 +789,8 @@ window.ConfigValidator = {
 
         // Sanitize URLs
         const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
-                          'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl'];
+                          'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl',
+                          'privacyPolicyUrl', 'cookiePolicyUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -612,7 +809,7 @@ window.ConfigValidator = {
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
                            'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
                            'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
-                           'subtext', 'position', 'area', 'region'];
+                           'subtext', 'position', 'area', 'region', 'description', 'label'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -621,7 +818,44 @@ window.ConfigValidator = {
             }
         }
 
-        // Recursively sanitize card objects
+        // Special sanitization for cookie banner
+        if (sectionType === 'cookieBanner') {
+            // Sanitize Facebook Pixel ID
+            if (sanitized.facebook && sanitized.facebook.pixelId) {
+                sanitized.facebook.pixelId = sanitized.facebook.pixelId
+                    .replace(/[^\d]/g, '') // Remove non-numeric characters
+                    .trim();
+            }
+            
+            // Sanitize category texts
+            if (sanitized.categories) {
+                for (const [key, category] of Object.entries(sanitized.categories)) {
+                    if (category.label) {
+                        category.label = category.label
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                    if (category.description) {
+                        category.description = category.description
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                }
+            }
+            
+            // Sanitize button texts
+            if (sanitized.buttons) {
+                for (const [key, button] of Object.entries(sanitized.buttons)) {
+                    if (button.text) {
+                        button.text = button.text
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                }
+            }
+        }
+
+        // Recursively sanitize card objects (for mehrErfahren)
         if (sectionType === 'mehrErfahren') {
             ['aboutCard', 'benefitsCard', 'faqCard'].forEach(cardType => {
                 if (sanitized[cardType]) {
