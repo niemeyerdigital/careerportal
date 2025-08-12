@@ -540,7 +540,7 @@
     
     /* Larger button text on mobile - maintain increased sizes */
     .cookie-btn-accept {
-        font-size: calc(var(--font-sm) * 1.3);
+        font-size: calc(var(--font-sm) * 1.69);
     }
     
     .cookie-btn-save {
@@ -556,6 +556,10 @@
         left: 15px;
         width: 52px;
         height: 52px;
+    }
+    
+    .cookie-collapsed-icon {
+        font-size: 42px;
     }
 }
 
