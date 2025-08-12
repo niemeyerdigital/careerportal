@@ -180,7 +180,7 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
-    font-size: var(--font-xs);
+    font-size: calc(var(--font-sm) * 1.05);
 }
 
 .cookie-banner-link {
@@ -266,7 +266,7 @@
 }
 
 .cookie-category-label {
-    font-size: var(--font-sm);
+    font-size: calc(var(--font-sm) * 1.1);
     font-weight: 600;
     color: #333333;
     margin: 0;
@@ -294,7 +294,7 @@
     }
 }
 
-/* Toggle switch - Light theme with accent */
+/* Toggle switch - Light theme with green accent */
 .cookie-toggle-switch {
     width: 44px;
     height: 24px;
@@ -307,16 +307,16 @@
 }
 
 .cookie-toggle-switch.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    box-shadow: 0 0 12px var(--glow-color-light);
+    background: #1AAB27;
+    border-color: #1AAB27;
+    box-shadow: 0 0 12px rgba(26, 171, 39, 0.3);
 }
 
 .cookie-toggle-switch.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: #1AAB27;
+    border-color: #1AAB27;
 }
 
 .cookie-toggle-switch input {
@@ -549,6 +549,15 @@
     .cookie-btn {
         width: 100%;
         padding: 14px;
+    }
+    
+    /* Larger button text on mobile */
+    .cookie-btn-accept {
+        font-size: calc(var(--font-sm) * 1.3);
+    }
+    
+    .cookie-btn-save {
+        font-size: calc(var(--font-sm) * 1.2);
     }
     
     .cookie-banner-collapsed {
