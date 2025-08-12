@@ -1,7 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
- * Now includes Cookie Banner support
+ * Now includes Cookie Banner and Thanks Section support
  */
 
 class CareerPortalLoader {
@@ -122,7 +122,8 @@ class CareerPortalLoader {
             'styles/sections/mehrErfahren.css',
             'styles/sections/process.css',
             'styles/sections/positions.css',
-            'styles/sections/footer.css'
+            'styles/sections/footer.css',
+            'styles/sections/thanks.css'  // Added thanks.css
         ];
         
         console.log('📦 Loading CSS files...');
@@ -157,11 +158,12 @@ class CareerPortalLoader {
 
             // Validate configuration
             if (window.ConfigValidator) {
-                const validatedConfig = window.ConfigValidator.validate(config, sectionType);
+                const validatedConfig = window.ConfigValidator.process(config, sectionType);
                 if (!validatedConfig.isValid) {
                     console.error(`Invalid config for ${sectionType}:`, validatedConfig.errors);
                     return false;
                 }
+                config = validatedConfig.config;
             }
 
             // Initialize the section
@@ -393,7 +395,8 @@ if (document.readyState === 'loading') {
                 'styles/sections/mehrErfahren.css',
                 'styles/sections/process.css',
                 'styles/sections/positions.css',
-                'styles/sections/footer.css'
+                'styles/sections/footer.css',
+                'styles/sections/thanks.css'  // Added thanks.css
             ];
             
             console.log('📦 Loading CSS files...');
@@ -439,8 +442,8 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 6. Load all section modules
-            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions'];
+            // 6. Load all section modules (including thanks)
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks'];
             
             for (const section of sections) {
                 const response = await fetch(BASE_URL + `sections/${section}Section.js`);
@@ -475,6 +478,12 @@ if (document.readyState === 'loading') {
                 console.log('🎉 Positions section initialized successfully!');
             }
             
+            // Initialize Thanks section if it exists
+            if (window.ThanksSection && document.getElementById('thanks-section') && window.THANKS_CONFIG) {
+                new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
+                console.log('🎉 Thanks section initialized successfully!');
+            }
+            
         } catch (error) {
             console.error('❌ Failed to load Career Portal:', error);
         }
@@ -503,6 +512,7 @@ window.debugCareerPortal = function() {
         'ProcessSection',
         'FooterSection',
         'PositionsSection',
+        'ThanksSection',  // Added ThanksSection
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -540,12 +550,14 @@ window.debugCareerPortal = function() {
     const processElement = document.getElementById('process-section');
     const footerElement = document.getElementById('footer-section');
     const positionsElement = document.getElementById('positions-section');
+    const thanksElement = document.getElementById('thanks-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Process Section Element: ${processElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Thanks Section Element: ${thanksElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
@@ -554,6 +566,7 @@ window.debugCareerPortal = function() {
     console.log('Process Config:', window.PROCESS_CONFIG);
     console.log('Footer Config:', window.FOOTER_CONFIG);
     console.log('Positions Config:', window.POSITIONS_CONFIG);
+    console.log('Thanks Config:', window.THANKS_CONFIG);
 };
 
 // Debug helper for Cookie Banner
@@ -642,6 +655,30 @@ window.reinitializePositionsSection = function() {
     } else {
         console.error('PositionsSection class or POSITIONS_CONFIG not available');
         return false;
+    }
+};
+
+// Reinitialize Thanks section
+window.reinitializeThanksSection = function() {
+    if (window.ThanksSection && window.THANKS_CONFIG) {
+        return new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
+    } else {
+        console.error('ThanksSection class or THANKS_CONFIG not available');
+        return false;
+    }
+};
+
+// Debug helper for Thanks section
+window.debugThanks = function() {
+    console.log('=== Thanks Section Debug Info ===');
+    console.log('ThanksSection loaded:', !!window.ThanksSection);
+    console.log('Container found:', !!document.getElementById('thanks-section'));
+    console.log('Config:', window.THANKS_CONFIG);
+    
+    if (window.THANKS_CONFIG) {
+        console.log('Contact name:', window.THANKS_CONFIG.contact?.name);
+        console.log('Has portrait:', window.THANKS_CONFIG.contact?.showPortrait);
+        console.log('Social channel:', window.THANKS_CONFIG.socialMedia?.channelName);
     }
 };
 
