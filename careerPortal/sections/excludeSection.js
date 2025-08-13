@@ -60,12 +60,26 @@ window.ExcludeSection = class ExcludeSection extends window.BaseSec {
                         </div>
                     </div>
 
-                    <!-- Social Media Section -->
-                    <div class="exclude-social-section fade-in-up slow">
-                        <p class="exclude-social-text">${config.socialMediaText}</p>
-                        <a href="${config.socialMedia.channelUrl}" class="exclude-social-btn" target="_blank" rel="noreferrer noopener">
-                            ${config.socialMedia.channelName}
-                        </a>
+                    <!-- Social Media Card - Like Thanks Section -->
+                    <div class="exclude-grid fade-in-up slow">
+                        <div class="exclude-card">
+                            <div class="exclude-card-content">
+                                <div class="exclude-media">
+                                    <div class="exclude-media-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-share-nodes"></i>
+                                    </div>
+                                    <div>
+                                        <h2>Folge uns auf Social Media</h2>
+                                        <p>Bei weiteren Fragen besuche gerne unseren Social-Media-Kanal <span class="exclude-highlight">${config.socialMedia.channelName}</span>.</p>
+                                    </div>
+                                </div>
+                                <div class="exclude-btn-wrapper">
+                                    <a class="exclude-btn" href="${config.socialMedia.channelUrl}" target="_blank" rel="noreferrer noopener" aria-label="Social-Media-Kanal öffnen">
+                                        Zu unseren Socials
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Footer text -->
@@ -88,7 +102,7 @@ window.ExcludeSection = class ExcludeSection extends window.BaseSec {
         }
 
         // Track social media click
-        const socialBtn = this.container.querySelector('.exclude-social-btn');
+        const socialBtn = this.container.querySelector('.exclude-btn');
         if (socialBtn) {
             socialBtn.addEventListener('click', (e) => {
                 this.trackSocialClick();
