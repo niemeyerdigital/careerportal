@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Includes Cookie Banner, Thanks, Exclude, and Application Section validation
+ * Includes Cookie Banner, Thanks Section, and Exclude Section validation
  */
 
 window.ConfigValidator = {
@@ -307,92 +307,6 @@ window.ConfigValidator = {
                     if (!Array.isArray(config.talentPool.interests)) {
                         errors.push('talentPool.interests must be an array');
                     }
-                }
-                
-                return errors;
-            }
-        },
-        application: {
-            required: [],
-            optional: ['showPromptBanner', 'promptBanner', 'enableValidation', 'validation', 'styles', 'tracking', 'advanced'],
-            types: {
-                showPromptBanner: 'boolean',
-                promptBanner: 'object',
-                enableValidation: 'boolean',
-                validation: 'object',
-                styles: 'object',
-                tracking: 'object',
-                advanced: 'object'
-            },
-            defaults: {
-                showPromptBanner: true,
-                promptBanner: {
-                    title: "Schnell & Einfach",
-                    subtitle: "Beantworte nur 5 kurze Fragen",
-                    autoHideAfter: 10
-                },
-                enableValidation: true,
-                validation: {
-                    validatePhone: true,
-                    validateEmail: true,
-                    phoneSelectors: ['div[data-title="phone_number_input"]', '.elInput[data-input-type="phone"]'],
-                    emailSelectors: ['div[data-title="email_input"]', '.elInput[data-input-type="email"]'],
-                    submitButtonSelector: '[data-title="button_form"]',
-                    disableSubmitUntilValid: true
-                }
-            },
-            subSchemas: {
-                promptBanner: {
-                    required: ['title', 'subtitle'],
-                    optional: ['autoHideAfter'],
-                    types: {
-                        title: 'string',
-                        subtitle: 'string',
-                        autoHideAfter: 'number'
-                    }
-                },
-                validation: {
-                    required: [],
-                    optional: ['validatePhone', 'validateEmail', 'phoneSelectors', 'emailSelectors', 'submitButtonSelector', 'disableSubmitUntilValid', 'messages'],
-                    types: {
-                        validatePhone: 'boolean',
-                        validateEmail: 'boolean',
-                        phoneSelectors: 'object',
-                        emailSelectors: 'object',
-                        submitButtonSelector: 'string',
-                        disableSubmitUntilValid: 'boolean',
-                        messages: 'object'
-                    }
-                }
-            },
-            customValidation: (config) => {
-                const errors = [];
-                
-                // Validate prompt banner settings
-                if (config.promptBanner && config.promptBanner.autoHideAfter !== undefined) {
-                    if (typeof config.promptBanner.autoHideAfter !== 'number' || config.promptBanner.autoHideAfter < 0) {
-                        errors.push('promptBanner.autoHideAfter must be a non-negative number');
-                    }
-                }
-                
-                // Validate selectors arrays
-                if (config.validation) {
-                    if (config.validation.phoneSelectors && !Array.isArray(config.validation.phoneSelectors)) {
-                        errors.push('validation.phoneSelectors must be an array');
-                    }
-                    if (config.validation.emailSelectors && !Array.isArray(config.validation.emailSelectors)) {
-                        errors.push('validation.emailSelectors must be an array');
-                    }
-                }
-                
-                // Validate tracking functions
-                if (config.tracking) {
-                    const trackingFunctions = ['onValidationError', 'onValidationSuccess', 'onBannerClose'];
-                    trackingFunctions.forEach(func => {
-                        if (config.tracking[func] && typeof config.tracking[func] !== 'function') {
-                            errors.push(`tracking.${func} must be a function`);
-                        }
-                    });
                 }
                 
                 return errors;
@@ -846,16 +760,6 @@ window.ConfigValidator = {
             }
         }
 
-        // Special validations for application section
-        if (sectionType === 'application') {
-            // Check if validation is configured properly when enabled
-            if (config.enableValidation && config.validation) {
-                if (!config.validation.validatePhone && !config.validation.validateEmail) {
-                    console.warn('Application section: Validation enabled but no validation types selected');
-                }
-            }
-        }
-
         return {
             isValid: errors.length === 0,
             errors: errors,
@@ -976,23 +880,6 @@ window.ConfigValidator = {
                     facebook: { enabled: false, url: "#", icon: "fab fa-facebook-f" },
                     instagram: { enabled: false, url: "#", icon: "fab fa-instagram" },
                     xing: { enabled: false, url: "#", icon: "fab fa-xing" }
-                }
-            },
-            application: {
-                showPromptBanner: true,
-                promptBanner: {
-                    title: "Schnell & Einfach",
-                    subtitle: "Beantworte nur 5 kurze Fragen",
-                    autoHideAfter: 10
-                },
-                enableValidation: true,
-                validation: {
-                    validatePhone: true,
-                    validateEmail: true,
-                    phoneSelectors: ['div[data-title="phone_number_input"]', '.elInput[data-input-type="phone"]'],
-                    emailSelectors: ['div[data-title="email_input"]', '.elInput[data-input-type="email"]'],
-                    submitButtonSelector: '[data-title="button_form"]',
-                    disableSubmitUntilValid: true
                 }
             },
             welcome: {
@@ -1159,25 +1046,12 @@ window.ConfigValidator = {
                            'quickActionButtonText', 'name', 'channelName',
                            'statusBadgeText', 'messageTitle', 'messageText', 'alternativePathsTitle',
                            'improvementHeadline', 'footerText', 'buttonText', 'modalTitle', 
-                           'modalDescription', 'linkText', 'subtitle'];
+                           'modalDescription', 'linkText'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim();
-            }
-        }
-
-        // Special sanitization for application section
-        if (sectionType === 'application') {
-            if (sanitized.promptBanner) {
-                ['title', 'subtitle'].forEach(field => {
-                    if (sanitized.promptBanner[field]) {
-                        sanitized.promptBanner[field] = sanitized.promptBanner[field]
-                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                            .trim();
-                    }
-                });
             }
         }
 
