@@ -17,6 +17,35 @@ div[data-title='RowThanks'] .container {
     box-sizing: border-box !important;
 }
 
+/* Desktop: Make ClickFunnels containers 20% wider */
+@media (min-width: 769px) {
+    /* Target ClickFunnels row containers */
+    div[data-title='RowThanks'] {
+        width: 120% !important;
+        max-width: 120% !important;
+        margin-left: -10% !important;
+        margin-right: -10% !important;
+    }
+    
+    /* Also target any parent section containers */
+    div[data-title='SectionThanks'] {
+        overflow: visible !important;
+        width: 100vw !important;
+        position: relative !important;
+        left: 50% !important;
+        right: 50% !important;
+        margin-left: -50vw !important;
+        margin-right: -50vw !important;
+    }
+    
+    /* Ensure the inner container uses the full width */
+    div[data-title='SectionThanks'] .innerContent,
+    div[data-title='RowThanks'] .innerContent {
+        max-width: none !important;
+        width: 100% !important;
+    }
+}
+
 /* Main wrapper - 3X spacious full viewport styling */
 .thanks-wrapper {
     min-height: 150vh; /* 3x bigger module */
@@ -636,6 +665,15 @@ div[data-title='RowThanks'] .container {
     .thanks-wrapper {
         padding: 5.25rem 1.4rem; /* 30% smaller than 7.5rem */
         min-height: 105vh; /* 30% smaller than 150vh */
+        width: 100vw; /* Ensure full viewport width */
+        margin-left: calc(-50vw + 50%); /* Center the full-width wrapper */
+    }
+    
+    .thanks-container {
+        width: 100%;
+        max-width: 108rem; /* 20% wider than 90rem */
+        margin: 0 auto;
+        padding: 0 2rem; /* Add some padding on very wide screens */
     }
 
     .thanks-banner {
