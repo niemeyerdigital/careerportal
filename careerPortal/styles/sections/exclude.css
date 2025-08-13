@@ -205,25 +205,89 @@ div[data-title='RowExclude'] .container {
     font-family: var(--font-family);
 }
 
-/* Social Media Section - Similar to Thanks section - 1.5x bigger */
-.exclude-social-section {
-    text-align: center;
-    padding: 3rem; /* 1.5x padding */
-    background: #ffffff;
-    border-radius: 1.5rem; /* 1.5x radius */
-    box-shadow: 0 1.5px 4.5px rgba(0, 0, 0, 0.1); /* 1.5x shadow */
+/* Grid layout - 1.5x spacious */
+.exclude-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.875rem; /* 1.5x gap */
     margin-bottom: 3rem; /* 1.5x space below */
 }
 
-.exclude-social-text {
-    margin: 0 0 2.25rem 0; /* 1.5x space below */
-    font-size: 1.5rem; /* 1.5x size */
+/* Cards - 1.5x bigger with soft elevated design (like Thanks) */
+.exclude-card {
+    border: 3px solid #e5e5e5; /* 1.5x border */
+    border-radius: 1.5rem; /* 1.5x radius */
+    background: #ffffff;
+    box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.08); /* 1.5x shadow */
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.exclude-card:hover {
+    transform: translateY(-3px); /* 1.5x lift */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* 1.5x shadow */
+}
+
+.exclude-card-content {
+    padding: 2.25rem; /* 1.5x padding */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Media object inside cards - 1.5x bigger */
+.exclude-media {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem; /* 1.5x gap */
+    flex: 1;
+}
+
+.exclude-media-icon {
+    background: #f3f4f6;
+    border-radius: 1.5rem; /* 1.5x radius */
+    padding: 1.125rem; /* 1.5x padding */
+    display: inline-flex;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.exclude-media-icon i {
+    font-size: 1.875rem; /* 1.5x icon */
+}
+
+.exclude-media h2 {
+    font-size: 1.875rem; /* 1.5x size */
+    margin: 0 0 0.75rem 0; /* 1.5x spacing */
+    font-family: var(--font-family);
+    color: #111827;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.exclude-media p {
+    margin: 0;
     color: #6b7280;
+    font-size: 1.3125rem; /* 1.5x size */
     font-family: var(--font-family);
     line-height: 1.6;
 }
 
-.exclude-social-btn {
+.exclude-highlight {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+/* Social button wrapper - 1.5x spacing */
+.exclude-btn-wrapper {
+    text-align: center;
+    margin-top: 1.875rem; /* 1.5x spacing */
+    padding-top: 1.5rem; /* 1.5x padding */
+}
+
+/* Social button - 1.5x bigger (exactly like Thanks) */
+.exclude-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -242,15 +306,15 @@ div[data-title='RowExclude'] .container {
     outline: none;
 }
 
-.exclude-social-btn:hover {
-    background: var(--button-primary);
+.exclude-btn:hover {
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: #ffffff;
     border-color: transparent;
     transform: translateY(-1.5px); /* 1.5x lift */
     box-shadow: 0 12px 36px -18px rgba(255, 107, 53, 0.15); /* 1.5x shadow */
 }
 
-.exclude-social-btn:active {
+.exclude-btn:active {
     transform: translateY(1.5px); /* 1.5x press */
 }
 
@@ -359,18 +423,48 @@ div[data-title='RowExclude'] .container {
         font-size: 1.125rem; /* 25% smaller */
     }
 
-    .exclude-social-section {
-        padding: 2.25rem; /* 25% smaller */
-        border-radius: 1.125rem;
+    .exclude-grid {
+        gap: 1.40625rem; /* 25% smaller */
         margin-bottom: 2.25rem;
     }
 
-    .exclude-social-text {
-        font-size: 1.125rem; /* 25% smaller */
-        margin-bottom: 1.6875rem;
+    .exclude-card {
+        border-width: 2.25px;
+        border-radius: 1.125rem;
     }
 
-    .exclude-social-btn {
+    .exclude-card-content {
+        padding: 1.6875rem; /* 25% smaller */
+    }
+
+    .exclude-media {
+        gap: 1.125rem;
+    }
+
+    .exclude-media-icon {
+        border-radius: 1.125rem;
+        padding: 0.84375rem;
+    }
+
+    .exclude-media-icon i {
+        font-size: 1.40625rem;
+    }
+
+    .exclude-media h2 {
+        font-size: 1.40625rem; /* 25% smaller */
+        margin-bottom: 0.5625rem;
+    }
+
+    .exclude-media p {
+        font-size: 0.984375rem; /* 25% smaller */
+    }
+
+    .exclude-btn-wrapper {
+        margin-top: 1.40625rem;
+        padding-top: 1.125rem;
+    }
+
+    .exclude-btn {
         gap: 0.5625rem;
         padding: 0.84375rem 1.6875rem; /* 25% smaller */
         border-radius: 0.84375rem;
@@ -449,18 +543,38 @@ div[data-title='RowExclude'] .container {
         font-size: 1.3125rem;
     }
 
-    .exclude-social-section {
-        padding: 2.25rem 1.5rem; /* 1.5x padding */
-        margin-bottom: 2.25rem;
+    .exclude-grid {
+        gap: 1.5rem; /* 1.5x gap */
+        margin-bottom: 3rem;
     }
 
-    .exclude-social-text {
-        font-size: 1.3125rem;
-        margin-bottom: 1.875rem;
+    .exclude-card-content {
+        padding: 1.875rem; /* 1.5x padding */
     }
 
-    .exclude-social-btn {
-        padding: 0.9375rem 1.875rem; /* 1.5x padding */
+    .exclude-media-icon {
+        padding: 0.9375rem;
+    }
+
+    .exclude-media-icon i {
+        font-size: 1.5rem;
+    }
+
+    .exclude-media h2 {
+        font-size: 1.5rem;
+    }
+
+    .exclude-media p {
+        font-size: 1.125rem;
+    }
+
+    .exclude-btn-wrapper {
+        margin-top: 1.5rem;
+        padding-top: 1.125rem;
+    }
+
+    .exclude-btn {
+        padding: 0.9375rem 1.875rem;
         font-size: 1.3125rem;
     }
 
@@ -530,18 +644,38 @@ div[data-title='RowExclude'] .container {
         font-size: 1.125rem; /* Bigger */
     }
 
-    .exclude-social-section {
-        padding: 1.875rem 1.125rem; /* 1.5x padding */
-        margin-bottom: 1.875rem;
+    .exclude-grid {
+        gap: 1.3125rem; /* 1.5x gap */
+        margin-bottom: 2.25rem;
     }
 
-    .exclude-social-text {
-        font-size: 1.125rem; /* Bigger */
-        margin-bottom: 1.5rem;
+    .exclude-card-content {
+        padding: 1.5rem; /* 1.5x padding */
     }
 
-    .exclude-social-btn {
-        padding: 0.75rem 1.5rem; /* 1.5x padding */
+    .exclude-media-icon {
+        padding: 0.75rem;
+    }
+
+    .exclude-media-icon i {
+        font-size: 1.3125rem;
+    }
+
+    .exclude-media h2 {
+        font-size: 1.3125rem; /* Bigger */
+    }
+
+    .exclude-media p {
+        font-size: 0.9375rem; /* Bigger */
+    }
+
+    .exclude-btn-wrapper {
+        margin-top: 1.3125rem;
+        padding-top: 0.9375rem;
+    }
+
+    .exclude-btn {
+        padding: 0.75rem 1.5rem; /* Bigger */
         font-size: 1.125rem;
     }
 
