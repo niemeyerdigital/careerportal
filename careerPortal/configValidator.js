@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Now includes Cookie Banner and Thanks Section validation
+ * Includes Cookie Banner, Thanks Section, and Exclude Section validation
  */
 
 window.ConfigValidator = {
@@ -207,6 +207,106 @@ window.ConfigValidator = {
                     !config.socialMedia.channelUrl.startsWith('#') && 
                     !config.socialMedia.channelUrl.startsWith('http')) {
                     errors.push('socialMedia.channelUrl must be a valid URL or anchor link');
+                }
+                
+                return errors;
+            }
+        },
+        exclude: {
+            required: ['statusBadgeText', 'mainHeadline', 'mainDescription', 'messageTitle', 'messageText'],
+            optional: ['alternativePathsTitle', 'alternativePaths', 'improvementHeadline', 'improvementTips', 'footerText', 'talentPool', 'socialMedia', 'onPathClick', 'onSocialClick'],
+            types: {
+                statusBadgeText: 'string',
+                mainHeadline: 'string',
+                mainDescription: 'string',
+                messageTitle: 'string',
+                messageText: 'string',
+                alternativePathsTitle: 'string',
+                alternativePaths: 'object',
+                improvementHeadline: 'string',
+                improvementTips: 'object',
+                footerText: 'string',
+                talentPool: 'object',
+                socialMedia: 'object',
+                onPathClick: 'function',
+                onSocialClick: 'function'
+            },
+            defaults: {
+                statusBadgeText: "Bewerbung abgeschlossen",
+                mainHeadline: "Vielen Dank für dein Interesse",
+                mainDescription: "Wir haben deine Bewerbung sorgfältig geprüft.",
+                messageTitle: "Leider passt es diesmal nicht",
+                messageText: "Nach eingehender Prüfung deiner Unterlagen müssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
+                alternativePathsTitle: "Alternative Möglichkeiten",
+                alternativePaths: [],
+                improvementHeadline: "Tipps für deine nächste Bewerbung",
+                improvementTips: [],
+                footerText: "Wir wünschen dir viel Erfolg für deinen weiteren Werdegang!",
+                talentPool: {
+                    enabled: false,
+                    buttonText: "In Talentpool aufnehmen",
+                    modalTitle: "Bleib mit uns in Kontakt",
+                    modalDescription: "Lass uns deine Daten speichern und wir informieren dich, sobald eine passende Position frei wird.",
+                    interests: [],
+                    onSubmit: null
+                },
+                socialMedia: {
+                    linkedin: { enabled: false, url: "#", icon: "fab fa-linkedin-in" },
+                    facebook: { enabled: false, url: "#", icon: "fab fa-facebook-f" },
+                    instagram: { enabled: false, url: "#", icon: "fab fa-instagram" },
+                    xing: { enabled: false, url: "#", icon: "fab fa-xing" }
+                }
+            },
+            subSchemas: {
+                talentPool: {
+                    required: ['enabled'],
+                    optional: ['buttonText', 'modalTitle', 'modalDescription', 'interests', 'onSubmit'],
+                    types: {
+                        enabled: 'boolean',
+                        buttonText: 'string',
+                        modalTitle: 'string',
+                        modalDescription: 'string',
+                        interests: 'object',
+                        onSubmit: 'function'
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate alternative paths if provided
+                if (config.alternativePaths && Array.isArray(config.alternativePaths)) {
+                    config.alternativePaths.forEach((path, index) => {
+                        if (!path.icon) errors.push(`alternativePaths[${index}].icon is required`);
+                        if (!path.title) errors.push(`alternativePaths[${index}].title is required`);
+                        if (!path.description) errors.push(`alternativePaths[${index}].description is required`);
+                        
+                        // If link URL is provided, validate it
+                        if (path.linkUrl && !path.linkUrl.startsWith('#') && !path.linkUrl.startsWith('http')) {
+                            errors.push(`alternativePaths[${index}].linkUrl must be a valid URL or anchor link`);
+                        }
+                    });
+                }
+                
+                // Validate improvement tips if provided
+                if (config.improvementTips && !Array.isArray(config.improvementTips)) {
+                    errors.push('improvementTips must be an array');
+                }
+                
+                // Validate talent pool configuration if enabled
+                if (config.talentPool && config.talentPool.enabled) {
+                    if (!config.talentPool.buttonText) {
+                        errors.push('talentPool.buttonText is required when enabled');
+                    }
+                    if (!config.talentPool.modalTitle) {
+                        errors.push('talentPool.modalTitle is required when enabled');
+                    }
+                    if (!config.talentPool.modalDescription) {
+                        errors.push('talentPool.modalDescription is required when enabled');
+                    }
+                    if (!Array.isArray(config.talentPool.interests)) {
+                        errors.push('talentPool.interests must be an array');
+                    }
                 }
                 
                 return errors;
@@ -756,6 +856,32 @@ window.ConfigValidator = {
                     channelUrl: "#PLACEHOLDER"
                 }
             },
+            exclude: {
+                statusBadgeText: "Bewerbung abgeschlossen",
+                mainHeadline: "Vielen Dank für dein Interesse",
+                mainDescription: "Wir haben deine Bewerbung sorgfältig geprüft.",
+                messageTitle: "Leider passt es diesmal nicht",
+                messageText: "Nach eingehender Prüfung deiner Unterlagen müssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
+                alternativePathsTitle: "Alternative Möglichkeiten",
+                alternativePaths: [],
+                improvementHeadline: "Tipps für deine nächste Bewerbung",
+                improvementTips: [],
+                footerText: "Wir wünschen dir viel Erfolg für deinen weiteren Werdegang!",
+                talentPool: {
+                    enabled: false,
+                    buttonText: "In Talentpool aufnehmen",
+                    modalTitle: "Bleib mit uns in Kontakt",
+                    modalDescription: "Lass uns deine Daten speichern und wir informieren dich, sobald eine passende Position frei wird.",
+                    interests: [],
+                    onSubmit: null
+                },
+                socialMedia: {
+                    linkedin: { enabled: false, url: "#", icon: "fab fa-linkedin-in" },
+                    facebook: { enabled: false, url: "#", icon: "fab fa-facebook-f" },
+                    instagram: { enabled: false, url: "#", icon: "fab fa-instagram" },
+                    xing: { enabled: false, url: "#", icon: "fab fa-xing" }
+                }
+            },
             welcome: {
                 logoLink: 'https://placehold.co/32x32/cccccc/666666?text=Logo',
                 mainAsset: 'video',
@@ -896,7 +1022,7 @@ window.ConfigValidator = {
         // Sanitize URLs
         const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
                           'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl',
-                          'privacyPolicyUrl', 'cookiePolicyUrl', 'portraitUrl', 'channelUrl'];
+                          'privacyPolicyUrl', 'cookiePolicyUrl', 'portraitUrl', 'channelUrl', 'linkUrl'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -917,7 +1043,10 @@ window.ConfigValidator = {
                            'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
                            'subtext', 'position', 'area', 'region', 'description', 'label',
                            'bannerText', 'confirmationBadgeText', 'mainDescription', 
-                           'quickActionButtonText', 'name', 'channelName'];
+                           'quickActionButtonText', 'name', 'channelName',
+                           'statusBadgeText', 'messageTitle', 'messageText', 'alternativePathsTitle',
+                           'improvementHeadline', 'footerText', 'buttonText', 'modalTitle', 
+                           'modalDescription', 'linkText'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -946,6 +1075,43 @@ window.ConfigValidator = {
                 }
                 if (sanitized.socialMedia.channelUrl) {
                     sanitized.socialMedia.channelUrl = sanitized.socialMedia.channelUrl.trim();
+                }
+            }
+        }
+
+        // Special sanitization for exclude section
+        if (sectionType === 'exclude') {
+            // Sanitize alternative paths
+            if (sanitized.alternativePaths && Array.isArray(sanitized.alternativePaths)) {
+                sanitized.alternativePaths = sanitized.alternativePaths.map(path => ({
+                    ...path,
+                    title: path.title?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim(),
+                    description: path.description?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim(),
+                    linkText: path.linkText?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                }));
+            }
+            
+            // Sanitize improvement tips
+            if (sanitized.improvementTips && Array.isArray(sanitized.improvementTips)) {
+                sanitized.improvementTips = sanitized.improvementTips.map(tip => 
+                    tip.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                );
+            }
+            
+            // Sanitize talent pool
+            if (sanitized.talentPool) {
+                ['buttonText', 'modalTitle', 'modalDescription'].forEach(field => {
+                    if (sanitized.talentPool[field]) {
+                        sanitized.talentPool[field] = sanitized.talentPool[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+                
+                if (sanitized.talentPool.interests && Array.isArray(sanitized.talentPool.interests)) {
+                    sanitized.talentPool.interests = sanitized.talentPool.interests.map(interest =>
+                        interest.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                    );
                 }
             }
         }
