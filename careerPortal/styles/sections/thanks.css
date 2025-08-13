@@ -631,6 +631,231 @@ div[data-title='RowThanks'] .container {
     }
 }
 
+/* Desktop overrides - 30% smaller than 2x (1.4x of original) */
+@media (min-width: 769px) {
+    .thanks-wrapper {
+        padding: 5.25rem 1.4rem; /* 30% smaller than 7.5rem */
+        min-height: 105vh; /* 30% smaller than 150vh */
+    }
+
+    .thanks-banner {
+        padding: 1.225rem 1.75rem; /* 30% smaller */
+        font-size: 1.4rem; /* 30% smaller than 2rem */
+        border-radius: 1.4rem;
+        margin-bottom: 3.5rem;
+    }
+
+    .thanks-center {
+        margin-bottom: 4.2rem; /* 30% smaller than 6rem */
+    }
+
+    .thanks-chip {
+        gap: 0.7rem;
+        padding: 0.7rem 1.225rem;
+        font-size: 1.225rem; /* 30% smaller */
+        margin-bottom: 2.1rem;
+    }
+
+    .thanks-chip i {
+        font-size: 1.4rem;
+    }
+
+    .thanks-title {
+        font-size: clamp(2.625rem, 3.5vw + 1.4rem, 4.2rem); /* 30% smaller */
+        margin-bottom: 1.4rem;
+    }
+
+    .thanks-subtitle {
+        font-size: 1.575rem; /* 30% smaller */
+        margin-bottom: 2.8rem;
+    }
+
+    .thanks-quick-action-btn {
+        gap: 0.7rem;
+        padding: 1.225rem 2.45rem; /* 30% smaller */
+        font-size: 1.4rem;
+    }
+
+    .thanks-quick-action-btn i {
+        font-size: 1.575rem;
+    }
+
+    .thanks-grid {
+        gap: 2.1rem; /* 30% smaller than 3rem */
+        margin-bottom: 4.2rem;
+    }
+
+    .thanks-card {
+        border-width: 2.8px;
+        border-radius: 1.4rem;
+    }
+
+    .thanks-card-content {
+        padding: 2.1rem; /* 30% smaller */
+    }
+
+    .thanks-media {
+        gap: 1.4rem;
+    }
+
+    .thanks-media-icon {
+        border-radius: 1.4rem;
+        padding: 1.05rem;
+    }
+
+    .thanks-media-icon i {
+        font-size: 1.75rem;
+    }
+
+    .thanks-media h2 {
+        font-size: 1.75rem; /* 30% smaller */
+        margin-bottom: 0.7rem;
+    }
+
+    .thanks-media p {
+        font-size: 1.225rem; /* 30% smaller */
+    }
+
+    .thanks-btn-wrapper {
+        margin-top: 1.75rem;
+        padding-top: 1.4rem;
+    }
+
+    .thanks-btn {
+        gap: 0.7rem;
+        padding: 1.05rem 2.1rem; /* 30% smaller */
+        border-radius: 1.05rem;
+        border-width: 2.8px;
+        font-size: 1.4rem;
+    }
+
+    .thanks-section {
+        margin-bottom: 3.5rem;
+        border-radius: 2.1rem;
+        padding: 2.8rem; /* 30% smaller */
+    }
+
+    .thanks-section-title {
+        font-size: 2.1rem; /* 30% smaller */
+        margin-bottom: 2.1rem;
+    }
+
+    .thanks-steps {
+        gap: 1.75rem;
+    }
+
+    .thanks-step {
+        gap: 1.225rem;
+        border-radius: 1.4rem;
+        padding: 1.75rem; /* 30% smaller */
+    }
+
+    .thanks-step-index {
+        width: 2.8rem; /* 30% smaller */
+        height: 2.8rem;
+        font-size: 1.225rem;
+    }
+
+    .thanks-step p {
+        font-size: 1.4rem; /* 30% smaller */
+    }
+
+    .thanks-footnote {
+        margin-top: 3.5rem;
+        font-size: 1.05rem; /* 30% smaller */
+    }
+
+    /* Modal desktop sizes - 30% smaller */
+    .thanks-modal {
+        border-radius: 2.1rem;
+        max-width: 39.2rem; /* 30% smaller than 56rem */
+    }
+
+    .thanks-modal-close {
+        top: 1.4rem;
+        right: 1.4rem;
+        padding: 0.7rem;
+        font-size: 1.75rem;
+    }
+
+    .thanks-modal-content {
+        padding: 3.5rem 2.8rem 2.8rem; /* 30% smaller */
+    }
+
+    .thanks-modal-header {
+        margin-bottom: 2.8rem;
+    }
+
+    .thanks-modal-icon {
+        width: 4.2rem; /* 30% smaller */
+        height: 4.2rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .thanks-modal-icon i {
+        font-size: 2.1rem;
+    }
+
+    .thanks-modal-title {
+        font-size: 2.1rem; /* 30% smaller */
+        margin-bottom: 1.05rem;
+    }
+
+    .thanks-modal-subtitle {
+        font-size: 1.4rem;
+    }
+
+    .thanks-contact-person {
+        gap: 1.4rem;
+        padding: 1.75rem; /* 30% smaller */
+        border-radius: 1.4rem;
+        margin-bottom: 2.45rem;
+    }
+
+    .thanks-contact-avatar {
+        width: 4.2rem; /* 30% smaller */
+        height: 4.2rem;
+    }
+
+    .thanks-contact-avatar.no-image {
+        font-size: 1.75rem;
+    }
+
+    .thanks-contact-name {
+        font-size: 1.4rem;
+    }
+
+    .thanks-contact-position {
+        font-size: 1.225rem;
+        margin-top: 0.35rem;
+    }
+
+    .thanks-contact-actions {
+        gap: 1.225rem;
+    }
+
+    .thanks-contact-button {
+        gap: 1.225rem;
+        padding: 1.4rem 1.75rem; /* 30% smaller */
+        border-radius: 1.05rem;
+        font-size: 1.4rem;
+    }
+
+    .thanks-contact-button i {
+        width: 1.75rem;
+        font-size: 1.575rem;
+    }
+
+    .thanks-contact-button-label {
+        font-size: 1.225rem;
+    }
+
+    .thanks-contact-button-value {
+        font-size: 1.4rem;
+        margin-top: 0.35rem;
+    }
+}
+
 /* Mobile responsive - maintain 2x spaciousness */
 @media (max-width: 768px) {
     .thanks-wrapper {
