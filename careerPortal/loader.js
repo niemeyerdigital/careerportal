@@ -1,7 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
- * Now includes Cookie Banner and Thanks Section support
+ * Includes Cookie Banner, Thanks Section, and Exclude Section support
  */
 
 class CareerPortalLoader {
@@ -123,7 +123,8 @@ class CareerPortalLoader {
             'styles/sections/process.css',
             'styles/sections/positions.css',
             'styles/sections/footer.css',
-            'styles/sections/thanks.css'  // Added thanks.css
+            'styles/sections/thanks.css',
+            'styles/sections/exclude.css'  // Added exclude.css
         ];
         
         console.log('📦 Loading CSS files...');
@@ -396,7 +397,8 @@ if (document.readyState === 'loading') {
                 'styles/sections/process.css',
                 'styles/sections/positions.css',
                 'styles/sections/footer.css',
-                'styles/sections/thanks.css'  // Added thanks.css
+                'styles/sections/thanks.css',
+                'styles/sections/exclude.css'  // Added exclude.css
             ];
             
             console.log('📦 Loading CSS files...');
@@ -442,8 +444,8 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 6. Load all section modules (including thanks)
-            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks'];
+            // 6. Load all section modules (including thanks and exclude)
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude'];
             
             for (const section of sections) {
                 const response = await fetch(BASE_URL + `sections/${section}Section.js`);
@@ -484,6 +486,12 @@ if (document.readyState === 'loading') {
                 console.log('🎉 Thanks section initialized successfully!');
             }
             
+            // Initialize Exclude section if it exists
+            if (window.ExcludeSection && document.getElementById('exclude-section') && window.EXCLUDE_CONFIG) {
+                new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
+                console.log('🎉 Exclude section initialized successfully!');
+            }
+            
         } catch (error) {
             console.error('❌ Failed to load Career Portal:', error);
         }
@@ -512,7 +520,8 @@ window.debugCareerPortal = function() {
         'ProcessSection',
         'FooterSection',
         'PositionsSection',
-        'ThanksSection',  // Added ThanksSection
+        'ThanksSection',
+        'ExcludeSection',  // Added ExcludeSection
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -551,6 +560,7 @@ window.debugCareerPortal = function() {
     const footerElement = document.getElementById('footer-section');
     const positionsElement = document.getElementById('positions-section');
     const thanksElement = document.getElementById('thanks-section');
+    const excludeElement = document.getElementById('exclude-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
@@ -558,6 +568,7 @@ window.debugCareerPortal = function() {
     console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Thanks Section Element: ${thanksElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Exclude Section Element: ${excludeElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
@@ -567,6 +578,7 @@ window.debugCareerPortal = function() {
     console.log('Footer Config:', window.FOOTER_CONFIG);
     console.log('Positions Config:', window.POSITIONS_CONFIG);
     console.log('Thanks Config:', window.THANKS_CONFIG);
+    console.log('Exclude Config:', window.EXCLUDE_CONFIG);
 };
 
 // Debug helper for Cookie Banner
@@ -668,6 +680,16 @@ window.reinitializeThanksSection = function() {
     }
 };
 
+// Reinitialize Exclude section
+window.reinitializeExcludeSection = function() {
+    if (window.ExcludeSection && window.EXCLUDE_CONFIG) {
+        return new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
+    } else {
+        console.error('ExcludeSection class or EXCLUDE_CONFIG not available');
+        return false;
+    }
+};
+
 // Debug helper for Thanks section
 window.debugThanks = function() {
     console.log('=== Thanks Section Debug Info ===');
@@ -679,6 +701,22 @@ window.debugThanks = function() {
         console.log('Contact name:', window.THANKS_CONFIG.contact?.name);
         console.log('Has portrait:', window.THANKS_CONFIG.contact?.showPortrait);
         console.log('Social channel:', window.THANKS_CONFIG.socialMedia?.channelName);
+    }
+};
+
+// Debug helper for Exclude section
+window.debugExclude = function() {
+    console.log('=== Exclude Section Debug Info ===');
+    console.log('ExcludeSection loaded:', !!window.ExcludeSection);
+    console.log('Container found:', !!document.getElementById('exclude-section'));
+    console.log('Config:', window.EXCLUDE_CONFIG);
+    
+    if (window.EXCLUDE_CONFIG) {
+        console.log('Talent Pool enabled:', window.EXCLUDE_CONFIG.talentPool?.enabled);
+        console.log('Alternative paths count:', window.EXCLUDE_CONFIG.alternativePaths?.length);
+        console.log('Social media platforms enabled:', Object.entries(window.EXCLUDE_CONFIG.socialMedia || {})
+            .filter(([_, settings]) => settings.enabled)
+            .map(([platform]) => platform));
     }
 };
 
