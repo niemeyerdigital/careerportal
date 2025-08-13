@@ -1,7 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
- * Includes Cookie Banner, Thanks Section, and Exclude Section support
+ * Includes Cookie Banner, Thanks, Exclude, and Application Section support
  */
 
 class CareerPortalLoader {
@@ -124,7 +124,8 @@ class CareerPortalLoader {
             'styles/sections/positions.css',
             'styles/sections/footer.css',
             'styles/sections/thanks.css',
-            'styles/sections/exclude.css'  // Added exclude.css
+            'styles/sections/exclude.css',
+            'styles/sections/application.css'  // Added application.css
         ];
         
         console.log('📦 Loading CSS files...');
@@ -398,7 +399,8 @@ if (document.readyState === 'loading') {
                 'styles/sections/positions.css',
                 'styles/sections/footer.css',
                 'styles/sections/thanks.css',
-                'styles/sections/exclude.css'  // Added exclude.css
+                'styles/sections/exclude.css',
+                'styles/sections/application.css'  // Added application.css
             ];
             
             console.log('📦 Loading CSS files...');
@@ -444,8 +446,8 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 6. Load all section modules (including thanks and exclude)
-            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude'];
+            // 6. Load all section modules (including application)
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude', 'application'];
             
             for (const section of sections) {
                 const response = await fetch(BASE_URL + `sections/${section}Section.js`);
@@ -492,6 +494,12 @@ if (document.readyState === 'loading') {
                 console.log('🎉 Exclude section initialized successfully!');
             }
             
+            // Initialize Application section if it exists
+            if (window.ApplicationSection && document.getElementById('application-section') && window.APPLICATION_CONFIG) {
+                new window.ApplicationSection(window.APPLICATION_CONFIG, 'application-section');
+                console.log('🎉 Application section initialized successfully!');
+            }
+            
         } catch (error) {
             console.error('❌ Failed to load Career Portal:', error);
         }
@@ -521,7 +529,8 @@ window.debugCareerPortal = function() {
         'FooterSection',
         'PositionsSection',
         'ThanksSection',
-        'ExcludeSection',  // Added ExcludeSection
+        'ExcludeSection',
+        'ApplicationSection',  // Added ApplicationSection
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -561,6 +570,7 @@ window.debugCareerPortal = function() {
     const positionsElement = document.getElementById('positions-section');
     const thanksElement = document.getElementById('thanks-section');
     const excludeElement = document.getElementById('exclude-section');
+    const applicationElement = document.getElementById('application-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
@@ -569,6 +579,7 @@ window.debugCareerPortal = function() {
     console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Thanks Section Element: ${thanksElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Exclude Section Element: ${excludeElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Application Section Element: ${applicationElement ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
@@ -579,6 +590,7 @@ window.debugCareerPortal = function() {
     console.log('Positions Config:', window.POSITIONS_CONFIG);
     console.log('Thanks Config:', window.THANKS_CONFIG);
     console.log('Exclude Config:', window.EXCLUDE_CONFIG);
+    console.log('Application Config:', window.APPLICATION_CONFIG);
 };
 
 // Debug helper for Cookie Banner
@@ -690,6 +702,16 @@ window.reinitializeExcludeSection = function() {
     }
 };
 
+// Reinitialize Application section
+window.reinitializeApplicationSection = function() {
+    if (window.ApplicationSection && window.APPLICATION_CONFIG) {
+        return new window.ApplicationSection(window.APPLICATION_CONFIG, 'application-section');
+    } else {
+        console.error('ApplicationSection class or APPLICATION_CONFIG not available');
+        return false;
+    }
+};
+
 // Debug helper for Thanks section
 window.debugThanks = function() {
     console.log('=== Thanks Section Debug Info ===');
@@ -717,6 +739,36 @@ window.debugExclude = function() {
         console.log('Social media platforms enabled:', Object.entries(window.EXCLUDE_CONFIG.socialMedia || {})
             .filter(([_, settings]) => settings.enabled)
             .map(([platform]) => platform));
+    }
+};
+
+// Debug helper for Application section
+window.debugApplication = function() {
+    console.log('=== Application Section Debug Info ===');
+    console.log('ApplicationSection loaded:', !!window.ApplicationSection);
+    console.log('Container found:', !!document.getElementById('application-section'));
+    console.log('Config:', window.APPLICATION_CONFIG);
+    
+    if (window.APPLICATION_CONFIG) {
+        console.log('Prompt banner enabled:', window.APPLICATION_CONFIG.showPromptBanner);
+        console.log('Validation enabled:', window.APPLICATION_CONFIG.enableValidation);
+        
+        if (window.APPLICATION_CONFIG.validation) {
+            console.log('Phone validation:', window.APPLICATION_CONFIG.validation.validatePhone);
+            console.log('Email validation:', window.APPLICATION_CONFIG.validation.validateEmail);
+            console.log('Disable submit until valid:', window.APPLICATION_CONFIG.validation.disableSubmitUntilValid);
+        }
+        
+        // Check for form elements
+        const applicationForm = document.querySelector('[data-title="ApplicationForm"]');
+        const phoneInput = document.querySelector('[data-title="phone_number_input"]');
+        const emailInput = document.querySelector('[data-title="email_input"]');
+        const submitButton = document.querySelector('[data-title="button_form"]');
+        
+        console.log('Application form found:', !!applicationForm);
+        console.log('Phone input found:', !!phoneInput);
+        console.log('Email input found:', !!emailInput);
+        console.log('Submit button found:', !!submitButton);
     }
 };
 
