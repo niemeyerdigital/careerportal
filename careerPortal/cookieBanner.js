@@ -1,653 +1,808 @@
-/* ====================================================================
-   COOKIE BANNER MODULE
-   GDPR-compliant cookie consent with light modern design
-   ==================================================================== */
+/**
+ * Cookie Banner Module
+ * GDPR-compliant cookie consent management with Facebook Pixel integration
+ */
 
-/* Base container */
-.cookie-banner-module {
-    position: fixed;
-    z-index: 99999;
-    font-family: var(--font-family);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
-}
-
-.cookie-banner-module.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-}
-
-/* Position variants */
-.cookie-banner-module.cookie-position-bottom-left {
-    bottom: 20px;
-    left: 20px;
-    right: auto;
-}
-
-.cookie-banner-module.cookie-position-bottom-right {
-    bottom: 20px;
-    right: 20px;
-    left: auto;
-}
-
-.cookie-banner-module.cookie-position-center {
-    bottom: 50%;
-    left: 50%;
-    transform: translate(-50%, 50%);
-}
-
-.cookie-banner-module.cookie-position-center.show {
-    transform: translate(-50%, 50%) scale(1);
-    opacity: 1;
-}
-
-/* Overlay */
-.cookie-banner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 99998;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.cookie-banner-overlay.show {
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* Main container - Light theme */
-.cookie-banner-container {
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
-    border-radius: 20px;
-    padding: 28px;
-    width: 420px;
-    max-width: calc(100vw - 40px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08),
-                0 2px 10px rgba(0, 0, 0, 0.04);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Gradient border effect using primary color */
-.cookie-banner-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-        var(--primary-color) 0%, 
-        var(--secondary-color) 50%, 
-        var(--primary-color) 100%);
-    background-size: 200% 100%;
-    animation: gradientSlide 3s ease infinite;
-}
-
-@keyframes gradientSlide {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Icon wrapper */
-.cookie-banner-icon-wrapper {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    z-index: 1;
-}
-
-/* Animated cookie icon with emoji - FULL OPACITY */
-.cookie-icon-animated {
-    position: relative;
-    font-size: 80px;
-    animation: cookieFloat 3s ease-in-out infinite;
-    opacity: 1;
-}
-
-.cookie-icon-animated .cookie-emoji {
-    display: block;
-    transform: rotate(-15deg);
-}
-
-.cookie-bite {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    background: #ffffff;
-    border-radius: 50%;
-    top: 15px;
-    right: 20px;
-    animation: bite 3s ease-in-out infinite;
-}
-
-@keyframes cookieFloat {
-    0%, 100% { transform: translateY(0) rotate(-15deg); }
-    50% { transform: translateY(-10px) rotate(-10deg); }
-}
-
-@keyframes bite {
-    0%, 70%, 100% { transform: scale(0); }
-    80%, 90% { transform: scale(1.1); }
-}
-
-/* Static cookie icon with emoji - FULL OPACITY */
-.cookie-icon-static {
-    font-size: 80px;
-    transform: rotate(-15deg);
-    opacity: 1;
-}
-
-/* Content */
-.cookie-banner-content {
-    position: relative;
-    z-index: 2;
-}
-
-/* Headline - Dark text - LARGER */
-.cookie-banner-headline {
-    font-size: calc(var(--font-xl) * 1.4);
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 60px 12px 0;
-    line-height: 1.2;
-}
-
-/* Description - Gray text - LARGER */
-.cookie-banner-description {
-    font-size: calc(var(--font-sm) * 1.4);
-    color: #666666;
-    line-height: 1.6;
-    margin: 0 0 16px 0;
-}
-
-/* Links with accent color - LARGER */
-.cookie-banner-links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    font-size: calc(var(--font-sm) * 1.3);
-}
-
-.cookie-banner-link {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.cookie-banner-link::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--primary-color);
-    transition: width 0.3s ease;
-}
-
-.cookie-banner-link:hover {
-    color: var(--hover-color);
-}
-
-.cookie-banner-link:hover::after {
-    width: 100%;
-}
-
-.cookie-link-separator {
-    color: #cccccc;
-    user-select: none;
-}
-
-/* Categories section - Light background */
-.cookie-categories-section {
-    margin: 24px 0;
-    border: 1px solid #e5e5e5;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fafafa;
-}
-
-/* Category row */
-.cookie-category-row {
-    border-bottom: 1px solid #e5e5e5;
-    transition: background 0.2s ease;
-    background: #ffffff;
-}
-
-.cookie-category-row:last-child {
-    border-bottom: none;
-}
-
-.cookie-category-row:hover {
-    background: #f8f8f8;
-}
-
-/* Category header */
-.cookie-category-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.cookie-category-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.cookie-category-icon {
-    font-size: calc(var(--font-sm) * 1.3);
-    color: #999999;
-    transition: all 0.3s ease;
-    width: 20px;
-}
-
-.cookie-category-row.expanded .cookie-category-icon {
-    color: var(--primary-color);
-}
-
-.cookie-category-label {
-    font-size: calc(var(--font-sm) * 1.25);
-    font-weight: 600;
-    color: #333333;
-    margin: 0;
-}
-
-/* Category description - LARGER */
-.cookie-category-description {
-    display: none;
-    padding: 0 16px 14px 42px;
-    font-size: calc(var(--font-xs) * 1.3);
-    color: #666666;
-    line-height: 1.5;
-    margin: 0;
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+window.CookieBannerModule = class CookieBannerModule {
+    constructor(config) {
+        this.config = this.mergeConfig(config);
+        this.consentState = this.loadConsentState();
+        this.bannerId = 'cookie-banner-module';
+        this.initialized = false;
+        
+        // Initialize immediately for GDPR compliance
+        this.init();
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    /**
+     * Merge user config with defaults
+     */
+    mergeConfig(userConfig) {
+        const defaults = {
+            facebook: {
+                pixelId: null,
+                enabled: false,
+                events: {
+                    pageView: true,
+                    viewContent: true,
+                    search: true,
+                    lead: true,
+                    completeRegistration: true
+                }
+            },
+            banner: {
+                headline: "Mehr Relevanz, mehr Möglichkeiten",
+                description: "Wir nutzen Cookies, um unsere Karriereseite optimal für dich zu gestalten. Einige sind essenziell, andere verbessern dein Nutzungserlebnis.",
+                privacyPolicyUrl: "#datenschutz",
+                position: "bottom-left",
+                showOverlay: true,
+                animation: "slide",
+                autoShowDelay: 500,
+                iconType: "animated" // "animated", "static", or "none"
+            },
+            categories: {
+                essential: {
+                    label: "Essenziell",
+                    description: "Diese Cookies sind für den Betrieb der Webseite erforderlich.",
+                    required: true,
+                    icon: "fa-solid fa-shield-halved"
+                },
+                analytics: {
+                    label: "Analyse",
+                    description: "Diese Cookies helfen uns, die Nutzung der Seite zu verstehen.",
+                    defaultEnabled: false,
+                    icon: "fa-solid fa-chart-line"
+                },
+                marketing: {
+                    label: "Marketing",
+                    description: "Diese Cookies ermöglichen personalisierte Werbung.",
+                    defaultEnabled: false,
+                    icon: "fa-solid fa-bullhorn"
+                }
+            },
+            buttons: {
+                acceptAll: {
+                    text: "Ja, alle zustimmen",
+                    style: "primary"
+                },
+                saveSettings: {
+                    text: "Einstellung speichern",
+                    style: "secondary"
+                },
+                decline: {
+                    text: "Nur Essenzielle",
+                    style: "tertiary",
+                    enabled: false
+                }
+            },
+            tracking: {
+                onConsentGiven: true,
+                onBannerDismissed: true,
+                onSettingsChanged: true
+            },
+            advanced: {
+                cookieLifetime: 365, // days
+                reShowAfterDays: null, // null = never, number = days
+                debugMode: false
+            }
+        };
+
+        // Deep merge
+        return this.deepMerge(defaults, userConfig || {});
+    }
+
+    /**
+     * Deep merge utility
+     */
+    deepMerge(target, source) {
+        const output = Object.assign({}, target);
+        if (this.isObject(target) && this.isObject(source)) {
+            Object.keys(source).forEach(key => {
+                if (this.isObject(source[key])) {
+                    if (!(key in target))
+                        Object.assign(output, { [key]: source[key] });
+                    else
+                        output[key] = this.deepMerge(target[key], source[key]);
+                } else {
+                    Object.assign(output, { [key]: source[key] });
+                }
+            });
+        }
+        return output;
+    }
+
+    /**
+     * Check if value is object
+     */
+    isObject(item) {
+        return item && typeof item === 'object' && !Array.isArray(item);
+    }
+
+    /**
+     * Initialize cookie banner
+     */
+    init() {
+        if (this.initialized) return;
+        
+        // Always create the banner elements (including collapsed button)
+        this.createBanner();
+        this.setupEventListeners();
+        
+        // Check if we should show the full banner or just the collapsed button
+        if (this.shouldShowBanner()) {
+            this.showBanner();
+        } else {
+            // Show collapsed button and initialize tracking
+            this.showCollapsedOnly();
+            this.initializeTracking();
+        }
+        
+        this.initialized = true;
+        this.log('Cookie banner initialized');
+    }
+
+    /**
+     * Check if banner should be shown
+     */
+    shouldShowBanner() {
+        const hasSetPreferences = localStorage.getItem('cookiePreferencesSet') === 'true';
+        
+        // Check if we should re-show after certain days
+        if (hasSetPreferences && this.config.advanced.reShowAfterDays) {
+            const lastShown = localStorage.getItem('cookiePreferencesDate');
+            if (lastShown) {
+                const daysSince = (Date.now() - parseInt(lastShown)) / (1000 * 60 * 60 * 24);
+                if (daysSince >= this.config.advanced.reShowAfterDays) {
+                    return true;
+                }
+            }
+        }
+        
+        return !hasSetPreferences;
+    }
+
+    /**
+     * Create banner HTML
+     */
+    createBanner() {
+        // Remove existing banner if any
+        const existing = document.getElementById(this.bannerId);
+        if (existing) existing.remove();
+
+        // Create container
+        const container = document.createElement('div');
+        container.id = this.bannerId;
+        container.className = 'cookie-banner-module cookie-position-' + this.config.banner.position;
+        
+        // Build HTML
+        container.innerHTML = this.getBannerHTML();
+        
+        // Add to body
+        document.body.appendChild(container);
+        
+        // Add overlay if configured
+        if (this.config.banner.showOverlay) {
+            const overlay = document.createElement('div');
+            overlay.id = 'cookie-banner-overlay';
+            overlay.className = 'cookie-banner-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        // Add collapsed button (cookie emoji only)
+        const collapsedBtn = document.createElement('div');
+        collapsedBtn.id = 'cookie-banner-collapsed';
+        collapsedBtn.className = 'cookie-banner-collapsed';
+        collapsedBtn.innerHTML = '<span class="cookie-collapsed-emoji">🍪</span>';
+        document.body.appendChild(collapsedBtn);
+    }
+
+    /**
+     * Get banner HTML
+     */
+    getBannerHTML() {
+        const categories = this.getCategoriesHTML();
+        const buttons = this.getButtonsHTML();
+        const icon = this.getIconHTML();
+        
+        return `
+            <div class="cookie-banner-container">
+                ${icon}
+                <div class="cookie-banner-content">
+                    <h2 class="cookie-banner-headline">${this.config.banner.headline}</h2>
+                    <p class="cookie-banner-description">${this.config.banner.description}</p>
+                    <div class="cookie-banner-links">
+                        <a href="${this.config.banner.privacyPolicyUrl}" target="_blank" class="cookie-banner-link">
+                            Datenschutzerklärung
+                        </a>
+                    </div>
+                    <div class="cookie-categories-section">
+                        ${categories}
+                    </div>
+                    <div class="cookie-banner-actions">
+                        ${buttons}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get icon HTML
+     */
+    getIconHTML() {
+        if (this.config.banner.iconType === 'none') return '';
+        
+        if (this.config.banner.iconType === 'animated') {
+            return `
+                <div class="cookie-banner-icon-wrapper">
+                    <div class="cookie-icon-animated">
+                        <div class="cookie-bite"></div>
+                        <span class="cookie-emoji">🍪</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="cookie-banner-icon-wrapper">
+                <span class="cookie-icon-static">🍪</span>
+            </div>
+        `;
+    }
+
+    /**
+     * Get categories HTML
+     */
+    getCategoriesHTML() {
+        let html = '';
+        
+        for (const [key, category] of Object.entries(this.config.categories)) {
+            const isChecked = this.consentState[key] || category.required;
+            const isDisabled = category.required;
+            
+            html += `
+                <div class="cookie-category-row" data-category="${key}">
+                    <div class="cookie-category-header">
+                        <div class="cookie-category-info">
+                            <i class="${category.icon || 'fa-solid fa-caret-right'} cookie-category-icon"></i>
+                            <h3 class="cookie-category-label">${category.label}</h3>
+                        </div>
+                        <div class="cookie-toggle-switch ${isDisabled ? 'disabled' : ''}" data-category="${key}">
+                            <input type="checkbox" 
+                                   id="cookie-${key}-toggle" 
+                                   ${isChecked ? 'checked' : ''} 
+                                   ${isDisabled ? 'disabled' : ''}>
+                            <span class="cookie-toggle-slider"></span>
+                        </div>
+                    </div>
+                    <p class="cookie-category-description">${category.description}</p>
+                </div>
+            `;
+        }
+        
+        return html;
+    }
+
+    /**
+     * Get buttons HTML
+     */
+    getButtonsHTML() {
+        let html = '';
+        
+        // Decline button (if enabled)
+        if (this.config.buttons.decline.enabled) {
+            html += `
+                <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">
+                    ${this.config.buttons.decline.text}
+                </button>
+            `;
+        }
+        
+        // Save settings button
+        html += `
+            <button class="cookie-btn cookie-btn-save" id="cookie-save-btn">
+                ${this.config.buttons.saveSettings.text}
+            </button>
+        `;
+        
+        // Accept all button
+        html += `
+            <button class="cookie-btn cookie-btn-accept" id="cookie-accept-btn">
+                ${this.config.buttons.acceptAll.text}
+            </button>
+        `;
+        
+        return html;
+    }
+
+    /**
+     * Setup event listeners
+     */
+    setupEventListeners() {
+        // Accept all button
+        const acceptBtn = document.getElementById('cookie-accept-btn');
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', () => this.acceptAll());
+        }
+
+        // Save settings button
+        const saveBtn = document.getElementById('cookie-save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveSettings());
+        }
+
+        // Decline button
+        const declineBtn = document.getElementById('cookie-decline-btn');
+        if (declineBtn) {
+            declineBtn.addEventListener('click', () => this.declineAll());
+        }
+
+        // Toggle switches
+        document.querySelectorAll('.cookie-toggle-switch:not(.disabled)').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                const checkbox = toggle.querySelector('input');
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                this.updateToggleVisual(toggle, checkbox.checked);
+            });
+        });
+
+        // Category rows (accordion)
+        document.querySelectorAll('.cookie-category-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                if (!e.target.closest('.cookie-toggle-switch')) {
+                    this.toggleAccordion(header);
+                }
+            });
+        });
+
+        // Collapsed button
+        const collapsedBtn = document.getElementById('cookie-banner-collapsed');
+        if (collapsedBtn) {
+            collapsedBtn.addEventListener('click', () => this.showBanner());
+        }
+
+        // Overlay click - DO NOT close banner on overlay click
+        // Users must make a choice
+        const overlay = document.getElementById('cookie-banner-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Do nothing - force user to make a choice
+            });
+        }
+    }
+
+    /**
+     * Toggle accordion - Only one open at a time
+     */
+    toggleAccordion(header) {
+        const row = header.parentElement;
+        const description = row.querySelector('.cookie-category-description');
+        const icon = header.querySelector('.cookie-category-icon');
+        const isCurrentlyExpanded = row.classList.contains('expanded');
+        
+        // Close all other accordions first
+        document.querySelectorAll('.cookie-category-row').forEach(otherRow => {
+            const otherDesc = otherRow.querySelector('.cookie-category-description');
+            const otherIcon = otherRow.querySelector('.cookie-category-icon');
+            
+            otherRow.classList.remove('expanded');
+            if (otherDesc) otherDesc.style.display = 'none';
+            if (otherIcon && otherIcon.classList.contains('fa-caret-right')) {
+                otherIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        // If this one wasn't expanded, expand it
+        if (!isCurrentlyExpanded) {
+            row.classList.add('expanded');
+            if (description) description.style.display = 'block';
+            if (icon && icon.classList.contains('fa-caret-right')) {
+                icon.style.transform = 'rotate(90deg)';
+            }
+        }
+    }
+
+    /**
+     * Update toggle visual
+     */
+    updateToggleVisual(toggle, checked) {
+        if (checked) {
+            toggle.classList.add('active');
+        } else {
+            toggle.classList.remove('active');
+        }
+    }
+
+    /**
+     * Accept all cookies
+     */
+    acceptAll() {
+        this.log('Accept all clicked');
+        
+        // Set all non-essential categories to true
+        for (const key of Object.keys(this.config.categories)) {
+            this.consentState[key] = true;
+        }
+        
+        this.saveConsentState();
+        this.initializeTracking();
+        this.hideBanner(true);
+        this.trackEvent('ConsentGiven', { type: 'accept_all' });
+    }
+
+    /**
+     * Save current settings
+     */
+    saveSettings() {
+        this.log('Save settings clicked');
+        
+        // Read current toggle states
+        for (const key of Object.keys(this.config.categories)) {
+            if (!this.config.categories[key].required) {
+                const toggle = document.getElementById('cookie-' + key + '-toggle');
+                if (toggle) {
+                    this.consentState[key] = toggle.checked;
+                }
+            } else {
+                this.consentState[key] = true;
+            }
+        }
+        
+        this.saveConsentState();
+        this.initializeTracking();
+        this.hideBanner(true);
+        this.trackEvent('ConsentGiven', { type: 'custom_settings' });
+    }
+
+    /**
+     * Decline all non-essential cookies
+     */
+    declineAll() {
+        this.log('Decline all clicked');
+        
+        // Set only essential to true
+        for (const [key, category] of Object.entries(this.config.categories)) {
+            this.consentState[key] = category.required || false;
+        }
+        
+        this.saveConsentState();
+        this.hideBanner(true);
+        this.trackEvent('ConsentGiven', { type: 'decline_all' });
+    }
+
+    /**
+     * Show collapsed button only (when preferences already set)
+     */
+    showCollapsedOnly() {
+        const banner = document.getElementById(this.bannerId);
+        const overlay = document.getElementById('cookie-banner-overlay');
+        const collapsed = document.getElementById('cookie-banner-collapsed');
+        
+        // Hide main banner and overlay
+        if (banner) {
+            banner.classList.remove('show');
+            banner.style.display = 'none';
+        }
+        if (overlay) {
+            overlay.classList.remove('show');
+            overlay.style.display = 'none';
+        }
+        
+        // Show collapsed button
+        if (collapsed) {
+            setTimeout(() => {
+                collapsed.classList.add('show');
+            }, 500);
+        }
+        
+        this.log('Showing collapsed button only (preferences already set)');
+    }
+
+    /**
+     * Show banner
+     */
+    showBanner() {
+        const banner = document.getElementById(this.bannerId);
+        const overlay = document.getElementById('cookie-banner-overlay');
+        const collapsed = document.getElementById('cookie-banner-collapsed');
+        
+        if (banner) {
+            // Make sure banner is visible
+            banner.style.display = 'block';
+            
+            // Reset toggle states
+            for (const [key, state] of Object.entries(this.consentState)) {
+                const toggle = document.getElementById('cookie-' + key + '-toggle');
+                if (toggle && !this.config.categories[key].required) {
+                    toggle.checked = state;
+                    this.updateToggleVisual(toggle.parentElement, state);
+                }
+            }
+            
+            // Hide collapsed button first
+            if (collapsed) collapsed.classList.remove('show');
+            
+            setTimeout(() => {
+                banner.classList.add('show');
+                if (overlay) {
+                    overlay.style.display = 'block';
+                    setTimeout(() => overlay.classList.add('show'), 10);
+                }
+            }, this.config.banner.autoShowDelay || 100);
+        }
+    }
+
+    /**
+     * Hide banner
+     */
+    hideBanner(showCollapsed) {
+        if (showCollapsed === undefined) showCollapsed = true;
+        
+        const banner = document.getElementById(this.bannerId);
+        const overlay = document.getElementById('cookie-banner-overlay');
+        const collapsed = document.getElementById('cookie-banner-collapsed');
+        
+        if (banner) {
+            banner.classList.remove('show');
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 500);
+        }
+        
+        if (overlay) {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+        
+        if (showCollapsed && collapsed) {
+            setTimeout(() => {
+                collapsed.classList.add('show');
+            }, 600);
+        }
+        
+        if (this.config.tracking.onBannerDismissed) {
+            this.trackEvent('BannerDismissed');
+        }
+    }
+
+    /**
+     * Load consent state from localStorage
+     */
+    loadConsentState() {
+        const state = {};
+        
+        for (const key of Object.keys(this.config.categories)) {
+            const stored = localStorage.getItem('cookie_consent_' + key);
+            if (stored !== null) {
+                state[key] = stored === 'true';
+            } else if (this.config.categories[key].required) {
+                state[key] = true;
+            } else {
+                state[key] = this.config.categories[key].defaultEnabled || false;
+            }
+        }
+        
+        return state;
+    }
+
+    /**
+     * Save consent state to localStorage
+     */
+    saveConsentState() {
+        for (const [key, value] of Object.entries(this.consentState)) {
+            localStorage.setItem('cookie_consent_' + key, value);
+        }
+        
+        localStorage.setItem('cookiePreferencesSet', 'true');
+        localStorage.setItem('cookiePreferencesDate', Date.now().toString());
+        
+        // Dispatch custom event
+        window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+            detail: this.consentState
+        }));
+        
+        this.log('Consent state saved:', this.consentState);
+    }
+
+    /**
+     * Initialize tracking based on consent
+     */
+    initializeTracking() {
+        // Initialize Facebook Pixel if marketing consent is given
+        if (this.consentState.marketing && this.config.facebook.enabled && this.config.facebook.pixelId) {
+            this.initFacebookPixel();
+        }
+        
+        // Initialize analytics if analytics consent is given
+        if (this.consentState.analytics) {
+            this.initAnalytics();
+        }
+    }
+
+    /**
+     * Initialize Facebook Pixel
+     */
+    initFacebookPixel() {
+        if (window.fbq) {
+            this.log('Facebook Pixel already initialized');
+            return;
+        }
+        
+        try {
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            
+            fbq('init', this.config.facebook.pixelId);
+            
+            if (this.config.facebook.events.pageView) {
+                fbq('track', 'PageView');
+            }
+            
+            this.log('Facebook Pixel initialized with ID:', this.config.facebook.pixelId);
+            
+            // Set global flag
+            window.cookieBannerFBPixelReady = true;
+            
+            // Dispatch event for other modules
+            window.dispatchEvent(new CustomEvent('fbPixelReady'));
+            
+        } catch (error) {
+            console.error('Failed to initialize Facebook Pixel:', error);
+        }
+    }
+
+    /**
+     * Initialize analytics
+     */
+    initAnalytics() {
+        // Google Analytics or other analytics initialization
+        this.log('Analytics initialized');
+        
+        // Set global flag
+        window.cookieBannerAnalyticsReady = true;
+        
+        // Dispatch event for other modules
+        window.dispatchEvent(new CustomEvent('analyticsReady'));
+    }
+
+    /**
+     * Track event (public method for other modules)
+     */
+    trackEvent(eventName, parameters) {
+        if (!parameters) parameters = {};
+        
+        // Only track if we have consent
+        if (!this.consentState.marketing) {
+            this.log('Event ' + eventName + ' not tracked - no marketing consent');
+            return;
+        }
+        
+        // Track with Facebook Pixel if available
+        if (window.fbq && this.config.facebook.enabled) {
+            const fbEventMap = {
+                'Lead': 'Lead',
+                'CompleteRegistration': 'CompleteRegistration',
+                'ViewContent': 'ViewContent',
+                'Search': 'Search',
+                'InitiateCheckout': 'InitiateCheckout',
+                'ConsentGiven': 'CustomEvent',
+                'BannerDismissed': 'CustomEvent'
+            };
+            
+            const fbEvent = fbEventMap[eventName] || 'CustomEvent';
+            
+            try {
+                if (fbEvent === 'CustomEvent') {
+                    fbq('trackCustom', eventName, parameters);
+                } else {
+                    fbq('track', fbEvent, parameters);
+                }
+                this.log('FB Pixel event tracked: ' + eventName, parameters);
+            } catch (error) {
+                console.error('Failed to track event ' + eventName + ':', error);
+            }
+        }
+        
+        // Track with Google Analytics if available
+        if (window.gtag && this.consentState.analytics) {
+            try {
+                gtag('event', eventName, parameters);
+                this.log('GA event tracked: ' + eventName, parameters);
+            } catch (error) {
+                console.error('Failed to track GA event ' + eventName + ':', error);
+            }
+        }
+    }
+
+    /**
+     * Check if consent is given for a category
+     */
+    hasConsent(category) {
+        return this.consentState[category] || false;
+    }
+
+    /**
+     * Update consent programmatically
+     */
+    updateConsent(category, value) {
+        if (this.config.categories[category]) {
+            this.consentState[category] = value;
+            this.saveConsentState();
+            this.initializeTracking();
+            this.log('Consent updated: ' + category + ' = ' + value);
+        }
+    }
+
+    /**
+     * Reset all preferences
+     */
+    resetPreferences() {
+        localStorage.removeItem('cookiePreferencesSet');
+        localStorage.removeItem('cookiePreferencesDate');
+        
+        for (const key of Object.keys(this.config.categories)) {
+            localStorage.removeItem('cookie_consent_' + key);
+        }
+        
+        this.consentState = this.loadConsentState();
+        this.showBanner();
+    }
+
+    /**
+     * Debug logging
+     */
+    log() {
+        if (this.config.advanced.debugMode) {
+            const args = Array.prototype.slice.call(arguments);
+            args.unshift('[CookieBanner]');
+            console.log.apply(console, args);
+        }
+    }
+
+    /**
+     * Get banner status
+     */
+    getStatus() {
+        return {
+            initialized: this.initialized,
+            consentState: this.consentState,
+            fbPixelReady: !!window.fbq,
+            config: this.config
+        };
+    }
+
+    /**
+     * Destroy banner
+     */
+    destroy() {
+        const banner = document.getElementById(this.bannerId);
+        const overlay = document.getElementById('cookie-banner-overlay');
+        const collapsed = document.getElementById('cookie-banner-collapsed');
+        
+        if (banner) banner.remove();
+        if (overlay) overlay.remove();
+        if (collapsed) collapsed.remove();
+        
+        this.initialized = false;
     }
 }
 
-/* Toggle switch - Light theme with green accent */
-.cookie-toggle-switch {
-    width: 44px;
-    height: 24px;
-    background: #D7D7D7;
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid #cccccc;
-}
+// Create global instance
+window.CookieBanner = null;
 
-.cookie-toggle-switch.active {
-    background: #1AAB27;
-    border-color: #1AAB27;
-    box-shadow: 0 0 12px rgba(26, 171, 39, 0.3);
-}
-
-.cookie-toggle-switch.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: #1AAB27;
-    border-color: #1AAB27;
-}
-
-.cookie-toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.cookie-toggle-slider {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 18px;
-    height: 18px;
-    background: #ffffff !important;
-    border-radius: 50%;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.cookie-toggle-switch input:checked + .cookie-toggle-slider,
-.cookie-toggle-switch.active .cookie-toggle-slider {
-    transform: translateX(20px);
-}
-
-/* Buttons section */
-.cookie-banner-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 24px;
-}
-
-/* Button base */
-.cookie-btn {
-    flex: 1;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: var(--font-sm);
-    font-weight: 600;
-    font-family: var(--font-family);
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.cookie-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.cookie-btn:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-/* Accept button - Primary accent - LARGER TEXT */
-.cookie-btn-accept {
-    background: var(--button-primary);
-    color: #ffffff;
-    box-shadow: 0 4px 12px var(--glow-color-light);
-    font-size: calc(var(--font-sm) * 1.6);
-}
-
-.cookie-btn-accept:hover {
-    background: var(--button-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--glow-color-light);
-}
-
-/* Save button - Light with border - LARGER TEXT */
-.cookie-btn-save {
-    background: #ffffff;
-    color: #333333;
-    border: 1px solid #D7D7D7;
-    font-size: calc(var(--font-sm) * 1.2);
-}
-
-.cookie-btn-save:hover {
-    background: #f8f8f8;
-    transform: translateY(-2px);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-/* Decline button - Minimal - LARGER TEXT */
-.cookie-btn-decline {
-    background: transparent;
-    color: #999999;
-    border: 1px solid #e5e5e5;
-    font-size: calc(var(--font-sm) * 1.2);
-}
-
-.cookie-btn-decline:hover {
-    border-color: #999999;
-    color: #666666;
-    background: #fafafa;
-}
-
-/* Collapsed cookie button - Light theme - BIGGER COOKIE, LESS PADDING */
-.cookie-banner-collapsed {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 99997;
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    padding: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.cookie-banner-collapsed.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-    animation: bounceIn 0.6s ease;
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0.3) translateY(20px);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.05) translateY(0);
-    }
-    70% {
-        transform: scale(0.9) translateY(0);
-    }
-    100% {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-}
-
-.cookie-banner-collapsed:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12),
-                0 0 20px var(--glow-color-light);
-    border-color: var(--primary-color);
-}
-
-.cookie-banner-collapsed:hover .cookie-collapsed-emoji {
-    animation: wiggle 2s ease-in-out infinite;
-}
-
-.cookie-collapsed-emoji {
-    font-size: 42px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-@keyframes wiggle {
-    0%, 90%, 100% { transform: rotate(0deg); }
-    92% { transform: rotate(-10deg); }
-    94% { transform: rotate(10deg); }
-    96% { transform: rotate(-10deg); }
-    98% { transform: rotate(10deg); }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .cookie-banner-module.cookie-position-bottom-left,
-    .cookie-banner-module.cookie-position-bottom-right {
-        left: 10px;
-        right: 10px;
-        bottom: 10px;
-        width: auto;
-    }
-    
-    .cookie-banner-container {
-        width: 100%;
-        max-width: none;
-        padding: 24px 20px;
-        border-radius: 16px;
-    }
-    
-    /* Use bigger root classes for mobile with !important */
-    .cookie-banner-headline {
-        font-size: 25px !important;
-        margin-right: 50px;
-    }
-    
-    .cookie-banner-description {
-        font-size: var(--font-lg) !important;
-    }
-    
-    /* SMALLER privacy link on mobile */
-    .cookie-banner-links {
-        font-size: var(--font-xs) !important;
-    }
-    
-    /* Bigger accordion headline on mobile */
-    .cookie-category-label {
-        font-size: var(--font-lg) !important;
-    }
-    
-    /* Bigger accordion content on mobile */
-    .cookie-category-description {
-        font-size: var(--font-md) !important;
-    }
-    
-    /* Cookie position adjustment for mobile - MUCH HIGHER AND FURTHER RIGHT */
-    .cookie-banner-icon-wrapper {
-        position: absolute;
-        top: -100px;
-        right: -90px;
-        z-index: 1;
-    }
-    
-    /* SMALLER cookie icon on mobile - 20% smaller (130px instead of 200px) */
-    .cookie-icon-animated,
-    .cookie-icon-static {
-        font-size: 130px !important;
-    }
-    
-    .cookie-banner-actions {
-        flex-direction: column;
-    }
-    
-    .cookie-btn {
-        width: 100%;
-        padding: 14px;
-    }
-    
-    /* Larger button text on mobile - these work with calc */
-    .cookie-btn-accept {
-        font-size: calc(var(--font-sm) * 1.6);
-    }
-    
-    .cookie-btn-save {
-        font-size: calc(var(--font-sm) * 1.2);
-    }
-    
-    .cookie-btn-decline {
-        font-size: calc(var(--font-sm) * 1.2);
-    }
-    
-    .cookie-banner-collapsed {
-        bottom: 15px;
-        left: 15px;
-        width: 48px;
-        height: 48px;
-    }
-    
-    .cookie-collapsed-emoji {
-        font-size: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-    .cookie-banner-container {
-        padding: 20px 16px;
-    }
-    
-    .cookie-banner-headline {
-        font-size: var(--font-lg);
-    }
-    
-    .cookie-banner-description {
-        font-size: calc(var(--font-xs) * 1.1);
-    }
-    
-    .cookie-category-label {
-        font-size: calc(var(--font-sm) * 0.95);
-    }
-    
-    .cookie-category-description {
-        font-size: calc(var(--font-xs) * 0.95);
-    }
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .cookie-icon-animated,
-    .cookie-bite,
-    .cookie-collapsed-icon {
-        animation: none;
-    }
-    
-    .cookie-banner-container::before {
-        animation: none;
-    }
-    
-    .cookie-banner-module,
-    .cookie-banner-overlay,
-    .cookie-banner-collapsed,
-    .cookie-btn,
-    .cookie-toggle-switch {
-        transition: none;
-    }
-}
-
-/* Dark mode adjustments (if needed) */
-@media (prefers-color-scheme: light) {
-    .cookie-banner-container {
-        background: #ffffff;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
-                    0 0 120px rgba(255, 107, 53, 0.1);
-    }
-    
-    .cookie-banner-headline {
-        color: #1a1a1a;
-    }
-    
-    .cookie-categories-section {
-        background: rgba(0, 0, 0, 0.02);
-    }
-    
-    .cookie-toggle-slider {
-        background: #ffffff !important;
-    }
+// Auto-initialize if config exists
+if (window.COOKIE_BANNER_CONFIG) {
+    window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
 }
