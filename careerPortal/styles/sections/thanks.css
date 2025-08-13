@@ -1,6 +1,6 @@
 /* ====================================================================
    THANKS SECTION (SectionThanks)
-   Thank you confirmation page with contact modal
+   Thank you confirmation page with contact modal - Soft UI Design
    ==================================================================== */
 
 /* Reset and normalize for ClickFunnels containers */
@@ -17,7 +17,7 @@ div[data-title='RowThanks'] .container {
     box-sizing: border-box !important;
 }
 
-/* Main wrapper - full viewport styling */
+/* Main wrapper - spacious full viewport styling */
 .thanks-wrapper {
     min-height: 100vh;
     background: linear-gradient(to bottom, #ffffff, #f7f7f9);
@@ -34,10 +34,11 @@ div[data-title='RowThanks'] .container {
     width: 100%;
     max-width: 80rem;
     margin: 0 auto;
+    padding: 0;
     box-sizing: border-box;
 }
 
-/* Banner - matches HTML exactly */
+/* Banner - soft elevated design with shimmer */
 .thanks-banner {
     border: 2px solid var(--primary-color);
     background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 140, 90, 0.05) 100%);
@@ -46,12 +47,12 @@ div[data-title='RowThanks'] .container {
     padding: 0.875rem 1.25rem;
     text-align: center;
     font-weight: 600;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     font-family: var(--font-family);
-    box-shadow: 0 4px 16px var(--glow-color-light);
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
     position: relative;
     overflow: hidden;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem; /* More spacious */
 }
 
 .thanks-banner::before {
@@ -69,37 +70,39 @@ div[data-title='RowThanks'] .container {
     to { left: 100%; }
 }
 
-/* Success header section */
+/* Success header section - more spacious */
 .thanks-center {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem; /* Increased spacing */
 }
 
+/* Success chip - soft design */
 .thanks-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.875rem;
     background: #ffffff;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e5e5e5;
     border-radius: 999px;
-    box-shadow: 0 1px 2px var(--shadow-light);
-    font-size: var(--font-xs);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    font-size: 0.875rem;
     font-weight: 600;
     color: #10b981;
     font-family: var(--font-family);
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .thanks-chip i {
     font-size: 1rem;
 }
 
+/* Title - large and spacious */
 .thanks-title {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 1rem 0; /* More space below */
     font-size: clamp(1.875rem, 2.5vw + 1rem, 3rem);
     line-height: 1.1;
     font-weight: 700;
@@ -108,30 +111,31 @@ div[data-title='RowThanks'] .container {
     text-wrap: balance;
 }
 
+/* Subtitle - softer gray */
 .thanks-subtitle {
-    margin: 0 0 1.5rem 0;
-    font-size: var(--font-md);
+    margin: 0 0 2rem 0; /* More space below */
+    font-size: 1.125rem;
     color: #6b7280;
     font-family: var(--font-family);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
-/* Quick Action Button - Primary filled style */
+/* Quick Action Button - prominent with soft shadows */
 .thanks-quick-action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1.75rem;
-    background: var(--button-primary);
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     border: none;
     border-radius: 999px;
     color: #ffffff;
     font-weight: 600;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     font-family: var(--font-family);
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 24px -12px var(--glow-color-light);
+    box-shadow: 0 8px 24px -12px rgba(255, 107, 53, 0.15);
     position: relative;
     outline: none;
 }
@@ -146,10 +150,10 @@ div[data-title='RowThanks'] .container {
 }
 
 .thanks-quick-action-btn:hover {
-    background: var(--button-primary-hover);
+    background: linear-gradient(135deg, #ff4d1a 0%, #cc4822 100%);
     transform: scale(1.05) translateY(-1px);
     animation: none;
-    box-shadow: 0 12px 28px -10px var(--glow-color-light);
+    box-shadow: 0 12px 28px -10px rgba(255, 107, 53, 0.15);
 }
 
 .thanks-quick-action-btn:active {
@@ -160,27 +164,27 @@ div[data-title='RowThanks'] .container {
     font-size: 1.125rem;
 }
 
-/* Grid layout */
+/* Grid layout - spacious with proper gaps */
 .thanks-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem; /* Increased gap */
+    margin-bottom: 3rem; /* More space below */
 }
 
 @media (min-width: 768px) {
     .thanks-grid { 
         grid-template-columns: repeat(3, 1fr); 
-        gap: 1.25rem; 
+        gap: 1.5rem; /* Even more gap on desktop */
     }
 }
 
-/* Cards - matching HTML exactly */
+/* Cards - soft elevated design */
 .thanks-card {
-    border: 2px solid var(--border-light);
+    border: 2px solid #e5e5e5;
     border-radius: 1rem;
     background: #ffffff;
-    box-shadow: 0 1px 2px var(--shadow-light);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     height: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
@@ -188,16 +192,17 @@ div[data-title='RowThanks'] .container {
 
 .thanks-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .thanks-card-content {
-    padding: 1.25rem;
+    padding: 1.5rem; /* More padding */
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
+/* Media object inside cards */
 .thanks-media {
     display: flex;
     align-items: flex-start;
@@ -219,20 +224,20 @@ div[data-title='RowThanks'] .container {
 }
 
 .thanks-media h2 {
-    font-size: var(--font-lg);
+    font-size: 1.25rem;
     margin: 0 0 0.5rem 0;
     font-family: var(--font-family);
     color: #111827;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
 .thanks-media p {
     margin: 0;
     color: #6b7280;
-    font-size: var(--font-xs);
+    font-size: 0.875rem;
     font-family: var(--font-family);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .thanks-highlight {
@@ -240,13 +245,14 @@ div[data-title='RowThanks'] .container {
     color: #4b5563;
 }
 
-/* Social button wrapper */
+/* Social button wrapper - proper spacing */
 .thanks-btn-wrapper {
     text-align: center;
-    margin-top: 1rem;
-    padding-top: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
 }
 
+/* Social button - soft gradient border style */
 .thanks-btn {
     display: inline-flex;
     align-items: center;
@@ -259,7 +265,7 @@ div[data-title='RowThanks'] .container {
     background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 90, 0.05));
     text-decoration: none;
     font-weight: 600;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     font-family: var(--font-family);
     transition: all 0.2s ease;
     width: auto;
@@ -267,46 +273,46 @@ div[data-title='RowThanks'] .container {
 }
 
 .thanks-btn:hover {
-    background: var(--button-primary);
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: #ffffff;
     border-color: transparent;
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px -12px var(--glow-color-light);
+    box-shadow: 0 8px 24px -12px rgba(255, 107, 53, 0.15);
 }
 
 .thanks-btn:active {
     transform: translateY(1px);
 }
 
-/* What to expect section */
+/* What to expect section - soft card design */
 .thanks-section {
     margin-bottom: 2.5rem;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e5e5e5;
     border-radius: 1.5rem;
     background: #ffffff;
-    padding: 1.25rem;
-    box-shadow: 0 1px 2px var(--shadow-light);
+    padding: 2rem; /* Spacious padding */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
     .thanks-section {
-        padding: 2rem;
+        padding: 1.5rem;
     }
 }
 
 .thanks-section-title {
-    font-size: var(--font-xl);
-    margin: 0 0 1.25rem 0;
+    font-size: 1.5rem;
+    margin: 0 0 1.5rem 0; /* More space below */
     font-weight: 700;
     font-family: var(--font-family);
     color: #111827;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
-/* Steps grid */
+/* Steps grid - spacious layout */
 .thanks-steps {
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem; /* Increased gap */
 }
 
 @media (min-width: 640px) {
@@ -321,15 +327,16 @@ div[data-title='RowThanks'] .container {
     }
 }
 
+/* Individual step - soft card design */
 .thanks-step {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    border: 1px solid var(--border-light);
+    gap: 0.875rem; /* Slightly larger gap */
+    border: 1px solid #e5e5e5;
     border-radius: 1rem;
     background: #ffffff;
-    padding: 1rem;
-    box-shadow: 0 1px 2px var(--shadow-light);
+    padding: 1.25rem; /* More padding */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .thanks-step-index {
@@ -338,10 +345,10 @@ div[data-title='RowThanks'] .container {
     height: 2rem;
     display: grid;
     place-items: center;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e5e5e5;
     border-radius: 999px;
     font-weight: 700;
-    font-size: var(--font-xs);
+    font-size: 0.875rem;
     color: var(--primary-color);
     font-family: var(--font-family);
     background: #ffffff;
@@ -349,24 +356,25 @@ div[data-title='RowThanks'] .container {
 
 .thanks-step p {
     margin: 0;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     color: #4b5563;
     font-family: var(--font-family);
-    line-height: 1.5;
+    line-height: 1.6;
     padding-top: 0.125rem;
 }
 
-/* Footnote */
+/* Footnote - subtle and spacious */
 .thanks-footnote {
-    margin-top: 2rem;
+    margin-top: 2.5rem; /* More space above */
     text-align: center;
     font-size: 0.75rem;
     color: #6b7280;
     font-family: var(--font-family);
-    line-height: 1.5;
+    line-height: 1.6;
+    padding: 0 1rem;
 }
 
-/* Modal Styles */
+/* Modal Styles - soft overlay and card */
 .thanks-modal-overlay {
     position: fixed;
     top: 0;
@@ -390,6 +398,7 @@ div[data-title='RowThanks'] .container {
     opacity: 1;
 }
 
+/* Modal container - soft rounded corners */
 .thanks-modal {
     background: white;
     border-radius: 1.5rem;
@@ -407,6 +416,7 @@ div[data-title='RowThanks'] .container {
     transform: translateY(0);
 }
 
+/* Modal close button */
 .thanks-modal-close {
     position: absolute;
     top: 1rem;
@@ -428,19 +438,21 @@ div[data-title='RowThanks'] .container {
     color: #4b5563;
 }
 
+/* Modal content - spacious padding */
 .thanks-modal-content {
-    padding: 2rem;
+    padding: 2.5rem 2rem 2rem; /* Extra top padding for close button */
 }
 
 .thanks-modal-header {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem; /* More space below */
 }
 
+/* Modal icon - soft background */
 .thanks-modal-icon {
     width: 3rem;
     height: 3rem;
-    margin: 0 auto 1rem;
+    margin: 0 auto 1.25rem; /* More space below */
     background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 90, 0.05));
     border-radius: 999px;
     display: flex;
@@ -454,38 +466,39 @@ div[data-title='RowThanks'] .container {
 }
 
 .thanks-modal-title {
-    font-size: var(--font-xl);
+    font-size: 1.5rem;
     font-weight: 700;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.75rem; /* More space below */
     color: #111827;
     font-family: var(--font-family);
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
 .thanks-modal-subtitle {
-    font-size: var(--font-sm);
+    font-size: 1rem;
     color: #6b7280;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
     font-family: var(--font-family);
 }
 
-/* Contact person */
+/* Contact person - soft gray background */
 .thanks-contact-person {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.25rem; /* More padding */
     background: #f9fafb;
     border-radius: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem; /* More space below */
 }
 
+/* Contact avatar */
 .thanks-contact-avatar {
     width: 3rem;
     height: 3rem;
     border-radius: 999px;
-    background: var(--button-primary);
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -515,38 +528,38 @@ div[data-title='RowThanks'] .container {
     font-weight: 600;
     color: #111827;
     margin: 0;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     font-family: var(--font-family);
-    line-height: 1.2;
+    line-height: 1.4;
 }
 
 .thanks-contact-position {
-    font-size: var(--font-xs);
+    font-size: 0.875rem;
     color: var(--primary-color);
-    margin: 0.125rem 0 0;
+    margin: 0.25rem 0 0; /* Slightly more space */
     font-family: var(--font-family);
-    line-height: 1.2;
+    line-height: 1.4;
 }
 
-/* Contact actions */
+/* Contact actions - spacious buttons */
 .thanks-contact-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.875rem; /* Slightly larger gap */
 }
 
 .thanks-contact-button {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1.25rem;
-    border: 1px solid var(--border-light);
+    gap: 0.875rem; /* Larger gap */
+    padding: 1rem 1.25rem; /* More padding */
+    border: 1px solid #e5e5e5;
     border-radius: 0.75rem;
     background: white;
     text-decoration: none;
     color: #111827;
     transition: all 0.2s ease;
-    font-size: var(--font-sm);
+    font-size: 1rem;
     font-family: var(--font-family);
 }
 
@@ -561,6 +574,7 @@ div[data-title='RowThanks'] .container {
     width: 1.25rem;
     text-align: center;
     flex-shrink: 0;
+    font-size: 1.125rem;
 }
 
 .thanks-contact-button-text {
@@ -569,61 +583,76 @@ div[data-title='RowThanks'] .container {
 }
 
 .thanks-contact-button-label {
-    font-size: var(--font-xs);
+    font-size: 0.875rem;
     color: #6b7280;
     margin: 0;
     font-family: var(--font-family);
-    line-height: 1.2;
+    line-height: 1.4;
 }
 
 .thanks-contact-button-value {
     font-weight: 600;
-    margin: 0.125rem 0 0;
+    margin: 0.25rem 0 0; /* Slightly more space */
     font-family: var(--font-family);
-    line-height: 1.2;
+    line-height: 1.4;
     word-break: break-word;
+    font-size: 1rem;
 }
 
-/* Animations */
+/* Animations - smooth and subtle */
 .fade-in-up {
     opacity: 0;
     transform: translateY(8px);
-    transition: opacity 400ms ease, transform 400ms ease;
-}
-
-.fade-in-up.show {
-    opacity: 1;
-    transform: translateY(0);
+    animation: fadeUp 400ms ease forwards;
 }
 
 .fade-in-up.slow {
-    transition-duration: 500ms;
-    transition-delay: 150ms;
+    animation-duration: 500ms;
+    animation-delay: 150ms;
 }
 
 .fade-in-down {
     opacity: 0;
     transform: translateY(-6px);
-    transition: opacity 350ms ease, transform 350ms ease;
+    animation: fadeDown 350ms ease forwards;
 }
 
-.fade-in-down.show {
-    opacity: 1;
-    transform: translateY(0);
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Mobile responsive */
+@keyframes fadeDown {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile responsive - maintain spaciousness */
 @media (max-width: 768px) {
     .thanks-wrapper {
         padding: 2rem 1rem;
     }
 
+    .thanks-banner {
+        margin-bottom: 2rem;
+    }
+
+    .thanks-center {
+        margin-bottom: 2.5rem;
+    }
+
     .thanks-title {
         font-size: 1.75rem;
+        margin-bottom: 0.75rem;
     }
 
     .thanks-subtitle {
         font-size: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .thanks-quick-action-btn {
@@ -632,23 +661,46 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-grid {
-        gap: 0.875rem;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .thanks-card-content {
+        padding: 1.25rem;
     }
 
     .thanks-section {
-        padding: 1.25rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .thanks-section-title {
         font-size: 1.375rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .thanks-steps {
+        gap: 1rem;
+    }
+
+    .thanks-step {
+        padding: 1rem;
     }
 
     .thanks-modal-content {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem 1.5rem;
     }
 
     .thanks-modal-title {
         font-size: 1.375rem;
+    }
+
+    .thanks-contact-person {
+        padding: 1rem;
+    }
+
+    .thanks-contact-button {
+        padding: 0.875rem 1rem;
     }
 }
 
@@ -660,14 +712,21 @@ div[data-title='RowThanks'] .container {
     .thanks-banner {
         font-size: 0.875rem;
         padding: 0.75rem 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .thanks-center {
+        margin-bottom: 2rem;
     }
 
     .thanks-title {
         font-size: 1.5rem;
+        margin-bottom: 0.625rem;
     }
 
     .thanks-subtitle {
         font-size: 0.9375rem;
+        margin-bottom: 1.25rem;
     }
 
     .thanks-quick-action-btn {
@@ -677,6 +736,11 @@ div[data-title='RowThanks'] .container {
 
     .thanks-quick-action-btn i {
         font-size: 1rem;
+    }
+
+    .thanks-grid {
+        gap: 0.875rem;
+        margin-bottom: 2rem;
     }
 
     .thanks-card-content {
@@ -691,17 +755,28 @@ div[data-title='RowThanks'] .container {
         font-size: 0.8125rem;
     }
 
+    .thanks-btn-wrapper {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+    }
+
     .thanks-btn {
         padding: 0.625rem 1.25rem;
         font-size: 0.875rem;
     }
 
     .thanks-section {
-        padding: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 1.75rem;
     }
 
     .thanks-section-title {
         font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .thanks-steps {
+        gap: 0.875rem;
     }
 
     .thanks-step {
@@ -713,23 +788,47 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-modal-content {
-        padding: 1.25rem;
+        padding: 1.75rem 1.25rem 1.25rem;
+    }
+
+    .thanks-modal-header {
+        margin-bottom: 1.5rem;
     }
 
     .thanks-modal-title {
         font-size: 1.25rem;
+        margin-bottom: 0.5rem;
     }
 
     .thanks-modal-subtitle {
         font-size: 0.875rem;
     }
 
+    .thanks-contact-person {
+        padding: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .thanks-contact-actions {
+        gap: 0.75rem;
+    }
+
     .thanks-contact-button {
         padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .thanks-contact-button-label {
+        font-size: 0.75rem;
+    }
+
+    .thanks-contact-button-value {
+        font-size: 0.875rem;
     }
 
     .thanks-footnote {
         font-size: 0.6875rem;
+        margin-top: 2rem;
     }
 }
 
@@ -766,4 +865,9 @@ div[data-title='RowThanks'] .container {
 .thanks-wrapper {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes */
+.mb-6 {
+    margin-bottom: 1.5rem;
 }
