@@ -1,0 +1,570 @@
+/* ====================================================================
+   APPLICATION SECTION (SectionApplication)
+   Enhanced styling for ClickFunnels application forms
+   ==================================================================== */
+
+/* Reset and normalize for ClickFunnels containers */
+div[data-title='SectionApplication'],
+div[data-title='RowApplication'],
+div[data-title='ApplicationForm'] {
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Main application wrapper */
+.application-enhanced {
+    font-family: var(--font-family);
+    color: var(--primary-text);
+    line-height: 1.6;
+    position: relative;
+}
+
+/* Enhanced Application Form Container */
+div[data-title='ApplicationForm'],
+.enhanced-form {
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin: 2rem auto;
+    max-width: 800px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.enhanced-form:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 15px 50px rgba(255, 107, 53, 0.15);
+}
+
+/* Prompt Banner */
+.application-prompt-banner {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    margin: -2.5rem -2.5rem 2rem -2.5rem;
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.25);
+    animation: slideDown 0.4s ease-out;
+    transition: all 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.application-prompt-banner.hiding {
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+
+.prompt-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+}
+
+.prompt-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.prompt-icon i {
+    font-size: 1.25rem;
+    color: white;
+}
+
+.prompt-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.prompt-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.prompt-subtitle {
+    font-size: var(--font-sm);
+    opacity: 0.95;
+}
+
+.prompt-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.prompt-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.prompt-close i {
+    font-size: 1rem;
+}
+
+/* Position Header Enhancement */
+div[data-title='PositionApplication'],
+.enhanced-position-header {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 90, 0.05));
+    border-left: 4px solid var(--primary-color);
+    padding: 1.5rem !important;
+    margin-bottom: 2rem !important;
+    border-radius: 0.75rem;
+}
+
+.enhanced-position-header h2,
+.enhanced-position-header h3 {
+    color: var(--primary-text) !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    font-size: var(--font-xl) !important;
+}
+
+/* Enhanced Input Fields */
+.elInput,
+.enhanced-input {
+    margin-bottom: 1.5rem !important;
+    animation: fadeInUp 0.4s ease-out both;
+}
+
+.enhanced-input input,
+.enhanced-input select,
+.enhanced-input textarea,
+.elInput input,
+.elInput select,
+.elInput textarea {
+    width: 100% !important;
+    padding: 1rem 1.25rem !important;
+    background: var(--secondary-bg) !important;
+    border: 2px solid var(--border-light) !important;
+    border-radius: 0.75rem !important;
+    color: var(--primary-text) !important;
+    font-size: var(--font-sm) !important;
+    font-family: var(--font-family) !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+}
+
+.enhanced-input input:focus,
+.enhanced-input select:focus,
+.enhanced-input textarea:focus,
+.elInput input:focus,
+.elInput select:focus,
+.elInput textarea:focus {
+    border-color: var(--primary-color) !important;
+    background: var(--primary-bg) !important;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1) !important;
+}
+
+/* Input validation states */
+.enhanced-input input.input-valid,
+.elInput input.input-valid {
+    border-color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.05) !important;
+}
+
+.enhanced-input input.input-invalid,
+.elInput input.input-invalid {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+/* Form Headers Enhancement */
+div[data-title='HeaderForm'],
+.enhanced-form-header {
+    color: var(--secondary-text) !important;
+    font-size: var(--font-sm) !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.enhanced-form-header::before {
+    content: '';
+    width: 3px;
+    height: 1em;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Validation Feedback */
+.validation-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.validation-feedback i {
+    flex-shrink: 0;
+}
+
+.feedback-valid {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.feedback-invalid {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Survey Progress Counter Enhancement */
+.surveyStepProgressCounter,
+.enhanced-progress {
+    background: var(--secondary-bg) !important;
+    border: 2px solid var(--border-light) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    margin: 2rem 0 !important;
+}
+
+.surveyStepProgressCounter .progress-bar {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)) !important;
+    height: 8px !important;
+    border-radius: 4px !important;
+    position: relative;
+    overflow: hidden;
+    transition: width 0.5s ease;
+}
+
+.surveyStepProgressCounter .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-pulse {
+    animation: pulse 0.6s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.02); }
+}
+
+/* Submit Button Enhancement */
+div[data-title='button_form'],
+.enhanced-submit-button {
+    margin-top: 2rem !important;
+}
+
+div[data-title='button_form'] button,
+.enhanced-submit-button button,
+div[data-title='button_form'] a,
+.enhanced-submit-button a {
+    width: 100% !important;
+    padding: 1.25rem 2rem !important;
+    background: var(--button-primary) !important;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    color: white !important;
+    font-size: var(--font-md) !important;
+    font-weight: 700 !important;
+    font-family: var(--font-family) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: none !important;
+    letter-spacing: -0.02em !important;
+    box-shadow: 0 10px 30px -10px rgba(255, 107, 53, 0.4) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+div[data-title='button_form'] button::before,
+.enhanced-submit-button button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+div[data-title='button_form'] button:hover,
+.enhanced-submit-button button:hover {
+    background: var(--button-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 15px 35px -10px rgba(255, 107, 53, 0.5) !important;
+}
+
+div[data-title='button_form'] button:hover::before,
+.enhanced-submit-button button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+div[data-title='button_form'] button:active,
+.enhanced-submit-button button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 5px 20px -10px rgba(255, 107, 53, 0.4) !important;
+}
+
+/* Disabled button state */
+.button-disabled,
+div[data-title='button_form'] button:disabled,
+.enhanced-submit-button button:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+/* Radio buttons and checkboxes enhancement */
+.elInput input[type="radio"],
+.elInput input[type="checkbox"] {
+    width: auto !important;
+    margin-right: 0.75rem !important;
+    cursor: pointer;
+}
+
+.elInput label {
+    cursor: pointer;
+    color: var(--primary-text) !important;
+    font-size: var(--font-sm) !important;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.elInput label:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Custom radio/checkbox styles */
+.elInput input[type="radio"],
+.elInput input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid var(--border-medium);
+    background: var(--secondary-bg);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.elInput input[type="radio"] {
+    border-radius: 50%;
+}
+
+.elInput input[type="checkbox"] {
+    border-radius: 4px;
+}
+
+.elInput input[type="radio"]:checked,
+.elInput input[type="checkbox"]:checked {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.elInput input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+.elInput input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Animation classes */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    div[data-title='ApplicationForm'],
+    .enhanced-form {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .application-prompt-banner {
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        padding: 1rem;
+    }
+
+    .prompt-banner-content {
+        flex-wrap: wrap;
+    }
+
+    .prompt-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .prompt-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .prompt-title {
+        font-size: var(--font-sm);
+    }
+
+    .prompt-subtitle {
+        font-size: var(--font-xs);
+    }
+
+    .enhanced-input input,
+    .enhanced-input select,
+    .enhanced-input textarea,
+    .elInput input,
+    .elInput select,
+    .elInput textarea {
+        padding: 0.875rem 1rem !important;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+    }
+
+    div[data-title='button_form'] button,
+    .enhanced-submit-button button {
+        padding: 1rem 1.5rem !important;
+    }
+}
+
+/* Dark theme optimizations */
+@media (prefers-color-scheme: dark) {
+    .enhanced-form {
+        background: var(--card-bg);
+    }
+
+    .enhanced-input input,
+    .enhanced-input select,
+    .enhanced-input textarea {
+        background: var(--secondary-bg) !important;
+        color: var(--primary-text) !important;
+    }
+}
+
+/* Ensure proper stacking context */
+.application-enhanced * {
+    box-sizing: border-box;
+}
+
+/* Fix for ClickFunnels potential conflicts */
+.application-enhanced input,
+.application-enhanced select,
+.application-enhanced textarea,
+.application-enhanced button,
+.application-enhanced label {
+    font-family: var(--font-family) !important;
+}
+
+/* Loading state for form */
+.enhanced-form.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.enhanced-form.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 4px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
