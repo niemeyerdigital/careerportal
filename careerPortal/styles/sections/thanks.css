@@ -3,34 +3,21 @@
    Thank you confirmation page with contact modal
    ==================================================================== */
 
-/* ClickFunnels container overrides */
-div[data-title='SectionThanks'] {
-    overflow: visible !important;
-    position: relative !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-}
-
-div[data-title='RowThanks'] {
-    overflow: visible !important;
-    position: relative !important;
-    width: 100% !important;
-    max-width: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-}
-
+/* Reset and normalize for ClickFunnels containers */
+div[data-title='SectionThanks'],
+div[data-title='RowThanks'],
 div[data-title='RowThanks'] .container {
     overflow: visible !important;
+    position: relative !important;
     width: 100% !important;
     max-width: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
 }
 
-/* Main wrapper */
+/* Main wrapper - full viewport styling */
 .thanks-wrapper {
     min-height: 100vh;
     background: linear-gradient(to bottom, #ffffff, #f7f7f9);
@@ -38,15 +25,19 @@ div[data-title='RowThanks'] .container {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     position: relative;
+    font-family: var(--font-family);
+    color: #111827;
+    box-sizing: border-box;
 }
 
 .thanks-container {
     width: 100%;
     max-width: 80rem;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
-/* Banner */
+/* Banner - matches HTML exactly */
 .thanks-banner {
     border: 2px solid var(--primary-color);
     background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 140, 90, 0.05) 100%);
@@ -78,12 +69,13 @@ div[data-title='RowThanks'] .container {
     to { left: 100%; }
 }
 
-/* Success header */
+/* Success header section */
 .thanks-center {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 2.5rem;
 }
 
 .thanks-chip {
@@ -99,30 +91,36 @@ div[data-title='RowThanks'] .container {
     font-weight: 600;
     color: #10b981;
     font-family: var(--font-family);
+    margin-bottom: 1.25rem;
+}
+
+.thanks-chip i {
+    font-size: 1rem;
 }
 
 .thanks-title {
-    margin: 1.25rem 0 0.25rem;
+    margin: 0 0 0.75rem 0;
     font-size: clamp(1.875rem, 2.5vw + 1rem, 3rem);
     line-height: 1.1;
     font-weight: 700;
     font-family: var(--font-family);
     color: #111827;
+    text-wrap: balance;
 }
 
 .thanks-subtitle {
-    margin: 0.25rem 0 0;
+    margin: 0 0 1.5rem 0;
     font-size: var(--font-md);
     color: #6b7280;
     font-family: var(--font-family);
+    line-height: 1.5;
 }
 
-/* Quick Action Button */
+/* Quick Action Button - Primary filled style */
 .thanks-quick-action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
     padding: 0.875rem 1.75rem;
     background: var(--button-primary);
     border: none;
@@ -134,6 +132,8 @@ div[data-title='RowThanks'] .container {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 8px 24px -12px var(--glow-color-light);
+    position: relative;
+    outline: none;
 }
 
 .thanks-quick-action-btn.bounce-animation {
@@ -152,16 +152,20 @@ div[data-title='RowThanks'] .container {
     box-shadow: 0 12px 28px -10px var(--glow-color-light);
 }
 
+.thanks-quick-action-btn:active {
+    transform: scale(1.02) translateY(0);
+}
+
 .thanks-quick-action-btn i {
     font-size: 1.125rem;
 }
 
-/* Grid */
+/* Grid layout */
 .thanks-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
 }
 
 @media (min-width: 768px) {
@@ -171,7 +175,7 @@ div[data-title='RowThanks'] .container {
     }
 }
 
-/* Cards */
+/* Cards - matching HTML exactly */
 .thanks-card {
     border: 2px solid var(--border-light);
     border-radius: 1rem;
@@ -179,6 +183,7 @@ div[data-title='RowThanks'] .container {
     box-shadow: 0 1px 2px var(--shadow-light);
     height: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
 }
 
 .thanks-card:hover {
@@ -188,12 +193,16 @@ div[data-title='RowThanks'] .container {
 
 .thanks-card-content {
     padding: 1.25rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .thanks-media {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    flex: 1;
 }
 
 .thanks-media-icon {
@@ -202,30 +211,40 @@ div[data-title='RowThanks'] .container {
     padding: 0.75rem;
     display: inline-flex;
     color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.thanks-media-icon i {
+    font-size: 1.25rem;
 }
 
 .thanks-media h2 {
     font-size: var(--font-lg);
-    margin: 0;
+    margin: 0 0 0.5rem 0;
     font-family: var(--font-family);
     color: #111827;
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .thanks-media p {
-    margin: 0.25rem 0 0;
+    margin: 0;
     color: #6b7280;
     font-size: var(--font-xs);
     font-family: var(--font-family);
+    line-height: 1.5;
 }
 
 .thanks-highlight {
     font-weight: 600;
+    color: #4b5563;
 }
 
-/* Social button */
+/* Social button wrapper */
 .thanks-btn-wrapper {
     text-align: center;
-    margin-top: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
 }
 
 .thanks-btn {
@@ -244,6 +263,7 @@ div[data-title='RowThanks'] .container {
     font-family: var(--font-family);
     transition: all 0.2s ease;
     width: auto;
+    outline: none;
 }
 
 .thanks-btn:hover {
@@ -258,9 +278,9 @@ div[data-title='RowThanks'] .container {
     transform: translateY(1px);
 }
 
-/* Section */
+/* What to expect section */
 .thanks-section {
-    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
     border: 1px solid var(--border-light);
     border-radius: 1.5rem;
     background: #ffffff;
@@ -276,13 +296,14 @@ div[data-title='RowThanks'] .container {
 
 .thanks-section-title {
     font-size: var(--font-xl);
-    margin: 0 0 0.75rem;
+    margin: 0 0 1.25rem 0;
     font-weight: 700;
     font-family: var(--font-family);
     color: #111827;
+    line-height: 1.2;
 }
 
-/* Steps */
+/* Steps grid */
 .thanks-steps {
     display: grid;
     gap: 1rem;
@@ -323,6 +344,7 @@ div[data-title='RowThanks'] .container {
     font-size: var(--font-xs);
     color: var(--primary-color);
     font-family: var(--font-family);
+    background: #ffffff;
 }
 
 .thanks-step p {
@@ -330,15 +352,18 @@ div[data-title='RowThanks'] .container {
     font-size: var(--font-sm);
     color: #4b5563;
     font-family: var(--font-family);
+    line-height: 1.5;
+    padding-top: 0.125rem;
 }
 
 /* Footnote */
 .thanks-footnote {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     text-align: center;
     font-size: 0.75rem;
     color: #6b7280;
     font-family: var(--font-family);
+    line-height: 1.5;
 }
 
 /* Modal Styles */
@@ -350,6 +375,7 @@ div[data-title='RowThanks'] .container {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: 9999;
     display: none;
     align-items: center;
@@ -373,6 +399,8 @@ div[data-title='RowThanks'] .container {
     transform: translateY(20px);
     transition: transform 0.3s ease;
     position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .thanks-modal-overlay.active .thanks-modal {
@@ -390,10 +418,14 @@ div[data-title='RowThanks'] .container {
     padding: 0.5rem;
     border-radius: 0.5rem;
     transition: background 0.2s ease;
+    font-size: 1.25rem;
+    line-height: 1;
+    z-index: 1;
 }
 
 .thanks-modal-close:hover {
     background: #f3f4f6;
+    color: #4b5563;
 }
 
 .thanks-modal-content {
@@ -417,12 +449,17 @@ div[data-title='RowThanks'] .container {
     color: var(--primary-color);
 }
 
+.thanks-modal-icon i {
+    font-size: 1.5rem;
+}
+
 .thanks-modal-title {
     font-size: var(--font-xl);
     font-weight: 700;
     margin: 0 0 0.5rem;
     color: #111827;
     font-family: var(--font-family);
+    line-height: 1.2;
 }
 
 .thanks-modal-subtitle {
@@ -456,6 +493,7 @@ div[data-title='RowThanks'] .container {
     font-weight: 700;
     overflow: hidden;
     font-family: var(--font-family);
+    flex-shrink: 0;
 }
 
 .thanks-contact-avatar img {
@@ -470,6 +508,7 @@ div[data-title='RowThanks'] .container {
 
 .thanks-contact-info {
     flex: 1;
+    min-width: 0;
 }
 
 .thanks-contact-name {
@@ -478,6 +517,7 @@ div[data-title='RowThanks'] .container {
     margin: 0;
     font-size: var(--font-sm);
     font-family: var(--font-family);
+    line-height: 1.2;
 }
 
 .thanks-contact-position {
@@ -485,6 +525,7 @@ div[data-title='RowThanks'] .container {
     color: var(--primary-color);
     margin: 0.125rem 0 0;
     font-family: var(--font-family);
+    line-height: 1.2;
 }
 
 /* Contact actions */
@@ -506,6 +547,7 @@ div[data-title='RowThanks'] .container {
     color: #111827;
     transition: all 0.2s ease;
     font-size: var(--font-sm);
+    font-family: var(--font-family);
 }
 
 .thanks-contact-button:hover {
@@ -518,10 +560,12 @@ div[data-title='RowThanks'] .container {
     color: var(--primary-color);
     width: 1.25rem;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .thanks-contact-button-text {
     flex: 1;
+    min-width: 0;
 }
 
 .thanks-contact-button-label {
@@ -529,44 +573,43 @@ div[data-title='RowThanks'] .container {
     color: #6b7280;
     margin: 0;
     font-family: var(--font-family);
+    line-height: 1.2;
 }
 
 .thanks-contact-button-value {
     font-weight: 600;
     margin: 0.125rem 0 0;
     font-family: var(--font-family);
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 /* Animations */
 .fade-in-up {
     opacity: 0;
     transform: translateY(8px);
-    animation: fadeUp 400ms ease forwards;
+    transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.fade-in-up.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .fade-in-up.slow {
-    animation-duration: 500ms;
-    animation-delay: 150ms;
+    transition-duration: 500ms;
+    transition-delay: 150ms;
 }
 
 .fade-in-down {
     opacity: 0;
     transform: translateY(-6px);
-    animation: fadeDown 350ms ease forwards;
+    transition: opacity 350ms ease, transform 350ms ease;
 }
 
-@keyframes fadeUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeDown {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.fade-in-down.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Mobile responsive */
@@ -579,8 +622,13 @@ div[data-title='RowThanks'] .container {
         font-size: 1.75rem;
     }
 
+    .thanks-subtitle {
+        font-size: 1rem;
+    }
+
     .thanks-quick-action-btn {
         padding: 0.75rem 1.5rem;
+        font-size: 0.9375rem;
     }
 
     .thanks-grid {
@@ -591,8 +639,16 @@ div[data-title='RowThanks'] .container {
         padding: 1.25rem;
     }
 
+    .thanks-section-title {
+        font-size: 1.375rem;
+    }
+
     .thanks-modal-content {
         padding: 1.5rem;
+    }
+
+    .thanks-modal-title {
+        font-size: 1.375rem;
     }
 }
 
@@ -611,7 +667,7 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-subtitle {
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
     }
 
     .thanks-quick-action-btn {
@@ -619,16 +675,20 @@ div[data-title='RowThanks'] .container {
         font-size: 0.875rem;
     }
 
+    .thanks-quick-action-btn i {
+        font-size: 1rem;
+    }
+
     .thanks-card-content {
         padding: 1rem;
     }
 
     .thanks-media h2 {
-        font-size: 1rem;
+        font-size: 1.125rem;
     }
 
     .thanks-media p {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
     }
 
     .thanks-btn {
@@ -645,7 +705,11 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-step {
-        padding: 0.75rem;
+        padding: 0.875rem;
+    }
+
+    .thanks-step p {
+        font-size: 0.875rem;
     }
 
     .thanks-modal-content {
@@ -663,9 +727,43 @@ div[data-title='RowThanks'] .container {
     .thanks-contact-button {
         padding: 0.75rem 1rem;
     }
+
+    .thanks-footnote {
+        font-size: 0.6875rem;
+    }
 }
 
-/* Utility helpers */
-.mb-6 {
-    margin-bottom: 1.5rem;
+/* Ensure proper stacking context */
+.thanks-wrapper * {
+    box-sizing: border-box;
+}
+
+/* Fix for ClickFunnels potential conflicts */
+.thanks-wrapper h1,
+.thanks-wrapper h2,
+.thanks-wrapper h3,
+.thanks-wrapper p,
+.thanks-wrapper button,
+.thanks-wrapper a {
+    font-family: var(--font-family) !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+}
+
+/* Ensure buttons are clickable */
+.thanks-wrapper button,
+.thanks-wrapper a {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix potential overflow issues in ClickFunnels */
+#section-thanks {
+    overflow: visible !important;
+}
+
+/* Ensure proper font weight rendering */
+.thanks-wrapper {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
