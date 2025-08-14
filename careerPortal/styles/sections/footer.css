@@ -68,8 +68,8 @@ div[data-title='RowFooter'] .container {
 /* Logo container with fixed dimensions */
 .footer-logo-container {
     position: relative;
-    width: 150px; /* Fixed width */
-    height: 150px; /* Default height for square */
+    width: 75px; /* Fixed width - half the previous size */
+    height: 75px; /* Default height for square */
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -78,12 +78,12 @@ div[data-title='RowFooter'] .container {
 
 /* Square aspect ratio (1:1) */
 .footer-logo-container.logo-square {
-    height: 150px; /* Square: same as width */
+    height: 75px; /* Square: same as width */
 }
 
 /* Wide aspect ratio (16:9) */
 .footer-logo-container.logo-wide {
-    height: 84px; /* 16:9 ratio: 150px * 9/16 = 84px */
+    height: 42px; /* 16:9 ratio: 75px * 9/16 = 42px */
 }
 
 .footer-logo {
@@ -332,15 +332,15 @@ div[data-title='RowFooter'] .container {
     }
 
     .footer-logo-container {
-        width: 120px; /* Smaller on tablet */
+        width: 60px; /* Smaller on tablet */
     }
 
     .footer-logo-container.logo-square {
-        height: 120px;
+        height: 60px;
     }
 
     .footer-logo-container.logo-wide {
-        height: 68px; /* 120px * 9/16 = 67.5px */
+        height: 34px; /* 60px * 9/16 = 34px */
     }
 
     .footer-company-name {
@@ -403,15 +403,15 @@ div[data-title='RowFooter'] .container {
     }
 
     .footer-logo-container {
-        width: 100px; /* Even smaller on mobile */
+        width: 50px; /* Even smaller on mobile */
     }
 
     .footer-logo-container.logo-square {
-        height: 100px;
+        height: 50px;
     }
 
     .footer-logo-container.logo-wide {
-        height: 56px; /* 100px * 9/16 = 56px */
+        height: 28px; /* 50px * 9/16 = 28px */
     }
 
     .footer-company-name {
