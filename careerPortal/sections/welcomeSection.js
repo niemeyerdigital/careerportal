@@ -181,7 +181,7 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
     }
 
     /**
-     * Setup image component
+     * Setup image component with 1:1 aspect ratio
      */
     setupImage(container) {
         container.innerHTML = `
