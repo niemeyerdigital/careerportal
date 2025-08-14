@@ -65,7 +65,7 @@ div[data-title='RowMehrErfahren'] .container {
     text-align: center;
     color: var(--primary-text);
     margin-bottom: 10px;
-    font-size: var(--font-4xl);
+    font-size: calc(var(--font-4xl) * 1.4);
     font-weight: 800;
     letter-spacing: -0.02em;
     font-family: var(--font-family);
