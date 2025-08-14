@@ -1,6 +1,7 @@
 /**
  * Welcome Section
  * Specific business logic for the career portal welcome section
+ * Now uses dynamic position-based button redirect
  */
 
 window.WelcomeSection = class WelcomeSection extends window.BaseSec {
@@ -95,7 +96,7 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
     }
 
     /**
-     * Setup button components
+     * Setup button components with dynamic position redirect
      */
     setupButtons() {
         if (!window.ButtonManager) {
@@ -108,18 +109,20 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
 
         if (!ctaContainer) return;
 
-        // Create primary CTA button
+        // Create primary CTA button with position redirect logic
         const primaryButton = buttonManager.createButton(
             this.config.buttonType || 'MainButton1',
             {
                 text: this.config.ctaText || 'Apply Now',
                 href: this.config.ctaLink || '#',
                 icon: 'fas fa-arrow-right',
-                id: 'welcomePrimaryBtn'
+                id: 'welcomePrimaryBtn',
+                usePositionRedirect: true, // Enable position redirect
+                fallbackSection: 'mehr-erfahren-section' // Fallback to mehr erfahren if no position
             }
         );
 
-        // Create secondary link button
+        // Create secondary link button (always scrolls to mehr erfahren)
         const secondaryButton = buttonManager.createSecondaryLink({
             text: this.config.secondaryText || 'Learn More',
             id: 'welcomeSecondaryBtn',
@@ -195,17 +198,26 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
      * Setup welcome section specific events
      */
     setupWelcomeEvents() {
-        // Handle primary button click
-        const primaryBtn = document.getElementById('welcomePrimaryBtn');
-        if (primaryBtn) {
-            primaryBtn.addEventListener('click', (e) => {
-                this.handlePrimaryClick(e);
-            });
+        // Primary button click is now handled by ButtonManager with position redirect logic
+        // No additional event needed here as ButtonManager handles it
+        
+        // Log position redirect status for debugging
+        if (this.components.buttonManager) {
+            const hasRedirect = this.components.buttonManager.hasPositionRedirect();
+            const positionData = this.components.buttonManager.getPositionData();
+            
+            console.log('Welcome Section - Position redirect active:', hasRedirect);
+            if (positionData) {
+                console.log('Welcome Section - Using position:', positionData.position);
+                console.log('Welcome Section - ContentId:', positionData.contentId);
+            } else {
+                console.log('Welcome Section - No position data, will scroll to mehr erfahren');
+            }
         }
     }
 
     /**
-     * Handle primary button click
+     * Handle primary button click (called by ButtonManager if custom handler needed)
      */
     handlePrimaryClick(event) {
         // Track the click if analytics is available
@@ -251,7 +263,19 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
      * Scroll to target section
      */
     scrollToSection(targetSection) {
-        const targetElement = document.querySelector(`div[data-title='${targetSection}']`);
+        // Try different selectors
+        let targetElement = document.querySelector(`div[data-title='${targetSection}']`);
+        
+        if (!targetElement) {
+            // Try by ID (mehr-erfahren-section)
+            targetElement = document.getElementById(targetSection);
+        }
+        
+        if (!targetElement) {
+            // Try by ID without -section suffix
+            const sectionName = targetSection.replace('-section', '');
+            targetElement = document.getElementById(`${sectionName}-section`);
+        }
         
         if (targetElement) {
             targetElement.scrollIntoView({
@@ -260,7 +284,7 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
                 inline: 'nearest'
             });
         } else {
-            console.warn(`Target section 'div[data-title='${targetSection}']' not found`);
+            console.warn(`Target section '${targetSection}' not found`);
         }
     }
 
@@ -324,16 +348,37 @@ window.WelcomeSection = class WelcomeSection extends window.BaseSec {
     }
 
     /**
+     * Refresh position data for button
+     * Can be called to update button behavior after positions load
+     */
+    refreshPositionData() {
+        if (this.components.buttonManager) {
+            // Re-initialize position data
+            this.components.buttonManager.initializePositionData();
+            
+            // Log updated status
+            const hasRedirect = this.components.buttonManager.hasPositionRedirect();
+            console.log('Welcome Section - Position data refreshed, redirect active:', hasRedirect);
+        }
+    }
+
+    /**
      * Get welcome section metrics
      */
     getMetrics() {
+        const positionData = this.components.buttonManager ? 
+            this.components.buttonManager.getPositionData() : null;
+
         return {
             sectionType: 'welcome',
             config: this.config,
             components: Object.keys(this.components),
             isVisible: this.isInViewport(this.container),
             hasVideo: this.config.mainAsset === 'video' && !!this.config.videoId,
-            hasImage: this.config.mainAsset === 'image' && !!this.config.mainImageLink
+            hasImage: this.config.mainAsset === 'image' && !!this.config.mainImageLink,
+            hasPositionRedirect: !!(positionData && positionData.applicationUrl),
+            positionId: positionData?.id || null,
+            contentId: positionData?.contentId || null
         };
     }
 
