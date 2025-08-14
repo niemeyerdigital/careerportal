@@ -65,32 +65,28 @@ div[data-title='RowFooter'] .container {
     align-items: center;
 }
 
-/* Logo container with aspect ratio */
+/* Logo container with fixed dimensions */
 .footer-logo-container {
     position: relative;
-    width: 100%;
-    max-width: 250px; /* Maximum width for logo container */
+    width: 150px; /* Fixed width */
+    height: 150px; /* Default height for square */
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Square aspect ratio (1:1) */
-.footer-logo-container.logo-square::before {
-    content: '';
-    display: block;
-    padding-top: 100%; /* 1:1 aspect ratio */
+.footer-logo-container.logo-square {
+    height: 150px; /* Square: same as width */
 }
 
 /* Wide aspect ratio (16:9) */
-.footer-logo-container.logo-wide::before {
-    content: '';
-    display: block;
-    padding-top: 56.25%; /* 16:9 aspect ratio */
+.footer-logo-container.logo-wide {
+    height: 84px; /* 16:9 ratio: 150px * 9/16 = 84px */
 }
 
 .footer-logo {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -336,7 +332,15 @@ div[data-title='RowFooter'] .container {
     }
 
     .footer-logo-container {
-        max-width: 200px; /* Smaller on tablet */
+        width: 120px; /* Smaller on tablet */
+    }
+
+    .footer-logo-container.logo-square {
+        height: 120px;
+    }
+
+    .footer-logo-container.logo-wide {
+        height: 68px; /* 120px * 9/16 = 67.5px */
     }
 
     .footer-company-name {
@@ -399,7 +403,15 @@ div[data-title='RowFooter'] .container {
     }
 
     .footer-logo-container {
-        max-width: 150px; /* Even smaller on mobile */
+        width: 100px; /* Even smaller on mobile */
+    }
+
+    .footer-logo-container.logo-square {
+        height: 100px;
+    }
+
+    .footer-logo-container.logo-wide {
+        height: 56px; /* 100px * 9/16 = 56px */
     }
 
     .footer-company-name {
