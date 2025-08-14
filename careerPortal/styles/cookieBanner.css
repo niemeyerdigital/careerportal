@@ -384,15 +384,15 @@
 /* Accept button - Primary accent - LARGER TEXT */
 .cookie-btn-accept {
     background: var(--button-primary);
-    color: var(--button-text-color);
-    box-shadow: 0 4px 12px var(--glow-color-light);
+    color: var(--button-text-color);  /* Changed from #ffffff */
+    box-shadow: 0 4px 12px var(--glow-color-light);  /* Already using root variable */
     font-size: calc(var(--font-sm) * 1.6);
 }
 
 .cookie-btn-accept:hover {
     background: var(--button-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--glow-color-light);
+    box-shadow: 0 6px 20px var(--glow-color-light);  /* Already using root variable */
 }
 
 /* Save button - Light with border - LARGER TEXT */
@@ -474,7 +474,7 @@
 .cookie-banner-collapsed:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12),
-                0 0 20px var(--glow-color-light);
+                0 0 20px var(--glow-color-light);  /* Already using root variable - this is correct */
     border-color: var(--primary-color);
 }
 
