@@ -463,7 +463,7 @@ div[data-title='RowMehrErfahren'] .container {
     height: 4px;
     background: linear-gradient(90deg, 
         transparent 0%, 
-        var(--primary-color) 50%, 
+        var(--secondary-color) 50%, 
         transparent 100%);
     border-radius: 2px;
     opacity: 0.8;
