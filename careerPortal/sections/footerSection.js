@@ -50,6 +50,19 @@ window.FooterSection = class FooterSection extends window.BaseSec {
             }
         }
         
+        // Generate employer badge HTML if enabled
+        let employerBadgeHTML = '';
+        if (config.showEmployerBadge !== false) { // Default to true if not specified
+            employerBadgeHTML = `
+                <div class="footer-employer-badge">
+                    <div class="footer-employer-badge-text">
+                        Employer Branding Maßnahmen erstellt und betreut durch 
+                        <a href="https://www.niemeyerdigital.de" target="_blank" class="footer-employer-badge-company">Niemeyer Digital GmbH</a>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Generate complete footer HTML
         this.container.innerHTML = `
             <div class="footer-wrapper">
@@ -81,13 +94,8 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                     <!-- Social Media Icons -->
                     ${socialIconsHTML}
 
-                    <!-- Employer Badge -->
-                    <div class="footer-employer-badge">
-                        <div class="footer-employer-badge-text">
-                            Employer Branding Maßnahmen erstellt und betreut durch 
-                            <a href="https://www.niemeyerdigital.de" target="_blank" class="footer-employer-badge-company">Niemeyer Digital GmbH</a>
-                        </div>
-                    </div>
+                    <!-- Employer Badge (conditional) -->
+                    ${employerBadgeHTML}
 
                     <!-- Legal Links -->
                     <div class="footer-legal-links">
@@ -141,12 +149,14 @@ window.FooterSection = class FooterSection extends window.BaseSec {
             });
         }
 
-        // Track Niemeyer Digital click
-        const niemeyerLink = this.container.querySelector('.footer-employer-badge-company');
-        if (niemeyerLink) {
-            niemeyerLink.addEventListener('click', (e) => {
-                this.trackNiemeyerClick();
-            });
+        // Track Niemeyer Digital click (only if badge is shown)
+        if (this.config.showEmployerBadge !== false) {
+            const niemeyerLink = this.container.querySelector('.footer-employer-badge-company');
+            if (niemeyerLink) {
+                niemeyerLink.addEventListener('click', (e) => {
+                    this.trackNiemeyerClick();
+                });
+            }
         }
 
         // Setup scroll to top button
@@ -263,15 +273,17 @@ window.FooterSection = class FooterSection extends window.BaseSec {
             }
         }
 
-        // Add hover animations to badge
-        const badge = this.container.querySelector('.footer-employer-badge');
-        if (badge) {
-            badge.addEventListener('mouseenter', () => {
-                badge.style.transform = 'rotate(-3deg) translateY(-2px)';
-            });
-            badge.addEventListener('mouseleave', () => {
-                badge.style.transform = 'rotate(-3deg)';
-            });
+        // Add hover animations to badge (only if badge is shown)
+        if (this.config.showEmployerBadge !== false) {
+            const badge = this.container.querySelector('.footer-employer-badge');
+            if (badge) {
+                badge.addEventListener('mouseenter', () => {
+                    badge.style.transform = 'rotate(-3deg) translateY(-2px)';
+                });
+                badge.addEventListener('mouseleave', () => {
+                    badge.style.transform = 'rotate(-3deg)';
+                });
+            }
         }
     }
 
@@ -353,6 +365,7 @@ window.FooterSection = class FooterSection extends window.BaseSec {
         return {
             logoUrl: "https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image",
             logoAspectRatio: "1:1", // Options: "1:1" or "16:9"
+            showEmployerBadge: true, // Toggle employer badge visibility
             businessName: "Muster GmbH",
             streetAddress: "Musterstraße 123",
             zipCode: "12345",
