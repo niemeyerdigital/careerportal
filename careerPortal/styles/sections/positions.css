@@ -135,7 +135,7 @@ div[data-title='RowPositions'] .container {
     bottom: -8px;
     width: 80px;
     height: 4px;
-    background: var(--primary-color);
+    background: var(--secondary-color);
     border-radius: 999px;
 }
 
@@ -184,16 +184,11 @@ div[data-title='RowPositions'] .container {
 
 .positions-chip-btn i {
     font-size: calc(1rem * 1.8); /* 1.8x bigger icons */
-    color: var(--secondary-color);
 }
 
 .positions-chip-btn.is-active {
     background: var(--primary-color);
     border-color: var(--primary-color);
-    color: #fff;
-}
-
-.positions-chip-btn.is-active i {
     color: #fff;
 }
 
@@ -240,7 +235,6 @@ div[data-title='RowPositions'] .container {
 
 .positions-search-title i {
     font-size: calc(1rem * 2); /* 2x bigger icons */
-    color: var(--secondary-color);
 }
 
 .positions-search-input {
@@ -311,7 +305,6 @@ div[data-title='RowPositions'] .container {
 
 .positions-filters-title i {
     font-size: calc(1rem * 2); /* 2x bigger icons */
-    color: var(--secondary-color);
 }
 
 .positions-filters-reset {
@@ -333,7 +326,7 @@ div[data-title='RowPositions'] .container {
 
 .positions-filters-reset:hover {
     background: var(--primary-color);
-    color: white;
+    color: var(--button-text-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--glow-color-light);
 }
@@ -345,12 +338,10 @@ div[data-title='RowPositions'] .container {
 .positions-filters-reset i {
     font-size: calc(1rem * 1.5);
     transition: transform 0.3s ease;
-    color: inherit;
 }
 
 .positions-filters-reset:hover i {
     transform: rotate(180deg);
-    color: white;
 }
 
 @keyframes fadeIn {
@@ -381,7 +372,6 @@ div[data-title='RowPositions'] .container {
 
 .positions-filters-toggle i {
     font-size: calc(1rem * 1.7); /* 1.7x bigger toggle icon */
-    color: var(--secondary-color);
 }
 
 .positions-filters-toggle:hover {
@@ -640,7 +630,6 @@ div[data-title='RowPositions'] .container {
 
 .positions-btn-sm i {
     font-size: 14px;
-    color: var(--secondary-color);
 }
 
 /* Mobile specific adjustments */
@@ -769,10 +758,6 @@ div[data-title='RowPositions'] .container {
     font-family: var(--font-family);
 }
 
-.positions-pill i {
-    color: var(--secondary-color);
-}
-
 .positions-pill-accent {
     border-color: rgba(var(--glow-color-rgb), 0.25);
     box-shadow: 0 0 0 0 rgba(var(--glow-color-rgb), 0);
@@ -804,18 +789,10 @@ div[data-title='RowPositions'] .container {
     transition: all 0.3s ease;
 }
 
-.positions-btn i {
-    color: var(--secondary-color);
-}
-
 .positions-btn-primary {
     background: var(--button-primary);
     color: var(--button-text-color);
     border: none;
-}
-
-.positions-btn-primary i {
-    color: var(--button-text-color);
 }
 
 .positions-btn-primary:hover {
@@ -1022,7 +999,7 @@ body.modal-open {
 }
 
 .positions-block header i {
-    color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
 .positions-block h4 {
@@ -1051,7 +1028,7 @@ body.modal-open {
 }
 
 .positions-block li i {
-    color: var(--secondary-color);
+    color: var(--positions-text-muted);
     margin-top: 2px;
 }
 
@@ -1077,10 +1054,6 @@ body.modal-open {
     align-items: center;
     gap: 8px;
     font-family: var(--font-family);
-}
-
-.positions-footer-meta i {
-    color: var(--secondary-color);
 }
 
 /* ====================================================================
