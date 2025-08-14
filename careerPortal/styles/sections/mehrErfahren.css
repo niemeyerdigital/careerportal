@@ -131,21 +131,21 @@ div[data-title='RowMehrErfahren'] .container {
 /* Progressive sticky positioning */
 .mehr-card:nth-child(1) {
     top: 50px;
-    background: linear-gradient(135deg, #ffffff 0%, #fff5f2 100%);
+    background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-color-rgb), 0.05) 100%);
     color: var(--primary-bg);
     box-shadow: 0 10px 40px var(--shadow-medium);
 }
 
 .mehr-card:nth-child(2) {
     top: 100px;
-    background: linear-gradient(135deg, #ffffff 0%, #fff8f5 100%);
+    background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-color-rgb), 0.08) 100%);
     color: var(--primary-bg);
     box-shadow: 0 10px 40px var(--shadow-medium);
 }
 
 .mehr-card:nth-child(3) {
     top: 150px;
-    background: linear-gradient(135deg, #ffffff 0%, #fffaf8 100%);
+    background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-color-rgb), 0.10) 100%);
     color: var(--primary-bg);
     box-shadow: 0 10px 40px var(--shadow-medium);
 }
@@ -181,7 +181,7 @@ div[data-title='RowMehrErfahren'] .container {
     opacity: 0;
     animation: fadeInUp 0.6s ease forwards;
     animation-delay: 0.1s;
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 /* Card heading */
