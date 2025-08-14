@@ -84,11 +84,11 @@ div[data-title='RowWelcome'] [class*='col-'] {
     width: 120%;
     height: 80vh;
     background: radial-gradient(ellipse 60% 100% at center top, 
-        rgba(13, 31, 59, 0.4) 0%, 
-        rgba(13, 31, 59, 0.25) 20%, 
-        rgba(13, 31, 59, 0.15) 40%, 
-        rgba(13, 31, 59, 0.08) 60%,
-        rgba(13, 31, 59, 0.03) 80%,
+        rgba(var(--glow-color-rgb), 0.4) 0%, 
+        rgba(var(--glow-color-rgb), 0.25) 20%, 
+        rgba(var(--glow-color-rgb), 0.15) 40%, 
+        rgba(var(--glow-color-rgb), 0.08) 60%,
+        rgba(var(--glow-color-rgb), 0.03) 80%,
         transparent 100%);
     pointer-events: none;
     z-index: 1;
