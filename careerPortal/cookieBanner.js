@@ -427,16 +427,33 @@ window.CookieBannerModule = class CookieBannerModule {
     acceptAll() {
         this.log('Accept all clicked');
         
+        // Check if consent actually changed
+        const previousState = { ...this.consentState };
+        
         // Set all non-essential categories to true
         for (const key of Object.keys(this.config.categories)) {
             this.consentState[key] = true;
         }
         
+        // Check if we need to reload
+        const needsReload = this.hasConsentChanged(previousState, this.consentState);
+        
         this.saveConsentState();
-        this.initializeTracking();
-        this.initializeFunnelTracking();
-        this.hideBanner(true);
-        this.trackEvent('ConsentGiven', { type: 'accept_all' });
+        
+        // If consent changed, reload the page to properly initialize tracking
+        if (needsReload) {
+            this.log('Consent changed, reloading page...');
+            // Brief delay to ensure localStorage is saved
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        } else {
+            // No change, just hide banner
+            this.initializeTracking();
+            this.initializeFunnelTracking();
+            this.hideBanner(true);
+            this.trackEvent('ConsentGiven', { type: 'accept_all' });
+        }
     }
 
     /**
@@ -444,6 +461,9 @@ window.CookieBannerModule = class CookieBannerModule {
      */
     saveSettings() {
         this.log('Save settings clicked');
+        
+        // Store previous state
+        const previousState = { ...this.consentState };
         
         // Read current toggle states
         for (const key of Object.keys(this.config.categories)) {
@@ -457,11 +477,25 @@ window.CookieBannerModule = class CookieBannerModule {
             }
         }
         
+        // Check if we need to reload
+        const needsReload = this.hasConsentChanged(previousState, this.consentState);
+        
         this.saveConsentState();
-        this.initializeTracking();
-        this.initializeFunnelTracking();
-        this.hideBanner(true);
-        this.trackEvent('ConsentGiven', { type: 'custom_settings' });
+        
+        // If consent changed, reload the page to properly initialize tracking
+        if (needsReload) {
+            this.log('Consent changed, reloading page...');
+            // Brief delay to ensure localStorage is saved
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        } else {
+            // No change, just hide banner
+            this.initializeTracking();
+            this.initializeFunnelTracking();
+            this.hideBanner(true);
+            this.trackEvent('ConsentGiven', { type: 'custom_settings' });
+        }
     }
 
     /**
@@ -470,15 +504,54 @@ window.CookieBannerModule = class CookieBannerModule {
     declineAll() {
         this.log('Decline all clicked');
         
+        // Store previous state
+        const previousState = { ...this.consentState };
+        
         // Set only essential to true
         for (const [key, category] of Object.entries(this.config.categories)) {
             this.consentState[key] = category.required || false;
         }
         
+        // Check if we need to reload
+        const needsReload = this.hasConsentChanged(previousState, this.consentState);
+        
         this.saveConsentState();
-        this.initializeFunnelTracking(); // Still initialize funnel tracking for essential events
-        this.hideBanner(true);
-        this.trackEvent('ConsentGiven', { type: 'decline_all' });
+        
+        // If consent changed, reload the page
+        if (needsReload) {
+            this.log('Consent changed, reloading page...');
+            // Brief delay to ensure localStorage is saved
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        } else {
+            // No change, just hide banner
+            this.initializeFunnelTracking(); // Still initialize funnel tracking for essential events
+            this.hideBanner(true);
+            this.trackEvent('ConsentGiven', { type: 'decline_all' });
+        }
+    }
+
+    /**
+     * Check if consent has changed
+     */
+    hasConsentChanged(oldState, newState) {
+        // Check if this is the first time setting preferences
+        const firstTimeSettingPrefs = localStorage.getItem('cookiePreferencesSet') !== 'true';
+        if (firstTimeSettingPrefs) {
+            this.log('First time setting preferences, reload needed');
+            return true;
+        }
+        
+        // Check each consent category
+        for (const key of Object.keys(this.config.categories)) {
+            if (oldState[key] !== newState[key]) {
+                this.log(`Consent changed for ${key}: ${oldState[key]} -> ${newState[key]}`);
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
