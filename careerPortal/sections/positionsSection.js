@@ -1,7 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
- * Fixed: Desktop view switcher scrolling and mobile table view
+ * Now includes contentId generation and position data registry
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -34,7 +34,215 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         this.PREFS_KEY = 'careerPortalPrefs_v3';
         this.SAVED_KEY = 'careerPortalSaved_v1';
         
+        // Initialize positions registry
+        this.initializePositionsRegistry();
+        
         this.initializePositions();
+    }
+
+    /**
+     * Initialize global positions registry with contentIds
+     */
+    initializePositionsRegistry() {
+        // Create global registry if it doesn't exist
+        if (!window.POSITIONS_REGISTRY) {
+            window.POSITIONS_REGISTRY = {};
+        }
+
+        // Process all positions and generate contentIds
+        this.cardsData.forEach(card => {
+            const contentId = this.generateContentId(card);
+            
+            // Store in registry with all relevant data
+            window.POSITIONS_REGISTRY[card.id] = {
+                id: card.id,
+                contentId: contentId,
+                position: card.position,
+                region: card.region,
+                workCapacity: card.workCapacity,
+                applicationUrl: card.applicationUrl,
+                status: card.status
+            };
+
+            // Also add contentId to the card data itself
+            card.contentId = contentId;
+
+            console.log(`Generated contentId for card: ${card.id}`);
+            console.log(`Card loaded: ${card.id}, contentId=${contentId}`);
+        });
+
+        console.log('Positions Registry initialized:', window.POSITIONS_REGISTRY);
+    }
+
+    /**
+     * Generate contentId from position data
+     * Format: position_region_capacity (max 30 chars)
+     */
+    generateContentId(card) {
+        // 1. Process position name
+        let positionPart = card.position || '';
+        
+        // Remove (m/w/d) and similar suffixes
+        positionPart = positionPart.replace(/\s*\(m\/w\/d\)/gi, '');
+        positionPart = positionPart.replace(/\s*\(w\/m\/d\)/gi, '');
+        positionPart = positionPart.replace(/\s*\(d\/w\/m\)/gi, '');
+        
+        // Convert to lowercase
+        positionPart = positionPart.toLowerCase();
+        
+        // Replace German umlauts
+        positionPart = this.replaceUmlauts(positionPart);
+        
+        // Replace spaces and special characters with underscores
+        positionPart = positionPart.replace(/[^a-z0-9]/g, '_');
+        
+        // Remove multiple underscores
+        positionPart = positionPart.replace(/_+/g, '_');
+        
+        // Trim underscores from start and end
+        positionPart = positionPart.replace(/^_+|_+$/g, '');
+
+        // 2. Process region (no truncation as requested)
+        let regionPart = card.region || '';
+        regionPart = regionPart.toLowerCase();
+        regionPart = this.replaceUmlauts(regionPart);
+        regionPart = regionPart.replace(/[^a-z0-9]/g, '_');
+        regionPart = regionPart.replace(/_+/g, '_');
+        regionPart = regionPart.replace(/^_+|_+$/g, '');
+
+        // 3. Process work capacity
+        let capacityPart = '';
+        if (card.workCapacity && card.workCapacity.length > 0) {
+            const capacity = card.workCapacity[0].toLowerCase();
+            
+            // Abbreviate common terms
+            if (capacity.includes('vollzeit')) {
+                capacityPart = 'voll';
+            } else if (capacity.includes('teilzeit')) {
+                capacityPart = 'teil';
+            } else if (capacity.includes('minijob')) {
+                capacityPart = 'mini';
+            } else if (capacity.includes('praktik')) {
+                capacityPart = 'prakt';
+            } else if (capacity.includes('ausbildung')) {
+                capacityPart = 'ausb';
+            } else if (capacity.includes('werkstudent')) {
+                capacityPart = 'werk';
+            } else if (capacity.includes('freelance')) {
+                capacityPart = 'free';
+            } else {
+                // Use first 4 characters of unknown capacity
+                capacityPart = this.replaceUmlauts(capacity).replace(/[^a-z0-9]/g, '').substring(0, 4);
+            }
+        }
+
+        // 4. Combine parts
+        let contentId = positionPart;
+        
+        if (regionPart) {
+            contentId += '_' + regionPart;
+        }
+        
+        if (capacityPart) {
+            contentId += '_' + capacityPart;
+        }
+
+        // 5. Ensure max 30 characters
+        if (contentId.length > 30) {
+            // Intelligently truncate - try to keep important parts
+            const parts = contentId.split('_');
+            
+            // Start with position (truncated if needed)
+            let result = parts[0].substring(0, 15);
+            
+            // Add region if space allows
+            if (parts[1] && result.length + parts[1].length + 1 <= 25) {
+                result += '_' + parts[1];
+            } else if (parts[1]) {
+                // Truncate region to fit
+                const remainingSpace = 25 - result.length - 1;
+                if (remainingSpace > 3) {
+                    result += '_' + parts[1].substring(0, remainingSpace);
+                }
+            }
+            
+            // Add capacity if space allows
+            if (parts[2] && result.length + parts[2].length + 1 <= 30) {
+                result += '_' + parts[2];
+            }
+            
+            contentId = result;
+        }
+
+        return contentId;
+    }
+
+    /**
+     * Replace German umlauts with standard characters
+     */
+    replaceUmlauts(str) {
+        const umlautMap = {
+            'ä': 'ae',
+            'ö': 'oe',
+            'ü': 'ue',
+            'ß': 'ss',
+            'Ä': 'ae',
+            'Ö': 'oe',
+            'Ü': 'ue'
+        };
+        
+        return str.replace(/[äöüßÄÖÜ]/g, char => umlautMap[char] || char);
+    }
+
+    /**
+     * Store position data when user interacts with it
+     */
+    storePositionInteraction(card) {
+        if (!window.ButtonManager) {
+            console.warn('ButtonManager not available for storing position data');
+            return;
+        }
+
+        // Get or create ButtonManager instance
+        const buttonManager = new window.ButtonManager();
+        
+        // Prepare position data for storage
+        const positionData = {
+            id: card.id,
+            contentId: card.contentId,
+            position: card.position,
+            region: card.region,
+            workCapacity: card.workCapacity,
+            applicationUrl: card.applicationUrl,
+            timestamp: Date.now()
+        };
+
+        // Store in sessionStorage via ButtonManager
+        buttonManager.storePositionData(positionData);
+
+        console.log('Position interaction stored:', positionData);
+    }
+
+    /**
+     * Prepare URL with position parameters for redirect
+     */
+    prepareRedirectUrl(card, targetUrl) {
+        try {
+            const url = new URL(targetUrl, window.location.origin);
+            
+            // Add position parameters
+            url.searchParams.set('positionId', card.id);
+            url.searchParams.set('contentId', card.contentId);
+            
+            // Add additional tracking parameters
+            url.searchParams.set('ref', 'positions');
+            url.searchParams.set('timestamp', Date.now());
+            
+            return url.toString();
+        } catch (e) {
+            console.error('Error preparing redirect URL:', e);
+            return targetUrl;
+        }
     }
 
     /**
@@ -562,6 +770,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         el.tabIndex = 0;
         el.setAttribute('role', 'button');
         el.setAttribute('aria-label', `Details zu ${this.ensureMWD(card.position)} öffnen`);
+        
+        // Add data attributes for tracking
+        el.setAttribute('data-position-id', card.id);
+        el.setAttribute('data-content-id', card.contentId);
 
         // Header
         const head = document.createElement('div');
@@ -616,7 +828,11 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         applyBtn.innerHTML = '<i class="fa-light fa-paper-plane"></i> Jetzt bewerben';
         applyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            window.open(card.applicationUrl, '_blank');
+            // Store position interaction before redirect
+            this.storePositionInteraction(card);
+            // Prepare URL with position parameters
+            const targetUrl = this.prepareRedirectUrl(card, card.applicationUrl);
+            window.open(targetUrl, '_blank');
         });
 
         const quickBtn = document.createElement('button');
@@ -632,10 +848,15 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         el.appendChild(actions);
 
         // Card click handler
-        el.addEventListener('click', () => this.openModal(card));
+        el.addEventListener('click', () => {
+            // Store position interaction when card is clicked
+            this.storePositionInteraction(card);
+            this.openModal(card);
+        });
         el.addEventListener('keydown', (evt) => {
             if (evt.key === 'Enter' || evt.key === ' ') {
                 evt.preventDefault();
+                this.storePositionInteraction(card);
                 this.openModal(card);
             }
         });
@@ -644,10 +865,10 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Render table view - using the exact working logic from tester.html
+     * Render table view
      */
     renderTable(data, container) {
-        // Create wrapper div with overflow-x: auto (exactly like tester.html)
+        // Create wrapper div with overflow-x: auto
         const wrap = document.createElement('div');
         wrap.className = 'positions-table-wrap';
         
@@ -673,6 +894,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         const tbody = document.createElement('tbody');
         data.forEach(card => {
             const tr = document.createElement('tr');
+            tr.setAttribute('data-position-id', card.id);
+            tr.setAttribute('data-content-id', card.contentId);
+            
             tr.innerHTML = `
                 <td>
                     <button class="positions-btn positions-btn-ghost" style="padding:6px 8px" aria-label="Details öffnen">
@@ -696,12 +920,20 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             `;
             
             // Add event listeners
-            tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => this.openModal(card));
+            tr.querySelector('button.positions-btn-ghost').addEventListener('click', () => {
+                this.storePositionInteraction(card);
+                this.openModal(card);
+            });
             tr.querySelector('button.btn-apply').addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.open(card.applicationUrl, '_blank');
+                this.storePositionInteraction(card);
+                const targetUrl = this.prepareRedirectUrl(card, card.applicationUrl);
+                window.open(targetUrl, '_blank');
             });
-            tr.querySelector('button.btn-open').addEventListener('click', () => this.openModal(card));
+            tr.querySelector('button.btn-open').addEventListener('click', () => {
+                this.storePositionInteraction(card);
+                this.openModal(card);
+            });
             
             tbody.appendChild(tr);
         });
@@ -720,6 +952,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
      */
     openModal(card) {
         this.state.active = card;
+        
+        // Store position interaction when modal opens
+        this.storePositionInteraction(card);
 
         const modalTitle = document.getElementById('modal-title');
         const modalPills = document.getElementById('modal-pills');
@@ -752,7 +987,12 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         }
 
         if (mApply) {
-            mApply.onclick = () => window.open(card.applicationUrl, '_blank');
+            mApply.onclick = () => {
+                // Store position interaction before redirect
+                this.storePositionInteraction(card);
+                const targetUrl = this.prepareRedirectUrl(card, card.applicationUrl);
+                window.open(targetUrl, '_blank');
+            };
         }
 
         // Update save icon if enabled
@@ -787,8 +1027,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             modal.classList.remove('is-open');
         }
         
-        // Force unlock body scroll - this should ALWAYS run
-        // Use setTimeout to ensure it runs after any other handlers
+        // Force unlock body scroll
         this.unlockBodyScroll();
         
         // Double-check cleanup after a short delay
@@ -827,7 +1066,6 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
     /**
      * Check if any filters are active and show/hide reset button
-     * This now gets called on every filter change and on initial load
      */
     checkFiltersActive() {
         const hasActiveFilters = 
@@ -901,7 +1139,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
         // Store current scroll position
         this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Apply minimal locking styles - use data attribute for safer cleanup
+        // Apply minimal locking styles
         document.body.setAttribute('data-modal-open', 'true');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
@@ -916,7 +1154,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Unlock body scroll when modal is closed - force cleanup
+     * Unlock body scroll when modal is closed
      */
     unlockBodyScroll() {
         // Force unlock regardless of state to ensure cleanup
@@ -1090,7 +1328,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             filteredPositions: this.filtered.length,
             currentView: this.state.view,
             savedEnabled: this.config.features?.savedPositions,
-            isVisible: this.isInViewport(this.container)
+            isVisible: this.isInViewport(this.container),
+            positionsWithContentId: this.cardsData.filter(c => c.contentId).length
         };
     }
 
