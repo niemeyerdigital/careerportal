@@ -1,7 +1,7 @@
 /**
  * Positions Section
  * Job listings with filtering, search, and modal details
- * Now includes contentId generation and position data registry
+ * Updated with unified tracking data flow
  */
 
 window.PositionsSection = class PositionsSection extends window.BaseSec {
@@ -196,16 +196,9 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
 
     /**
      * Store position data when user interacts with it
+     * Updated to work with FunnelTracking module
      */
     storePositionInteraction(card) {
-        if (!window.ButtonManager) {
-            console.warn('ButtonManager not available for storing position data');
-            return;
-        }
-
-        // Get or create ButtonManager instance
-        const buttonManager = new window.ButtonManager();
-        
         // Prepare position data for storage
         const positionData = {
             id: card.id,
@@ -217,22 +210,51 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             timestamp: Date.now()
         };
 
-        // Store in sessionStorage via ButtonManager
-        buttonManager.storePositionData(positionData);
+        // Store via ButtonManager if available
+        if (window.ButtonManager) {
+            const buttonManager = new window.ButtonManager();
+            buttonManager.storePositionData(positionData);
+        }
+
+        // Also update FunnelTracker if available
+        if (window.FunnelTracker && typeof window.FunnelTracker.updatePositionData === 'function') {
+            window.FunnelTracker.updatePositionData(positionData);
+            console.log('Position data sent to FunnelTracker');
+        }
+
+        // Store in session storage directly as fallback
+        try {
+            sessionStorage.setItem('selectedPosition', JSON.stringify(positionData));
+            sessionStorage.setItem('origin', card.contentId);
+            sessionStorage.setItem('contentId', card.contentId);
+        } catch (e) {
+            console.error('Error storing position data:', e);
+        }
 
         console.log('Position interaction stored:', positionData);
     }
 
     /**
      * Prepare URL with position parameters for redirect
+     * Updated to use FunnelTracker if available
      */
     prepareRedirectUrl(card, targetUrl) {
+        // If FunnelTracker is available, use it to prepare URL
+        if (window.FunnelTracker && typeof window.FunnelTracker.prepareNextStepUrl === 'function') {
+            // First update position data
+            this.storePositionInteraction(card);
+            // Then prepare URL with all tracking parameters
+            return window.FunnelTracker.prepareNextStepUrl(targetUrl);
+        }
+
+        // Fallback to manual URL preparation
         try {
             const url = new URL(targetUrl, window.location.origin);
             
             // Add position parameters
             url.searchParams.set('positionId', card.id);
             url.searchParams.set('contentId', card.contentId);
+            url.searchParams.set('origin', card.contentId);
             
             // Add additional tracking parameters
             url.searchParams.set('ref', 'positions');
@@ -1317,7 +1339,7 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
     }
 
     /**
-     * Get metrics
+     * Get metrics for tracking
      */
     getMetrics() {
         return {
@@ -1329,7 +1351,8 @@ window.PositionsSection = class PositionsSection extends window.BaseSec {
             currentView: this.state.view,
             savedEnabled: this.config.features?.savedPositions,
             isVisible: this.isInViewport(this.container),
-            positionsWithContentId: this.cardsData.filter(c => c.contentId).length
+            positionsWithContentId: this.cardsData.filter(c => c.contentId).length,
+            positionsRegistry: window.POSITIONS_REGISTRY ? Object.keys(window.POSITIONS_REGISTRY).length : 0
         };
     }
 
