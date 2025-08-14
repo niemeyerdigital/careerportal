@@ -221,8 +221,6 @@ div[data-title='RowWelcome'] [class*='col-'] {
     border: 1px solid var(--primary-color);
 }
 
-
-
 .welcome-video-responsive {
     position: relative;
     width: 100%;
@@ -231,14 +229,24 @@ div[data-title='RowWelcome'] [class*='col-'] {
     overflow: hidden;
 }
 
+/* Image wrapper with 1:1 aspect ratio */
 .welcome-image-wrapper {
     position: relative;
     width: 100%;
+    max-width: 600px; /* Maximum size for the square */
+    margin: 0 auto;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 10px 40px rgba(13, 31, 59, 0.1);
     transition: all 0.3s ease;
     border: 1px solid var(--primary-color);
+}
+
+/* 1:1 aspect ratio container */
+.welcome-image-wrapper::before {
+    content: '';
+    display: block;
+    padding-top: 100%; /* 1:1 aspect ratio */
 }
 
 .welcome-video-wrapper:hover,
@@ -247,10 +255,14 @@ div[data-title='RowWelcome'] [class*='col-'] {
 }
 
 .welcome-image {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: cover;
+    object-position: center;
 }
 
 /* Wistia Player Styling */
@@ -326,6 +338,10 @@ div[data-title='RowWelcome'] [class*='col-'] {
         border: 1px solid var(--primary-color);
     }
     
+    .welcome-image-wrapper {
+        max-width: 400px; /* Smaller square on tablet */
+    }
+    
     .welcome-video-wrapper:hover,
     .welcome-image-wrapper:hover {
         transform: none;
@@ -366,6 +382,10 @@ div[data-title='RowWelcome'] [class*='col-'] {
     .welcome-image-wrapper {
         border-radius: 12px;
         border: 1px solid var(--primary-color);
+    }
+    
+    .welcome-image-wrapper {
+        max-width: 300px; /* Even smaller square on mobile */
     }
     
     .wistia_responsive_padding,
