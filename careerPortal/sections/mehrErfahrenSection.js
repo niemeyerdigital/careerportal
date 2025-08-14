@@ -1,7 +1,7 @@
 /**
  * Mehr Erfahren Section
  * Sticky scroll cards section with About, Benefits, and FAQ cards
- * Now includes bottom CTA with fade-up animation
+ * Now includes bottom CTA with fade-up animation and dynamic position redirect
  */
 
 window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
@@ -9,6 +9,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
         super(config, containerId);
         this.cards = [];
         this.ctaObserver = null;
+        this.buttonManager = null;
         this.initializeMehrErfahren();
     }
 
@@ -74,7 +75,7 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
-     * Setup CTA button using ButtonManager
+     * Setup CTA button using ButtonManager with dynamic position redirect
      */
     setupCTAButton(ctaConfig) {
         const buttonContainer = document.getElementById('mehr-cta-button-container');
@@ -82,27 +83,48 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
 
         // Check if ButtonManager is available
         if (window.ButtonManager) {
-            const buttonManager = new window.ButtonManager();
+            this.buttonManager = new window.ButtonManager();
             
-            // Create the CTA button
-            const ctaButton = buttonManager.createButton(
+            // Create the CTA button with position redirect logic
+            const ctaButton = this.buttonManager.createButton(
                 ctaConfig.buttonType,
                 {
                     text: ctaConfig.buttonText,
                     href: ctaConfig.buttonLink,
                     icon: 'fas fa-arrow-right',
-                    id: 'mehrCTABtn'
+                    id: 'mehrCTABtn',
+                    usePositionRedirect: true, // Enable position redirect
+                    fallbackSection: 'positions-section' // Fallback to positions section if no position data
                 }
             );
             
             buttonContainer.appendChild(ctaButton);
             
-            // Add click handler
-            ctaButton.addEventListener('click', (e) => {
-                this.handleCTAClick(e, ctaConfig);
-            });
+            // Log position redirect status
+            const hasRedirect = this.buttonManager.hasPositionRedirect();
+            const positionData = this.buttonManager.getPositionData();
+            
+            console.log('Mehr Erfahren Section - Position redirect active:', hasRedirect);
+            if (positionData) {
+                console.log('Mehr Erfahren Section - Using position:', positionData.position);
+                console.log('Mehr Erfahren Section - ContentId:', positionData.contentId);
+            } else {
+                console.log('Mehr Erfahren Section - No position data, button will use fallback');
+            }
+            
+            // Add custom click handler if provided
+            if (this.config.onCTAClick && typeof this.config.onCTAClick === 'function') {
+                const btn = ctaButton.querySelector('button, a');
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        // Don't prevent default as ButtonManager handles navigation
+                        this.config.onCTAClick(e);
+                    });
+                }
+            }
         } else {
-            // Fallback if ButtonManager not loaded
+            // Fallback if ButtonManager not loaded (shouldn't happen)
+            console.warn('ButtonManager not available, using fallback button');
             buttonContainer.innerHTML = `
                 <div data-title="${ctaConfig.buttonType}">
                     <a href="${ctaConfig.buttonLink}" id="mehrCTABtn">
@@ -110,25 +132,6 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
                     </a>
                 </div>
             `;
-        }
-    }
-
-    /**
-     * Handle CTA button click
-     */
-    handleCTAClick(event, ctaConfig) {
-        // Track the click if analytics is available
-        if (window.gtag) {
-            window.gtag('event', 'click', {
-                event_category: 'CTA',
-                event_label: 'Mehr Erfahren Bottom CTA',
-                value: ctaConfig.buttonText
-            });
-        }
-
-        // Custom click handler
-        if (this.config.onCTAClick && typeof this.config.onCTAClick === 'function') {
-            this.config.onCTAClick(event);
         }
     }
 
@@ -387,6 +390,21 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
     }
 
     /**
+     * Refresh position data for button
+     * Can be called to update button behavior after positions load
+     */
+    refreshPositionData() {
+        if (this.buttonManager) {
+            // Re-initialize position data
+            this.buttonManager.initializePositionData();
+            
+            // Log updated status
+            const hasRedirect = this.buttonManager.hasPositionRedirect();
+            console.log('Mehr Erfahren Section - Position data refreshed, redirect active:', hasRedirect);
+        }
+    }
+
+    /**
      * Update configuration
      */
     updateMehrErfahrenConfig(newConfig) {
@@ -399,6 +417,8 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      */
     getMetrics() {
         const enabledCards = this.cards.filter(card => card.data.enabled);
+        const positionData = this.buttonManager ? 
+            this.buttonManager.getPositionData() : null;
         
         return {
             sectionType: 'mehrErfahren',
@@ -408,7 +428,10 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             cardTypes: enabledCards.map(c => c.type),
             isVisible: this.isInViewport(this.container),
             hasAccordions: this.container.querySelectorAll('.mehr-accordion-item').length > 0,
-            ctaVisible: this.container.querySelector('.mehr-bottom-cta.visible') !== null
+            ctaVisible: this.container.querySelector('.mehr-bottom-cta.visible') !== null,
+            hasPositionRedirect: !!(positionData && positionData.applicationUrl),
+            positionId: positionData?.id || null,
+            contentId: positionData?.contentId || null
         };
     }
 
@@ -464,6 +487,9 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
             this.ctaObserver.disconnect();
             this.ctaObserver = null;
         }
+
+        // Cleanup button manager reference
+        this.buttonManager = null;
 
         super.destroy();
     }
