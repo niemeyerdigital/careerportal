@@ -46,6 +46,14 @@ div[data-title='RowThanks'] .container {
     }
 }
 
+/* Confetti Particle Styles */
+.confetti-particle {
+    position: fixed !important;
+    pointer-events: none !important;
+    z-index: 99999 !important;
+    will-change: transform, opacity;
+}
+
 /* Main wrapper - 3X spacious full viewport styling */
 .thanks-wrapper {
     min-height: 150vh; /* 3x bigger module */
@@ -81,9 +89,8 @@ div[data-title='RowThanks'] .container {
     box-shadow: 0 8px 32px rgba(16, 185, 129, 0.15); /* Green shadow */
     position: relative;
     overflow: hidden;
-    margin-bottom: 5rem;
-} margin-bottom: 5rem; /* 2x spacing */
-
+    margin-bottom: 5rem; /* 2x spacing */
+}
 
 .thanks-banner::before {
     content: '';
@@ -596,8 +603,8 @@ div[data-title='RowThanks'] .container {
 .thanks-contact-button:hover {
     border-color: var(--primary-color);
     background: rgba(var(--glow-color-rgb), 0.05); /* Use root variable */
-    transform: translateX(8px);
-} transform: translateX(8px); /* 2x transform */
+    transform: translateX(8px); /* 2x transform */
+}
 
 .thanks-contact-button i {
     color: var(--primary-color);
@@ -818,7 +825,126 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-modal-content {
-        padding: 3.5rem 2.8rem 2.8rem; /* 30% smaller */
+        padding: 3.5rem 2.5rem 2.5rem; /* 2x padding */
+    }
+
+    .thanks-modal-header {
+        margin-bottom: 3rem; /* 2x spacing */
+    }
+
+    .thanks-modal-close {
+        font-size: 1.75rem;
+        top: 1.25rem;
+        right: 1.25rem;
+    }
+
+    .thanks-modal-icon {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 2rem;
+    }
+
+    .thanks-modal-icon i {
+        font-size: 2rem;
+    }
+
+    .thanks-modal-title {
+        font-size: 2.5rem; /* 2x size */
+        margin-bottom: 1rem;
+    }
+
+    .thanks-modal-subtitle {
+        font-size: 1.5rem; /* Bigger */
+    }
+
+    .thanks-contact-person {
+        padding: 1.75rem; /* 2x padding */
+        margin-bottom: 3rem;
+    }
+
+    .thanks-contact-avatar {
+        width: 4rem;
+        height: 4rem;
+    }
+
+    .thanks-contact-avatar.no-image {
+        font-size: 1.75rem;
+    }
+
+    .thanks-contact-name {
+        font-size: 1.5rem;
+    }
+
+    .thanks-contact-position {
+        font-size: 1.25rem;
+    }
+
+    .thanks-contact-actions {
+        gap: 1.5rem; /* 2x gap */
+    }
+
+    .thanks-contact-button {
+        padding: 1.5rem 1.75rem; /* 2x padding */
+        gap: 1.25rem;
+    }
+
+    .thanks-contact-button i {
+        font-size: 1.75rem;
+    }
+
+    .thanks-contact-button-label {
+        font-size: 1.25rem; /* Bigger */
+    }
+
+    .thanks-contact-button-value {
+        font-size: 1.5rem; /* Bigger */
+    }
+
+    .thanks-footnote {
+        font-size: 1.125rem; /* 2x size */
+        margin-top: 3.5rem;
+    }
+}
+
+/* Ensure proper stacking context */
+.thanks-wrapper * {
+    box-sizing: border-box;
+}
+
+/* Fix for ClickFunnels potential conflicts */
+.thanks-wrapper h1,
+.thanks-wrapper h2,
+.thanks-wrapper h3,
+.thanks-wrapper p,
+.thanks-wrapper button,
+.thanks-wrapper a {
+    font-family: var(--font-family) !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+}
+
+/* Ensure buttons are clickable */
+.thanks-wrapper button,
+.thanks-wrapper a {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix potential overflow issues in ClickFunnels */
+#section-thanks {
+    overflow: visible !important;
+}
+
+/* Ensure proper font weight rendering */
+.thanks-wrapper {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes */
+.mb-6 {
+    margin-bottom: 3rem; /* 2x spacing */
+}.8rem 2.8rem; /* 30% smaller */
     }
 
     .thanks-modal-header {
@@ -1184,123 +1310,4 @@ div[data-title='RowThanks'] .container {
     }
 
     .thanks-modal-content {
-        padding: 3.5rem 2.5rem 2.5rem; /* 2x padding */
-    }
-
-    .thanks-modal-header {
-        margin-bottom: 3rem; /* 2x spacing */
-    }
-
-    .thanks-modal-close {
-        font-size: 1.75rem;
-        top: 1.25rem;
-        right: 1.25rem;
-    }
-
-    .thanks-modal-icon {
-        width: 4rem;
-        height: 4rem;
-        margin-bottom: 2rem;
-    }
-
-    .thanks-modal-icon i {
-        font-size: 2rem;
-    }
-
-    .thanks-modal-title {
-        font-size: 2.5rem; /* 2x size */
-        margin-bottom: 1rem;
-    }
-
-    .thanks-modal-subtitle {
-        font-size: 1.5rem; /* Bigger */
-    }
-
-    .thanks-contact-person {
-        padding: 1.75rem; /* 2x padding */
-        margin-bottom: 3rem;
-    }
-
-    .thanks-contact-avatar {
-        width: 4rem;
-        height: 4rem;
-    }
-
-    .thanks-contact-avatar.no-image {
-        font-size: 1.75rem;
-    }
-
-    .thanks-contact-name {
-        font-size: 1.5rem;
-    }
-
-    .thanks-contact-position {
-        font-size: 1.25rem;
-    }
-
-    .thanks-contact-actions {
-        gap: 1.5rem; /* 2x gap */
-    }
-
-    .thanks-contact-button {
-        padding: 1.5rem 1.75rem; /* 2x padding */
-        gap: 1.25rem;
-    }
-
-    .thanks-contact-button i {
-        font-size: 1.75rem;
-    }
-
-    .thanks-contact-button-label {
-        font-size: 1.25rem; /* Bigger */
-    }
-
-    .thanks-contact-button-value {
-        font-size: 1.5rem; /* Bigger */
-    }
-
-    .thanks-footnote {
-        font-size: 1.125rem; /* 2x size */
-        margin-top: 3.5rem;
-    }
-}
-
-/* Ensure proper stacking context */
-.thanks-wrapper * {
-    box-sizing: border-box;
-}
-
-/* Fix for ClickFunnels potential conflicts */
-.thanks-wrapper h1,
-.thanks-wrapper h2,
-.thanks-wrapper h3,
-.thanks-wrapper p,
-.thanks-wrapper button,
-.thanks-wrapper a {
-    font-family: var(--font-family) !important;
-    letter-spacing: normal !important;
-    text-transform: none !important;
-}
-
-/* Ensure buttons are clickable */
-.thanks-wrapper button,
-.thanks-wrapper a {
-    position: relative;
-    z-index: 1;
-}
-
-/* Fix potential overflow issues in ClickFunnels */
-#section-thanks {
-    overflow: visible !important;
-}
-
-/* Ensure proper font weight rendering */
-.thanks-wrapper {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* Utility classes */
-.mb-6 {
-    margin-bottom: 3rem; /* 2x spacing */
-}
+        padding: 3.5rem 2
