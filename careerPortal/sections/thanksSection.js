@@ -1,12 +1,13 @@
 /**
  * Thanks Section
- * Thank you confirmation page with contact modal
+ * Thank you confirmation page with contact modal and confetti effect
  */
 
 window.ThanksSection = class ThanksSection extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.modalOpen = false;
+        this.confettiColors = ['#ff6b35', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'];
         this.initializeThanks();
     }
 
@@ -22,6 +23,116 @@ window.ThanksSection = class ThanksSection extends window.BaseSec {
         this.createThanksHTML();
         this.setupEventHandlers();
         this.initializeAnimations();
+        this.triggerConfetti(); // Add confetti on load
+    }
+
+    /**
+     * Create confetti particles
+     */
+    createConfettiParticle(x, y, color) {
+        const particle = document.createElement('div');
+        particle.className = 'confetti-particle';
+        
+        // Random properties
+        const size = Math.random() * 10 + 5;
+        const velocityX = (Math.random() - 0.5) * 10;
+        const velocityY = Math.random() * -15 - 10;
+        const rotationSpeed = (Math.random() - 0.5) * 720;
+        const lifetime = Math.random() * 2000 + 2000;
+        
+        // Random shape (square or rectangle)
+        const isRectangle = Math.random() > 0.5;
+        
+        particle.style.cssText = `
+            position: fixed;
+            left: ${x}px;
+            top: ${y}px;
+            width: ${isRectangle ? size * 1.5 : size}px;
+            height: ${size}px;
+            background: ${color};
+            pointer-events: none;
+            z-index: 9999;
+            transform-origin: center;
+        `;
+        
+        document.body.appendChild(particle);
+        
+        // Animate particle
+        let startTime = null;
+        let currentX = x;
+        let currentY = y;
+        let currentVelocityY = velocityY;
+        let rotation = 0;
+        
+        const animate = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            
+            if (elapsed > lifetime) {
+                particle.remove();
+                return;
+            }
+            
+            // Physics
+            currentX += velocityX;
+            currentVelocityY += 0.5; // gravity
+            currentY += currentVelocityY;
+            rotation += rotationSpeed / 60;
+            
+            // Apply transforms
+            const progress = elapsed / lifetime;
+            const opacity = 1 - progress;
+            
+            particle.style.transform = `translate(${currentX - x}px, ${currentY - y}px) rotate(${rotation}deg) scale(${1 - progress * 0.5})`;
+            particle.style.opacity = opacity;
+            
+            requestAnimationFrame(animate);
+        };
+        
+        requestAnimationFrame(animate);
+    }
+
+    /**
+     * Trigger confetti burst
+     */
+    triggerConfetti() {
+        // Create multiple burst points across the page
+        const burstPoints = [
+            { x: window.innerWidth * 0.2, y: window.innerHeight * 0.3 },
+            { x: window.innerWidth * 0.5, y: window.innerHeight * 0.2 },
+            { x: window.innerWidth * 0.8, y: window.innerHeight * 0.3 },
+            { x: window.innerWidth * 0.3, y: window.innerHeight * 0.5 },
+            { x: window.innerWidth * 0.7, y: window.innerHeight * 0.5 }
+        ];
+        
+        // Stagger the bursts for a wave effect
+        burstPoints.forEach((point, index) => {
+            setTimeout(() => {
+                // Create particles for each burst
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const color = this.confettiColors[Math.floor(Math.random() * this.confettiColors.length)];
+                        this.createConfettiParticle(point.x, point.y, color);
+                    }, i * 20);
+                }
+            }, index * 200);
+        });
+        
+        // Add a second wave for extra celebration
+        setTimeout(() => {
+            const centerBurst = [
+                { x: window.innerWidth * 0.5, y: window.innerHeight * 0.4 }
+            ];
+            
+            centerBurst.forEach(point => {
+                for (let i = 0; i < 30; i++) {
+                    setTimeout(() => {
+                        const color = this.confettiColors[Math.floor(Math.random() * this.confettiColors.length)];
+                        this.createConfettiParticle(point.x, point.y, color);
+                    }, i * 15);
+                }
+            });
+        }, 1500);
     }
 
     /**
@@ -277,6 +388,18 @@ window.ThanksSection = class ThanksSection extends window.BaseSec {
             document.body.style.overflow = 'hidden';
             this.modalOpen = true;
             this.trackModalOpen();
+            
+            // Trigger mini confetti burst when opening modal
+            const modalRect = modal.getBoundingClientRect();
+            const centerX = modalRect.left + modalRect.width / 2;
+            const centerY = modalRect.top + modalRect.height / 2;
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const color = this.confettiColors[Math.floor(Math.random() * this.confettiColors.length)];
+                    this.createConfettiParticle(centerX, centerY, color);
+                }, i * 20);
+            }
         }
     }
 
@@ -463,6 +586,10 @@ window.ThanksSection = class ThanksSection extends window.BaseSec {
         if (this.escapeHandler) {
             document.removeEventListener('keydown', this.escapeHandler);
         }
+
+        // Clean up any remaining confetti particles
+        const particles = document.querySelectorAll('.confetti-particle');
+        particles.forEach(particle => particle.remove());
 
         // Reset body overflow if modal was open
         if (this.modalOpen) {
