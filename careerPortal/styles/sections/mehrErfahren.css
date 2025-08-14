@@ -567,17 +567,17 @@ div[data-title='RowMehrErfahren'] .container {
     .mehr-card {
         padding: 40px 30px;
         flex-direction: column;
-        text-align: center;
+        text-align: left; /* Changed from center to left */
         min-height: auto;
     }
 
-    /* Left align text for first card (about card) */
-    .mehr-card[data-card-type='about'] {
+    /* All card headers left-aligned on mobile */
+    .mehr-card h2 {
         text-align: left;
     }
 
-    .mehr-card[data-card-type='about'] h2::after {
-        left: 0;
+    .mehr-card h2::after {
+        left: 0; /* Align underline to left */
     }
 
     .mehr-card-content {
@@ -670,6 +670,7 @@ div[data-title='RowMehrErfahren'] .container {
 
     .mehr-card h2 {
         font-size: calc(var(--font-xl) * 1.2);
+        text-align: left; /* Ensure left-align on small mobile too */
     }
     
     .mehr-card p {
