@@ -224,7 +224,7 @@ div[data-title='RowFooter'] .container {
 
 .footer-employer-badge-company {
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--secondary-color);
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
