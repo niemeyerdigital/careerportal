@@ -286,14 +286,14 @@ div[data-title='RowMehrErfahren'] .container {
     margin-bottom: 8px;
     border-radius: 8px;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 107, 53, 0.02) 100%);
+    background: linear-gradient(135deg, rgba(var(--glow-color-rgb), 0.05) 0%, rgba(var(--glow-color-rgb), 0.02) 100%);
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 107, 53, 0.1);
+    border: 1px solid rgba(var(--glow-color-rgb), 0.1);
 }
 
 .mehr-accordion-item:hover {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(var(--glow-color-rgb), 0.1) 0%, rgba(var(--glow-color-rgb), 0.05) 100%);
 }
 
 .mehr-accordion-header {
@@ -313,7 +313,7 @@ div[data-title='RowMehrErfahren'] .container {
 }
 
 .mehr-accordion-header:hover {
-    background: rgba(255, 107, 53, 0.08);
+    background: rgba(var(--glow-color-rgb), 0.08);
 }
 
 .mehr-accordion-icon {
@@ -323,7 +323,7 @@ div[data-title='RowMehrErfahren'] .container {
 }
 
 .mehr-accordion-item.active {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0.08) 100%);
+    background: linear-gradient(135deg, rgba(var(--glow-color-rgb), 0.15) 0%, rgba(var(--glow-color-rgb), 0.08) 100%);
     border-color: var(--primary-color);
 }
 
@@ -449,7 +449,7 @@ div[data-title='RowMehrErfahren'] .container {
 .mehr-cta-button-wrapper div[data-title='MainButton1'] button:hover,
 .mehr-cta-button-wrapper div[data-title='MainButton1'] a:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
+    box-shadow: 0 12px 40px rgba(var(--button-glow-rgb), 0.5);
 }
 
 /* Decorative gradient line above CTA */
@@ -479,8 +479,8 @@ div[data-title='RowMehrErfahren'] .container {
     width: 600px;
     height: 600px;
     background: radial-gradient(circle, 
-        rgba(255, 107, 53, 0.1) 0%, 
-        rgba(255, 107, 53, 0.05) 30%, 
+        rgba(var(--glow-color-rgb), 0.1) 0%, 
+        rgba(var(--glow-color-rgb), 0.05) 30%, 
         transparent 70%);
     pointer-events: none;
     z-index: -1;
@@ -495,13 +495,13 @@ div[data-title='RowMehrErfahren'] .container {
 /* Animation keyframe for pulse effect on button */
 @keyframes pulseCTA {
     0% {
-        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 4px 20px rgba(var(--button-glow-rgb), 0.3);
     }
     50% {
-        box-shadow: 0 8px 35px rgba(255, 107, 53, 0.5);
+        box-shadow: 0 8px 35px rgba(var(--button-glow-rgb), 0.5);
     }
     100% {
-        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 4px 20px rgba(var(--button-glow-rgb), 0.3);
     }
 }
 
