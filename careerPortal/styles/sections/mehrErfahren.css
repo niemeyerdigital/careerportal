@@ -343,7 +343,7 @@ div[data-title='RowMehrErfahren'] .container {
 }
 
 .mehr-accordion-item.active .mehr-accordion-content {
-    max-height: 150px;
+    max-height: 180px;
     padding: 12px 16px;
 }
 
