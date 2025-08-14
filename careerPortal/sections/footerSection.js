@@ -29,6 +29,9 @@ window.FooterSection = class FooterSection extends window.BaseSec {
     createFooterHTML() {
         const config = this.config;
         
+        // Determine logo aspect ratio class
+        const logoAspectClass = config.logoAspectRatio === '16:9' ? 'logo-wide' : 'logo-square';
+        
         // Generate social media icons HTML
         let socialIconsHTML = '';
         if (config.socialMedia) {
@@ -53,7 +56,9 @@ window.FooterSection = class FooterSection extends window.BaseSec {
                 <div class="footer-container">
                     <!-- Logo -->
                     <div class="footer-logo-section">
-                        <img src="${config.logoUrl}" alt="${config.businessName} Logo" class="footer-logo">
+                        <div class="footer-logo-container ${logoAspectClass}">
+                            <img src="${config.logoUrl}" alt="${config.businessName} Logo" class="footer-logo">
+                        </div>
                     </div>
 
                     <!-- Company Info -->
@@ -291,6 +296,7 @@ window.FooterSection = class FooterSection extends window.BaseSec {
             config: this.config,
             socialPlatforms: enabledSocial,
             hasLogo: !!this.config.logoUrl,
+            logoAspectRatio: this.config.logoAspectRatio || '1:1',
             isVisible: this.isInViewport(this.container)
         };
     }
@@ -305,6 +311,12 @@ window.FooterSection = class FooterSection extends window.BaseSec {
         if (missing.length > 0) {
             console.error(`Footer section missing required fields: ${missing.join(', ')}`);
             return false;
+        }
+
+        // Validate logo aspect ratio
+        if (this.config.logoAspectRatio && !['1:1', '16:9'].includes(this.config.logoAspectRatio)) {
+            console.warn(`Footer section: Invalid logoAspectRatio "${this.config.logoAspectRatio}". Using default "1:1"`);
+            this.config.logoAspectRatio = '1:1';
         }
 
         // Validate social media configuration
@@ -340,6 +352,7 @@ window.FooterSection = class FooterSection extends window.BaseSec {
     static getDefaultConfig() {
         return {
             logoUrl: "https://placehold.co/350x150/e1e5e6/6d7b8b?text=Demo+Image",
+            logoAspectRatio: "1:1", // Options: "1:1" or "16:9"
             businessName: "Muster GmbH",
             streetAddress: "Musterstraße 123",
             zipCode: "12345",
