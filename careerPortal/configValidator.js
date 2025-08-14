@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Includes Cookie Banner, Thanks Section, and Exclude Section validation
+ * Includes Cookie Banner, Thanks Section, Exclude Section, and Tracking validation
  */
 
 window.ConfigValidator = {
@@ -9,6 +9,129 @@ window.ConfigValidator = {
      * Section schemas define required and optional fields
      */
     schemas: {
+        tracking: {
+            required: ['funnelStep'],
+            optional: ['tracking', 'contentId', 'debug'],
+            types: {
+                funnelStep: 'string',
+                tracking: 'object',
+                contentId: 'object',
+                debug: 'boolean'
+            },
+            enums: {
+                funnelStep: ['Landing', 'Formular', 'Ausschluss', 'Danke']
+            },
+            defaults: {
+                tracking: {
+                    scrollDepth: {
+                        enabled: true,
+                        depths: [25, 50, 75, 100]
+                    },
+                    browserType: {
+                        enabled: true
+                    },
+                    deviceType: {
+                        enabled: true
+                    },
+                    activityStatus: {
+                        enabled: true,
+                        inactivityThreshold: 30000
+                    },
+                    dwellTime: {
+                        enabled: true,
+                        checkInterval: 1000
+                    }
+                },
+                contentId: {
+                    autoGenerate: true,
+                    fallback: 'unknown_origin'
+                },
+                debug: false
+            },
+            subSchemas: {
+                tracking: {
+                    optional: ['scrollDepth', 'browserType', 'deviceType', 'activityStatus', 'dwellTime'],
+                    types: {
+                        scrollDepth: 'object',
+                        browserType: 'object',
+                        deviceType: 'object',
+                        activityStatus: 'object',
+                        dwellTime: 'object'
+                    },
+                    customValidation: (tracking) => {
+                        const errors = [];
+                        
+                        // Validate scroll depth
+                        if (tracking.scrollDepth) {
+                            if (typeof tracking.scrollDepth.enabled !== 'boolean') {
+                                errors.push('tracking.scrollDepth.enabled must be a boolean');
+                            }
+                            if (tracking.scrollDepth.depths && !Array.isArray(tracking.scrollDepth.depths)) {
+                                errors.push('tracking.scrollDepth.depths must be an array');
+                            } else if (tracking.scrollDepth.depths) {
+                                tracking.scrollDepth.depths.forEach((depth, i) => {
+                                    if (typeof depth !== 'number' || depth < 0 || depth > 100) {
+                                        errors.push(`tracking.scrollDepth.depths[${i}] must be a number between 0 and 100`);
+                                    }
+                                });
+                            }
+                        }
+                        
+                        // Validate activity status
+                        if (tracking.activityStatus) {
+                            if (typeof tracking.activityStatus.enabled !== 'boolean') {
+                                errors.push('tracking.activityStatus.enabled must be a boolean');
+                            }
+                            if (tracking.activityStatus.inactivityThreshold && 
+                                (typeof tracking.activityStatus.inactivityThreshold !== 'number' || 
+                                 tracking.activityStatus.inactivityThreshold < 1000)) {
+                                errors.push('tracking.activityStatus.inactivityThreshold must be at least 1000ms');
+                            }
+                        }
+                        
+                        // Validate dwell time
+                        if (tracking.dwellTime) {
+                            if (typeof tracking.dwellTime.enabled !== 'boolean') {
+                                errors.push('tracking.dwellTime.enabled must be a boolean');
+                            }
+                            if (tracking.dwellTime.checkInterval && 
+                                (typeof tracking.dwellTime.checkInterval !== 'number' || 
+                                 tracking.dwellTime.checkInterval < 100)) {
+                                errors.push('tracking.dwellTime.checkInterval must be at least 100ms');
+                            }
+                        }
+                        
+                        return errors;
+                    }
+                },
+                contentId: {
+                    required: ['autoGenerate', 'fallback'],
+                    types: {
+                        autoGenerate: 'boolean',
+                        fallback: 'string'
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate funnel step
+                if (!config.funnelStep) {
+                    errors.push('funnelStep is required');
+                } else if (!['Landing', 'Formular', 'Ausschluss', 'Danke'].includes(config.funnelStep)) {
+                    errors.push(`Invalid funnelStep: ${config.funnelStep}. Must be one of: Landing, Formular, Ausschluss, Danke`);
+                }
+                
+                // Validate content ID fallback format
+                if (config.contentId && config.contentId.fallback) {
+                    if (!/^[a-z0-9_]+$/.test(config.contentId.fallback)) {
+                        errors.push('contentId.fallback must contain only lowercase letters, numbers, and underscores');
+                    }
+                }
+                
+                return errors;
+            }
+        },
         cookieBanner: {
             required: [],
             optional: ['facebook', 'banner', 'categories', 'buttons', 'tracking', 'advanced'],
@@ -772,6 +895,33 @@ window.ConfigValidator = {
      */
     applyDefaults(config, sectionType) {
         const defaults = {
+            tracking: {
+                tracking: {
+                    scrollDepth: {
+                        enabled: true,
+                        depths: [25, 50, 75, 100]
+                    },
+                    browserType: {
+                        enabled: true
+                    },
+                    deviceType: {
+                        enabled: true
+                    },
+                    activityStatus: {
+                        enabled: true,
+                        inactivityThreshold: 30000
+                    },
+                    dwellTime: {
+                        enabled: true,
+                        checkInterval: 1000
+                    }
+                },
+                contentId: {
+                    autoGenerate: true,
+                    fallback: 'unknown_origin'
+                },
+                debug: false
+            },
             cookieBanner: {
                 facebook: {
                     pixelId: null,
@@ -1046,12 +1196,37 @@ window.ConfigValidator = {
                            'quickActionButtonText', 'name', 'channelName',
                            'statusBadgeText', 'messageTitle', 'messageText', 'alternativePathsTitle',
                            'improvementHeadline', 'footerText', 'buttonText', 'modalTitle', 
-                           'modalDescription', 'linkText'];
+                           'modalDescription', 'linkText', 'fallback', 'funnelStep'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim();
+            }
+        }
+
+        // Special sanitization for tracking section
+        if (sectionType === 'tracking') {
+            // Sanitize funnel step
+            if (sanitized.funnelStep && !['Landing', 'Formular', 'Ausschluss', 'Danke'].includes(sanitized.funnelStep)) {
+                console.warn(`Invalid funnelStep: ${sanitized.funnelStep}, defaulting to Landing`);
+                sanitized.funnelStep = 'Landing';
+            }
+            
+            // Sanitize content ID fallback
+            if (sanitized.contentId?.fallback) {
+                sanitized.contentId.fallback = sanitized.contentId.fallback
+                    .toLowerCase()
+                    .replace(/[^a-z0-9_]/g, '_')
+                    .replace(/_+/g, '_')
+                    .replace(/^_+|_+$/g, '');
+            }
+            
+            // Sanitize scroll depths
+            if (sanitized.tracking?.scrollDepth?.depths) {
+                sanitized.tracking.scrollDepth.depths = sanitized.tracking.scrollDepth.depths
+                    .filter(d => typeof d === 'number' && d >= 0 && d <= 100)
+                    .sort((a, b) => a - b);
             }
         }
 
