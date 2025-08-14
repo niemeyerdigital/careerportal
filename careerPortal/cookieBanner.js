@@ -1,6 +1,7 @@
 /**
  * Cookie Banner Module
  * GDPR-compliant cookie consent management with Facebook Pixel integration
+ * Updated with tracking module integration
  */
 
 window.CookieBannerModule = class CookieBannerModule {
@@ -135,6 +136,9 @@ window.CookieBannerModule = class CookieBannerModule {
             // Show collapsed button and initialize tracking
             this.showCollapsedOnly();
             this.initializeTracking();
+            
+            // Also initialize funnel tracking if consent exists
+            this.initializeFunnelTracking();
         }
         
         this.initialized = true;
@@ -430,6 +434,7 @@ window.CookieBannerModule = class CookieBannerModule {
         
         this.saveConsentState();
         this.initializeTracking();
+        this.initializeFunnelTracking();
         this.hideBanner(true);
         this.trackEvent('ConsentGiven', { type: 'accept_all' });
     }
@@ -454,6 +459,7 @@ window.CookieBannerModule = class CookieBannerModule {
         
         this.saveConsentState();
         this.initializeTracking();
+        this.initializeFunnelTracking();
         this.hideBanner(true);
         this.trackEvent('ConsentGiven', { type: 'custom_settings' });
     }
@@ -470,6 +476,7 @@ window.CookieBannerModule = class CookieBannerModule {
         }
         
         this.saveConsentState();
+        this.initializeFunnelTracking(); // Still initialize funnel tracking for essential events
         this.hideBanner(true);
         this.trackEvent('ConsentGiven', { type: 'decline_all' });
     }
@@ -578,7 +585,9 @@ window.CookieBannerModule = class CookieBannerModule {
         const state = {};
         
         for (const key of Object.keys(this.config.categories)) {
-            const stored = localStorage.getItem('cookie_consent_' + key);
+            // Check both old and new localStorage keys for backwards compatibility
+            const stored = localStorage.getItem('cookie_consent_' + key) || 
+                          localStorage.getItem(key + 'Consent');
             if (stored !== null) {
                 state[key] = stored === 'true';
             } else if (this.config.categories[key].required) {
@@ -596,16 +605,21 @@ window.CookieBannerModule = class CookieBannerModule {
      */
     saveConsentState() {
         for (const [key, value] of Object.entries(this.consentState)) {
+            // Save to both old and new keys for compatibility
             localStorage.setItem('cookie_consent_' + key, value);
+            localStorage.setItem(key + 'Consent', value); // For backwards compatibility
         }
         
         localStorage.setItem('cookiePreferencesSet', 'true');
         localStorage.setItem('cookiePreferencesDate', Date.now().toString());
         
-        // Dispatch custom event
+        // Dispatch custom event for other modules
         window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
             detail: this.consentState
         }));
+        
+        // Also dispatch legacy event for backwards compatibility
+        window.dispatchEvent(new CustomEvent('consentUpdated'));
         
         this.log('Consent state saved:', this.consentState);
     }
@@ -622,6 +636,23 @@ window.CookieBannerModule = class CookieBannerModule {
         // Initialize analytics if analytics consent is given
         if (this.consentState.analytics) {
             this.initAnalytics();
+        }
+    }
+
+    /**
+     * Initialize funnel tracking module if it exists
+     */
+    initializeFunnelTracking() {
+        // Check if tracking config exists and module is loaded
+        if (window.TRACKING_CONFIG && window.FunnelTracking && !window.FunnelTracker) {
+            this.log('Initializing funnel tracking from cookie banner');
+            window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+        } else if (window.FunnelTracker) {
+            // Tracking already initialized, trigger consent update
+            this.log('Updating funnel tracking consent state');
+            window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+                detail: this.consentState
+            }));
         }
     }
 
@@ -646,14 +677,14 @@ window.CookieBannerModule = class CookieBannerModule {
             
             fbq('init', this.config.facebook.pixelId);
             
-            if (this.config.facebook.events.pageView) {
-                fbq('track', 'PageView');
-            }
+            // Don't fire PageView here - let FunnelTracking handle it
+            // This avoids duplicate PageView events
             
             this.log('Facebook Pixel initialized with ID:', this.config.facebook.pixelId);
             
-            // Set global flag
+            // Set global flags for other modules
             window.cookieBannerFBPixelReady = true;
+            window.fbPixelInitialized = true;
             
             // Dispatch event for other modules
             window.dispatchEvent(new CustomEvent('fbPixelReady'));
@@ -684,7 +715,7 @@ window.CookieBannerModule = class CookieBannerModule {
         if (!parameters) parameters = {};
         
         // Only track if we have consent
-        if (!this.consentState.marketing) {
+        if (!this.consentState.marketing && eventName !== 'ConsentGiven') {
             this.log('Event ' + eventName + ' not tracked - no marketing consent');
             return;
         }
@@ -727,7 +758,7 @@ window.CookieBannerModule = class CookieBannerModule {
     }
 
     /**
-     * Check if consent is given for a category
+     * Check if consent is given for a category (public method)
      */
     hasConsent(category) {
         return this.consentState[category] || false;
@@ -741,6 +772,7 @@ window.CookieBannerModule = class CookieBannerModule {
             this.consentState[category] = value;
             this.saveConsentState();
             this.initializeTracking();
+            this.initializeFunnelTracking();
             this.log('Consent updated: ' + category + ' = ' + value);
         }
     }
@@ -754,7 +786,12 @@ window.CookieBannerModule = class CookieBannerModule {
         
         for (const key of Object.keys(this.config.categories)) {
             localStorage.removeItem('cookie_consent_' + key);
+            localStorage.removeItem(key + 'Consent'); // Remove old format too
         }
+        
+        // Also clear analytics/marketing consent keys used by tracking
+        localStorage.removeItem('analyticsConsent');
+        localStorage.removeItem('marketingConsent');
         
         this.consentState = this.loadConsentState();
         this.showBanner();
@@ -772,7 +809,7 @@ window.CookieBannerModule = class CookieBannerModule {
     }
 
     /**
-     * Get banner status
+     * Get banner status (public method)
      */
     getStatus() {
         return {
