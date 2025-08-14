@@ -1,7 +1,7 @@
 /**
  * Button Manager Component
  * Handles MainButton1-3 creation and styling
- * Now includes dynamic position-based redirect logic
+ * Updated with unified tracking data flow integration
  */
 
 window.ButtonManager = class ButtonManager {
@@ -16,6 +16,7 @@ window.ButtonManager = class ButtonManager {
 
     /**
      * Initialize position data from URL params, sessionStorage, or referrer
+     * Now integrated with FunnelTracking module
      */
     initializePositionData() {
         // 1. Check URL parameters first (highest priority)
@@ -23,6 +24,9 @@ window.ButtonManager = class ButtonManager {
         if (urlPosition) {
             this.positionData = urlPosition;
             console.log('ButtonManager: Position data loaded from URL params', this.positionData);
+            
+            // Sync with FunnelTracker if available
+            this.syncWithFunnelTracker();
             return;
         }
 
@@ -31,6 +35,9 @@ window.ButtonManager = class ButtonManager {
         if (storedPosition) {
             this.positionData = storedPosition;
             console.log('ButtonManager: Position data loaded from sessionStorage', this.positionData);
+            
+            // Sync with FunnelTracker if available
+            this.syncWithFunnelTracker();
             return;
         }
 
@@ -39,10 +46,33 @@ window.ButtonManager = class ButtonManager {
         if (referrerPosition) {
             this.positionData = referrerPosition;
             console.log('ButtonManager: Position data loaded from referrer', this.positionData);
+            
+            // Sync with FunnelTracker if available
+            this.syncWithFunnelTracker();
             return;
         }
 
+        // 4. Check FunnelTracker for existing data
+        if (window.FunnelTracker && window.FunnelTracker.sessionData) {
+            const trackerData = window.FunnelTracker.sessionData.positionData;
+            if (trackerData) {
+                this.positionData = trackerData;
+                console.log('ButtonManager: Position data loaded from FunnelTracker', this.positionData);
+                return;
+            }
+        }
+
         console.log('ButtonManager: No position data found, using default behavior');
+    }
+
+    /**
+     * Sync position data with FunnelTracker
+     */
+    syncWithFunnelTracker() {
+        if (window.FunnelTracker && typeof window.FunnelTracker.updatePositionData === 'function') {
+            window.FunnelTracker.updatePositionData(this.positionData);
+            console.log('ButtonManager: Position data synced with FunnelTracker');
+        }
     }
 
     /**
@@ -51,21 +81,25 @@ window.ButtonManager = class ButtonManager {
     getPositionFromURL() {
         const params = new URLSearchParams(window.location.search);
         const positionId = params.get('positionId');
-        const contentId = params.get('contentId');
+        const contentId = params.get('contentId') || params.get('origin');
         
-        if (!positionId) return null;
+        if (!positionId && !contentId) return null;
 
         // Try to get full position data from global positions registry
-        if (window.POSITIONS_REGISTRY && window.POSITIONS_REGISTRY[positionId]) {
+        if (window.POSITIONS_REGISTRY && positionId && window.POSITIONS_REGISTRY[positionId]) {
             return window.POSITIONS_REGISTRY[positionId];
         }
 
-        // Return partial data if registry not available
-        return {
-            id: positionId,
-            contentId: contentId || positionId,
-            applicationUrl: null // Will need to be resolved
-        };
+        // Build position data from URL params
+        if (contentId || positionId) {
+            return {
+                id: positionId || contentId,
+                contentId: contentId || positionId,
+                applicationUrl: null // Will need to be resolved
+            };
+        }
+
+        return null;
     }
 
     /**
@@ -73,19 +107,33 @@ window.ButtonManager = class ButtonManager {
      */
     getPositionFromStorage() {
         try {
-            const stored = sessionStorage.getItem(this.STORAGE_KEY);
+            // Check both possible storage keys
+            const stored = sessionStorage.getItem(this.STORAGE_KEY) || 
+                          sessionStorage.getItem('origin') || 
+                          sessionStorage.getItem('contentId');
+            
             if (!stored) return null;
 
-            const data = JSON.parse(stored);
-            
-            // Check if data is still fresh (within 2 hours)
-            const TWO_HOURS = 2 * 60 * 60 * 1000;
-            if (data.timestamp && (Date.now() - data.timestamp) > TWO_HOURS) {
-                sessionStorage.removeItem(this.STORAGE_KEY);
-                return null;
+            // If it's JSON, parse it
+            if (stored.startsWith('{')) {
+                const data = JSON.parse(stored);
+                
+                // Check if data is still fresh (within 2 hours)
+                const TWO_HOURS = 2 * 60 * 60 * 1000;
+                if (data.timestamp && (Date.now() - data.timestamp) > TWO_HOURS) {
+                    sessionStorage.removeItem(this.STORAGE_KEY);
+                    return null;
+                }
+                
+                return data;
+            } else {
+                // It's a simple contentId string
+                return {
+                    id: stored,
+                    contentId: stored,
+                    applicationUrl: null
+                };
             }
-
-            return data;
         } catch (e) {
             console.error('ButtonManager: Error reading from sessionStorage', e);
             return null;
@@ -102,21 +150,25 @@ window.ButtonManager = class ButtonManager {
             const referrerURL = new URL(document.referrer);
             const params = new URLSearchParams(referrerURL.search);
             const positionId = params.get('positionId');
-            const contentId = params.get('contentId');
+            const contentId = params.get('contentId') || params.get('origin');
             
-            if (!positionId) return null;
+            if (!positionId && !contentId) return null;
 
             // Try to get full position data from global positions registry
-            if (window.POSITIONS_REGISTRY && window.POSITIONS_REGISTRY[positionId]) {
+            if (window.POSITIONS_REGISTRY && positionId && window.POSITIONS_REGISTRY[positionId]) {
                 return window.POSITIONS_REGISTRY[positionId];
             }
 
             // Return partial data if registry not available
-            return {
-                id: positionId,
-                contentId: contentId || positionId,
-                applicationUrl: null
-            };
+            if (contentId || positionId) {
+                return {
+                    id: positionId || contentId,
+                    contentId: contentId || positionId,
+                    applicationUrl: null
+                };
+            }
+
+            return null;
         } catch (e) {
             console.error('ButtonManager: Error parsing referrer URL', e);
             return null;
@@ -124,7 +176,7 @@ window.ButtonManager = class ButtonManager {
     }
 
     /**
-     * Store position data in sessionStorage
+     * Store position data in sessionStorage and sync with tracking
      */
     storePositionData(positionData) {
         try {
@@ -132,8 +184,24 @@ window.ButtonManager = class ButtonManager {
                 ...positionData,
                 timestamp: Date.now()
             };
+            
+            // Store in multiple formats for compatibility
             sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(dataToStore));
+            
+            // Also store contentId and origin separately
+            if (positionData.contentId) {
+                sessionStorage.setItem('origin', positionData.contentId);
+                sessionStorage.setItem('contentId', positionData.contentId);
+            }
+            
             console.log('ButtonManager: Position data stored', dataToStore);
+            
+            // Update internal state
+            this.positionData = dataToStore;
+            
+            // Sync with FunnelTracker
+            this.syncWithFunnelTracker();
+            
         } catch (e) {
             console.error('ButtonManager: Error storing position data', e);
         }
@@ -145,6 +213,8 @@ window.ButtonManager = class ButtonManager {
     clearPositionData() {
         try {
             sessionStorage.removeItem(this.STORAGE_KEY);
+            sessionStorage.removeItem('origin');
+            sessionStorage.removeItem('contentId');
             this.positionData = null;
             console.log('ButtonManager: Position data cleared');
         } catch (e) {
@@ -154,7 +224,7 @@ window.ButtonManager = class ButtonManager {
 
     /**
      * Create a button with specified type and configuration
-     * Now includes dynamic position-based redirect logic
+     * Now includes dynamic position-based redirect logic with tracking
      */
     createButton(type, config = {}) {
         const {
@@ -192,7 +262,15 @@ window.ButtonManager = class ButtonManager {
             // Track position-based redirect
             const originalOnClick = onClick;
             finalOnClick = (e) => {
-                // Track the position-based redirect
+                // Track the position-based redirect with FunnelTracker if available
+                if (window.FunnelTracker && typeof window.FunnelTracker.trackEvent === 'function') {
+                    window.FunnelTracker.trackEvent('PositionRedirect', {
+                        position_id: this.positionData.id,
+                        content_id: this.positionData.contentId
+                    });
+                }
+                
+                // Also track with gtag if available
                 if (window.gtag) {
                     window.gtag('event', 'position_redirect', {
                         event_category: 'CTA',
@@ -202,15 +280,22 @@ window.ButtonManager = class ButtonManager {
                     });
                 }
 
-                // Append position data to URL if it's an application URL
+                // Prepare URL with tracking parameters
                 if (finalHref && finalHref !== '#') {
-                    try {
-                        const url = new URL(finalHref, window.location.origin);
-                        url.searchParams.set('ref_position', this.positionData.contentId);
-                        url.searchParams.set('ref_id', this.positionData.id);
-                        finalHref = url.toString();
-                    } catch (e) {
-                        // URL parsing failed, use original
+                    // Use FunnelTracker to prepare URL if available
+                    if (window.FunnelTracker && typeof window.FunnelTracker.prepareNextStepUrl === 'function') {
+                        finalHref = window.FunnelTracker.prepareNextStepUrl(finalHref);
+                    } else {
+                        // Manual URL preparation
+                        try {
+                            const url = new URL(finalHref, window.location.origin);
+                            url.searchParams.set('ref_position', this.positionData.contentId);
+                            url.searchParams.set('ref_id', this.positionData.id);
+                            url.searchParams.set('origin', this.positionData.contentId);
+                            finalHref = url.toString();
+                        } catch (e) {
+                            // URL parsing failed, use original
+                        }
                     }
                 }
 
@@ -230,6 +315,13 @@ window.ButtonManager = class ButtonManager {
                 e.preventDefault();
                 
                 // Track fallback action
+                if (window.FunnelTracker && typeof window.FunnelTracker.trackEvent === 'function') {
+                    window.FunnelTracker.trackEvent('FallbackScroll', {
+                        target_section: fallbackSection
+                    });
+                }
+                
+                // Also track with gtag if available
                 if (window.gtag) {
                     window.gtag('event', 'scroll_to_section', {
                         event_category: 'Navigation',
@@ -504,5 +596,39 @@ window.ButtonManager = class ButtonManager {
     isCareerPortalButton(element) {
         const container = element.closest('[data-title]');
         return container && this.buttonTypes.includes(container.getAttribute('data-title'));
+    }
+
+    /**
+     * Prepare URL for next step with all tracking parameters
+     */
+    prepareTrackingUrl(targetUrl) {
+        // Use FunnelTracker if available
+        if (window.FunnelTracker && typeof window.FunnelTracker.prepareNextStepUrl === 'function') {
+            return window.FunnelTracker.prepareNextStepUrl(targetUrl);
+        }
+
+        // Fallback to manual preparation
+        try {
+            const url = new URL(targetUrl, window.location.origin);
+            
+            // Add position data if available
+            if (this.positionData) {
+                if (this.positionData.contentId) {
+                    url.searchParams.set('contentId', this.positionData.contentId);
+                    url.searchParams.set('origin', this.positionData.contentId);
+                }
+                if (this.positionData.id) {
+                    url.searchParams.set('positionId', this.positionData.id);
+                }
+            }
+            
+            // Add timestamp
+            url.searchParams.set('timestamp', Date.now());
+            
+            return url.toString();
+        } catch (e) {
+            console.error('ButtonManager: Error preparing tracking URL', e);
+            return targetUrl;
+        }
     }
 };
