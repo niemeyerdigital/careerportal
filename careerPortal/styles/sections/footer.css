@@ -60,11 +60,41 @@ div[data-title='RowFooter'] .container {
     margin-bottom: 30px;
     opacity: 0;
     animation: fadeInUp 0.6s ease 0.1s forwards;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Logo container with aspect ratio */
+.footer-logo-container {
+    position: relative;
+    width: 100%;
+    max-width: 250px; /* Maximum width for logo container */
+    margin: 0 auto;
+}
+
+/* Square aspect ratio (1:1) */
+.footer-logo-container.logo-square::before {
+    content: '';
+    display: block;
+    padding-top: 100%; /* 1:1 aspect ratio */
+}
+
+/* Wide aspect ratio (16:9) */
+.footer-logo-container.logo-wide::before {
+    content: '';
+    display: block;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
 }
 
 .footer-logo {
-    max-width: 200px;
-    height: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
     filter: brightness(0) invert(1);
     opacity: 0.9;
 }
@@ -305,6 +335,10 @@ div[data-title='RowFooter'] .container {
         padding: 60px 20px 30px;
     }
 
+    .footer-logo-container {
+        max-width: 200px; /* Smaller on tablet */
+    }
+
     .footer-company-name {
         font-size: calc(var(--font-lg) * 1.4);
     }
@@ -364,8 +398,8 @@ div[data-title='RowFooter'] .container {
         padding: 50px 15px 25px;
     }
 
-    .footer-logo {
-        max-width: 150px;
+    .footer-logo-container {
+        max-width: 150px; /* Even smaller on mobile */
     }
 
     .footer-company-name {
