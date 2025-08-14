@@ -184,11 +184,16 @@ div[data-title='RowPositions'] .container {
 
 .positions-chip-btn i {
     font-size: calc(1rem * 1.8); /* 1.8x bigger icons */
+    color: var(--secondary-color);
 }
 
 .positions-chip-btn.is-active {
     background: var(--primary-color);
     border-color: var(--primary-color);
+    color: #fff;
+}
+
+.positions-chip-btn.is-active i {
     color: #fff;
 }
 
@@ -235,6 +240,7 @@ div[data-title='RowPositions'] .container {
 
 .positions-search-title i {
     font-size: calc(1rem * 2); /* 2x bigger icons */
+    color: var(--secondary-color);
 }
 
 .positions-search-input {
@@ -305,6 +311,7 @@ div[data-title='RowPositions'] .container {
 
 .positions-filters-title i {
     font-size: calc(1rem * 2); /* 2x bigger icons */
+    color: var(--secondary-color);
 }
 
 .positions-filters-reset {
@@ -338,10 +345,12 @@ div[data-title='RowPositions'] .container {
 .positions-filters-reset i {
     font-size: calc(1rem * 1.5);
     transition: transform 0.3s ease;
+    color: inherit;
 }
 
 .positions-filters-reset:hover i {
     transform: rotate(180deg);
+    color: white;
 }
 
 @keyframes fadeIn {
@@ -372,6 +381,7 @@ div[data-title='RowPositions'] .container {
 
 .positions-filters-toggle i {
     font-size: calc(1rem * 1.7); /* 1.7x bigger toggle icon */
+    color: var(--secondary-color);
 }
 
 .positions-filters-toggle:hover {
@@ -630,6 +640,7 @@ div[data-title='RowPositions'] .container {
 
 .positions-btn-sm i {
     font-size: 14px;
+    color: var(--secondary-color);
 }
 
 /* Mobile specific adjustments */
@@ -758,14 +769,18 @@ div[data-title='RowPositions'] .container {
     font-family: var(--font-family);
 }
 
+.positions-pill i {
+    color: var(--secondary-color);
+}
+
 .positions-pill-accent {
-    border-color: rgba(255, 107, 53, 0.25);
-    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
+    border-color: rgba(var(--glow-color-rgb), 0.25);
+    box-shadow: 0 0 0 0 rgba(var(--glow-color-rgb), 0);
     transition: box-shadow 0.2s ease;
 }
 
 .positions-pill-accent:hover {
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--glow-color-rgb), 0.15);
 }
 
 .positions-card-actions {
@@ -789,10 +804,18 @@ div[data-title='RowPositions'] .container {
     transition: all 0.3s ease;
 }
 
+.positions-btn i {
+    color: var(--secondary-color);
+}
+
 .positions-btn-primary {
     background: var(--button-primary);
-    color: #fff;
+    color: var(--button-text-color);
     border: none;
+}
+
+.positions-btn-primary i {
+    color: var(--button-text-color);
 }
 
 .positions-btn-primary:hover {
@@ -999,7 +1022,7 @@ body.modal-open {
 }
 
 .positions-block header i {
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 .positions-block h4 {
@@ -1028,7 +1051,7 @@ body.modal-open {
 }
 
 .positions-block li i {
-    color: var(--positions-text-muted);
+    color: var(--secondary-color);
     margin-top: 2px;
 }
 
@@ -1054,6 +1077,10 @@ body.modal-open {
     align-items: center;
     gap: 8px;
     font-family: var(--font-family);
+}
+
+.positions-footer-meta i {
+    color: var(--secondary-color);
 }
 
 /* ====================================================================
