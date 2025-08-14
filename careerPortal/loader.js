@@ -1,7 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
- * Includes Cookie Banner, Thanks Section, and Exclude Section support
+ * Includes Cookie Banner, Thanks Section, Exclude Section, and Tracking support
  */
 
 class CareerPortalLoader {
@@ -11,6 +11,7 @@ class CareerPortalLoader {
         this.loadedStyles = new Map();
         this.initializationQueue = [];
         this.cookieBannerLoaded = false;
+        this.trackingLoaded = false;
     }
 
     /**
@@ -113,6 +114,40 @@ class CareerPortalLoader {
     }
 
     /**
+     * Load tracking modules
+     */
+    async loadTracking() {
+        if (this.trackingLoaded) {
+            console.log('✅ Tracking already loaded');
+            return true;
+        }
+
+        try {
+            console.log('📊 Loading tracking modules...');
+            
+            // Load tracking constants first
+            await this.loadModule('tracking/constantsTracking.js');
+            
+            // Load main tracking module
+            await this.loadModule('tracking/funnelTracking.js');
+            
+            // Initialize if config exists
+            if (window.TRACKING_CONFIG && window.FunnelTracking) {
+                window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                console.log('🎉 Tracking initialized successfully!');
+            } else {
+                console.log('ℹ️ Tracking modules loaded, waiting for config');
+            }
+            
+            this.trackingLoaded = true;
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to load tracking:', error);
+            return false;
+        }
+    }
+
+    /**
      * Load all required CSS files
      */
     async loadAllCSS() {
@@ -124,7 +159,7 @@ class CareerPortalLoader {
             'styles/sections/positions.css',
             'styles/sections/footer.css',
             'styles/sections/thanks.css',
-            'styles/sections/exclude.css'  // Added exclude.css
+            'styles/sections/exclude.css'
         ];
         
         console.log('📦 Loading CSS files...');
@@ -208,6 +243,11 @@ class CareerPortalLoader {
         // First check and load cookie banner if config exists
         if (window.COOKIE_BANNER_CONFIG) {
             await this.loadCookieBanner();
+        }
+        
+        // Load tracking if config exists
+        if (window.TRACKING_CONFIG) {
+            await this.loadTracking();
         }
         
         // Then load all CSS
@@ -328,6 +368,54 @@ if (document.readyState === 'loading') {
 })();
 
 // ====================================================================
+// TRACKING STANDALONE LOADER (FOR FUNNEL HEADER)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    // Only load tracking if config exists and loader hasn't already handled it
+    if (window.TRACKING_CONFIG && !window.CareerPortalLoader?.trackingLoaded) {
+        console.log('📊 Loading Tracking (standalone)...');
+        
+        async function loadTracking() {
+            try {
+                // Load constants first
+                const constantsResponse = await fetch(BASE_URL + 'tracking/constantsTracking.js');
+                if (!constantsResponse.ok) throw new Error('Failed to load tracking constants');
+                const constantsCode = await constantsResponse.text();
+                eval(constantsCode);
+                console.log('✅ Tracking constants loaded');
+                
+                // Load main tracking module
+                const trackingResponse = await fetch(BASE_URL + 'tracking/funnelTracking.js');
+                if (!trackingResponse.ok) throw new Error('Failed to load tracking module');
+                const trackingCode = await trackingResponse.text();
+                eval(trackingCode);
+                console.log('✅ Tracking module loaded');
+                
+                // Initialize with config
+                if (window.FunnelTracking && !window.FunnelTracker) {
+                    window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                    console.log('🎉 Tracking initialized successfully!');
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load tracking:', error);
+            }
+        }
+        
+        // Load after DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadTracking);
+        } else {
+            loadTracking();
+        }
+    }
+})();
+
+// ====================================================================
 // MANUAL INITIALIZATION FOR CLICKFUNNELS (CSP WORKAROUND)
 // ====================================================================
 
@@ -389,6 +477,28 @@ if (document.readyState === 'loading') {
                 }
             }
             
+            // 0.5 Load Tracking if config exists
+            if (window.TRACKING_CONFIG && !window.FunnelTracker) {
+                console.log('📊 Loading tracking modules...');
+                
+                // Load constants
+                const constantsResponse = await fetch(BASE_URL + 'tracking/constantsTracking.js');
+                const constantsCode = await constantsResponse.text();
+                eval(constantsCode);
+                console.log('✅ Tracking constants loaded');
+                
+                // Load main tracking
+                const trackingResponse = await fetch(BASE_URL + 'tracking/funnelTracking.js');
+                const trackingCode = await trackingResponse.text();
+                eval(trackingCode);
+                console.log('✅ Tracking module loaded');
+                
+                if (window.FunnelTracking) {
+                    window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                    console.log('🎉 Tracking initialized!');
+                }
+            }
+            
             // 1. Load CSS files by fetching as text and injecting as style elements
             const cssFiles = [
                 'styles/components/buttons.css',
@@ -398,7 +508,7 @@ if (document.readyState === 'loading') {
                 'styles/sections/positions.css',
                 'styles/sections/footer.css',
                 'styles/sections/thanks.css',
-                'styles/sections/exclude.css'  // Added exclude.css
+                'styles/sections/exclude.css'
             ];
             
             console.log('📦 Loading CSS files...');
@@ -444,7 +554,7 @@ if (document.readyState === 'loading') {
                 console.log('✅ Loaded:', component);
             }
             
-            // 6. Load all section modules (including thanks and exclude)
+            // 6. Load all section modules
             const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude'];
             
             for (const section of sections) {
@@ -480,13 +590,11 @@ if (document.readyState === 'loading') {
                 console.log('🎉 Positions section initialized successfully!');
             }
             
-            // Initialize Thanks section if it exists
             if (window.ThanksSection && document.getElementById('thanks-section') && window.THANKS_CONFIG) {
                 new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
                 console.log('🎉 Thanks section initialized successfully!');
             }
             
-            // Initialize Exclude section if it exists
             if (window.ExcludeSection && document.getElementById('exclude-section') && window.EXCLUDE_CONFIG) {
                 new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
                 console.log('🎉 Exclude section initialized successfully!');
@@ -521,13 +629,15 @@ window.debugCareerPortal = function() {
         'FooterSection',
         'PositionsSection',
         'ThanksSection',
-        'ExcludeSection',  // Added ExcludeSection
+        'ExcludeSection',
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
         'SlideUpAnimation',
         'AnimationController',
-        'CookieBannerModule'
+        'CookieBannerModule',
+        'FunnelTracking',
+        'TrackingConstants'
     ];
     
     console.log('=== Career Portal Debug Info ===');
@@ -553,6 +663,12 @@ window.debugCareerPortal = function() {
         console.log('Cookie Banner Status:', window.CookieBanner.getStatus());
     }
     
+    // Check tracking
+    console.log(`Tracking Instance: ${window.FunnelTracker ? '✅ Initialized' : '❌ Not initialized'}`);
+    if (window.FunnelTracker) {
+        console.log('Tracking Status:', window.FunnelTracker.getStatus());
+    }
+    
     // Check sections
     const welcomeElement = document.getElementById('welcome-section');
     const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
@@ -572,6 +688,7 @@ window.debugCareerPortal = function() {
     
     // Check configs
     console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
+    console.log('Tracking Config:', window.TRACKING_CONFIG);
     console.log('Welcome Config:', window.WELCOME_CONFIG);
     console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
     console.log('Process Config:', window.PROCESS_CONFIG);
@@ -604,6 +721,33 @@ window.debugCookieBanner = function() {
     }
 };
 
+// Debug helper for Tracking
+window.debugTracking = function() {
+    console.log('=== Tracking Debug Info ===');
+    console.log('FunnelTracking loaded:', !!window.FunnelTracking);
+    console.log('TrackingConstants loaded:', !!window.TrackingConstants);
+    console.log('FunnelTracker instance:', !!window.FunnelTracker);
+    
+    if (window.FunnelTracker) {
+        const status = window.FunnelTracker.getStatus();
+        console.log('Initialized:', status.initialized);
+        console.log('Funnel Step:', status.config.funnelStep);
+        console.log('Session Data:', status.sessionData);
+        console.log('Analytics Consent:', status.hasAnalyticsConsent);
+        console.log('Marketing Consent:', status.hasMarketingConsent);
+        console.log('Tracked Events:', status.trackedEvents);
+        console.log('Active Parameters:', window.TrackingConstants.getActiveParameters(status.config));
+    } else {
+        console.log('Tracking not initialized');
+    }
+    
+    // Check session storage
+    console.log('Session Storage:');
+    console.log('  - origin:', sessionStorage.getItem('origin'));
+    console.log('  - contentId:', sessionStorage.getItem('contentId'));
+    console.log('  - selectedPosition:', sessionStorage.getItem('selectedPosition'));
+};
+
 // Reset cookie preferences
 window.resetCookiePreferences = function() {
     if (window.CookieBanner) {
@@ -621,6 +765,53 @@ window.showCookieBanner = function() {
         console.log('✅ Cookie banner shown');
     } else {
         console.error('❌ Cookie banner not initialized');
+    }
+};
+
+// Manually trigger tracking event
+window.trackCustomEvent = function(eventName, parameters) {
+    if (window.FunnelTracker) {
+        window.FunnelTracker.trackEvent(eventName, parameters);
+        console.log('✅ Custom event tracked:', eventName);
+    } else {
+        console.error('❌ Tracking not initialized');
+    }
+};
+
+// Test tracking data flow
+window.testTrackingDataFlow = function() {
+    console.log('=== Testing Tracking Data Flow ===');
+    
+    // Simulate position data
+    const testPositionData = {
+        id: 'test-123',
+        contentId: 'pflegefachkraft_bielefeld_voll',
+        position: 'Pflegefachkraft',
+        region: 'Bielefeld',
+        workCapacity: ['Vollzeit']
+    };
+    
+    console.log('Test Position Data:', testPositionData);
+    
+    if (window.FunnelTracker) {
+        // Update position data
+        window.FunnelTracker.updatePositionData(testPositionData);
+        console.log('✅ Position data updated');
+        
+        // Check formatted content ID
+        const formatted = window.TrackingConstants.formatContentId(testPositionData.contentId);
+        console.log('Formatted Content ID:', formatted);
+        
+        // Check expected event names
+        const step = window.FunnelTracker.config.funnelStep;
+        const prefix = window.TrackingConstants.getPrefix(step);
+        console.log('Expected Event:', `${prefix}_${formatted}`);
+        
+        // Prepare next step URL
+        const nextUrl = window.FunnelTracker.prepareNextStepUrl('https://example.com/next-step');
+        console.log('Next Step URL:', nextUrl);
+    } else {
+        console.error('❌ Tracking not initialized');
     }
 };
 
@@ -670,7 +861,6 @@ window.reinitializePositionsSection = function() {
     }
 };
 
-// Reinitialize Thanks section
 window.reinitializeThanksSection = function() {
     if (window.ThanksSection && window.THANKS_CONFIG) {
         return new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
@@ -680,117 +870,11 @@ window.reinitializeThanksSection = function() {
     }
 };
 
-// Reinitialize Exclude section
 window.reinitializeExcludeSection = function() {
     if (window.ExcludeSection && window.EXCLUDE_CONFIG) {
         return new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
     } else {
         console.error('ExcludeSection class or EXCLUDE_CONFIG not available');
         return false;
-    }
-};
-
-// Debug helper for Thanks section
-window.debugThanks = function() {
-    console.log('=== Thanks Section Debug Info ===');
-    console.log('ThanksSection loaded:', !!window.ThanksSection);
-    console.log('Container found:', !!document.getElementById('thanks-section'));
-    console.log('Config:', window.THANKS_CONFIG);
-    
-    if (window.THANKS_CONFIG) {
-        console.log('Contact name:', window.THANKS_CONFIG.contact?.name);
-        console.log('Has portrait:', window.THANKS_CONFIG.contact?.showPortrait);
-        console.log('Social channel:', window.THANKS_CONFIG.socialMedia?.channelName);
-    }
-};
-
-// Debug helper for Exclude section
-window.debugExclude = function() {
-    console.log('=== Exclude Section Debug Info ===');
-    console.log('ExcludeSection loaded:', !!window.ExcludeSection);
-    console.log('Container found:', !!document.getElementById('exclude-section'));
-    console.log('Config:', window.EXCLUDE_CONFIG);
-    
-    if (window.EXCLUDE_CONFIG) {
-        console.log('Talent Pool enabled:', window.EXCLUDE_CONFIG.talentPool?.enabled);
-        console.log('Alternative paths count:', window.EXCLUDE_CONFIG.alternativePaths?.length);
-        console.log('Social media platforms enabled:', Object.entries(window.EXCLUDE_CONFIG.socialMedia || {})
-            .filter(([_, settings]) => settings.enabled)
-            .map(([platform]) => platform));
-    }
-};
-
-// Debug helper for Mehr Erfahren specifically
-window.debugMehrErfahren = function() {
-    console.log('=== Mehr Erfahren Debug Info ===');
-    console.log('MehrErfahrenSection loaded:', !!window.MehrErfahrenSection);
-    console.log('Container found:', !!document.getElementById('mehr-erfahren-section'));
-    console.log('Config:', window.MEHR_ERFAHREN_CONFIG);
-    
-    if (window.MEHR_ERFAHREN_CONFIG) {
-        // Check enabled cards
-        const enabledCards = Object.entries(window.MEHR_ERFAHREN_CONFIG)
-            .filter(([key, value]) => key.includes('Card') && value && value.enabled)
-            .map(([key]) => key);
-        console.log('Enabled cards:', enabledCards);
-        
-        // Check CTA configuration
-        console.log('CTA Headline:', window.MEHR_ERFAHREN_CONFIG.ctaHeadline);
-        console.log('CTA Button:', window.MEHR_ERFAHREN_CONFIG.ctaButtonText);
-    }
-};
-
-// Debug helper for Process section
-window.debugProcess = function() {
-    console.log('=== Process Section Debug Info ===');
-    console.log('ProcessSection loaded:', !!window.ProcessSection);
-    console.log('Container found:', !!document.getElementById('process-section'));
-    console.log('Config:', window.PROCESS_CONFIG);
-    
-    if (window.PROCESS_CONFIG) {
-        console.log('Number of cards:', window.PROCESS_CONFIG.cards ? window.PROCESS_CONFIG.cards.length : 0);
-        console.log('Show emoji containers:', window.PROCESS_CONFIG.showEmojiContainers);
-        console.log('Show emoji background:', window.PROCESS_CONFIG.showEmojiBackground);
-    }
-};
-
-// Debug helper for Footer section
-window.debugFooter = function() {
-    console.log('=== Footer Section Debug Info ===');
-    console.log('FooterSection loaded:', !!window.FooterSection);
-    console.log('Container found:', !!document.getElementById('footer-section'));
-    console.log('Config:', window.FOOTER_CONFIG);
-    
-    if (window.FOOTER_CONFIG && window.FOOTER_CONFIG.socialMedia) {
-        const enabledSocial = Object.entries(window.FOOTER_CONFIG.socialMedia)
-            .filter(([_, settings]) => settings.enabled)
-            .map(([platform]) => platform);
-        console.log('Enabled social platforms:', enabledSocial);
-    }
-};
-
-// Debug helper for Positions section
-window.debugPositions = function() {
-    console.log('=== Positions Section Debug Info ===');
-    console.log('PositionsSection loaded:', !!window.PositionsSection);
-    console.log('Container found:', !!document.getElementById('positions-section'));
-    console.log('Config:', window.POSITIONS_CONFIG);
-    
-    if (window.POSITIONS_CONFIG) {
-        console.log('Number of positions:', window.POSITIONS_CONFIG.positions ? window.POSITIONS_CONFIG.positions.length : 0);
-        console.log('Saved positions enabled:', window.POSITIONS_CONFIG.features?.savedPositions);
-        
-        // Check active filters
-        const activeFilters = Object.entries(window.POSITIONS_CONFIG.filters || {})
-            .filter(([key, filter]) => filter && typeof filter === 'object' && filter.enabled)
-            .map(([key]) => key);
-        console.log('Active filters:', activeFilters);
-        
-        // Check active positions
-        if (window.POSITIONS_CONFIG.positions) {
-            const activePositions = window.POSITIONS_CONFIG.positions.filter(p => p.status === 'on');
-            console.log('Active positions:', activePositions.length);
-            console.log('Inactive positions:', window.POSITIONS_CONFIG.positions.length - activePositions.length);
-        }
     }
 };
