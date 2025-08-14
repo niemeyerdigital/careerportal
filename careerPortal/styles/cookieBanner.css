@@ -384,7 +384,7 @@
 /* Accept button - Primary accent - LARGER TEXT */
 .cookie-btn-accept {
     background: var(--button-primary);
-    color: #ffffff;
+    color: var(--button-text-color);
     box-shadow: 0 4px 12px var(--glow-color-light);
     font-size: calc(var(--font-sm) * 1.6);
 }
