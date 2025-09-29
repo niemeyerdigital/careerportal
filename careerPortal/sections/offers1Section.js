@@ -4,7 +4,7 @@
  * Flexible for any business type (venues, restaurants, hotels, etc.)
  */
 
-window.OffersSection1 = class OffersSection1 extends window.BaseSec {
+window.Offers1Section = class Offers1Section extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.currentRoomIndex = 0;
@@ -397,8 +397,7 @@ window.OffersSection1 = class OffersSection1 extends window.BaseSec {
 
         // Track room view
         if (this.config.tracking?.enabled && this.config.tracking.onRoomClick) {
-            const room = this.config.rooms[index];
-            this.config.tracking.onRoomClick(room.id, room.name);
+            this.config.tracking.onRoomClick(this.config.rooms[index].id, this.config.rooms[index].name);
         }
     }
 
@@ -575,9 +574,9 @@ window.OffersSection1 = class OffersSection1 extends window.BaseSec {
      * Static factory method
      */
     static create(containerId, config) {
-        const defaultConfig = OffersSection1.getDefaultConfig();
+        const defaultConfig = Offers1Section.getDefaultConfig();
         const mergedConfig = { ...defaultConfig, ...config };
-        return new OffersSection1(mergedConfig, containerId);
+        return new Offers1Section(mergedConfig, containerId);
     }
 
     /**
