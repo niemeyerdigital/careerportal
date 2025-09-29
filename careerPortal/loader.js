@@ -1,7 +1,7 @@
 /**
  * Career Portal Loader - Main Entry Point
  * Dynamically loads CSS and JavaScript modules and initializes sections
- * Includes Cookie Banner, Thanks Section, Exclude Section, and Tracking support
+ * Includes Cookie Banner, Thanks Section, Exclude Section, Offers1, and Tracking support
  */
 
 class CareerPortalLoader {
@@ -159,7 +159,8 @@ class CareerPortalLoader {
             'styles/sections/positions.css',
             'styles/sections/footer.css',
             'styles/sections/thanks.css',
-            'styles/sections/exclude.css'
+            'styles/sections/exclude.css',
+            'styles/sections/offers1.css'
         ];
         
         console.log('📦 Loading CSS files...');
@@ -508,7 +509,8 @@ if (document.readyState === 'loading') {
                 'styles/sections/positions.css',
                 'styles/sections/footer.css',
                 'styles/sections/thanks.css',
-                'styles/sections/exclude.css'
+                'styles/sections/exclude.css',
+                'styles/sections/offers1.css'
             ];
             
             console.log('📦 Loading CSS files...');
@@ -555,7 +557,7 @@ if (document.readyState === 'loading') {
             }
             
             // 6. Load all section modules
-            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude'];
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude', 'offers1'];
             
             for (const section of sections) {
                 const response = await fetch(BASE_URL + `sections/${section}Section.js`);
@@ -600,6 +602,11 @@ if (document.readyState === 'loading') {
                 console.log('🎉 Exclude section initialized successfully!');
             }
             
+            if (window.Offers1Section && document.getElementById('offers1-section') && window.OFFERS1_CONFIG) {
+                new window.Offers1Section(window.OFFERS1_CONFIG, 'offers1-section');
+                console.log('🎉 Offers1 section initialized successfully!');
+            }
+            
         } catch (error) {
             console.error('❌ Failed to load Career Portal:', error);
         }
@@ -630,6 +637,7 @@ window.debugCareerPortal = function() {
         'PositionsSection',
         'ThanksSection',
         'ExcludeSection',
+        'Offers1Section',
         'VideoWistia',
         'ButtonManager',
         'BadgeComponent',
@@ -677,6 +685,7 @@ window.debugCareerPortal = function() {
     const positionsElement = document.getElementById('positions-section');
     const thanksElement = document.getElementById('thanks-section');
     const excludeElement = document.getElementById('exclude-section');
+    const offers1Element = document.getElementById('offers1-section');
     
     console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
@@ -685,6 +694,7 @@ window.debugCareerPortal = function() {
     console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Thanks Section Element: ${thanksElement ? '✅ Found' : '❌ Missing'}`);
     console.log(`Exclude Section Element: ${excludeElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Offers1 Section Element: ${offers1Element ? '✅ Found' : '❌ Missing'}`);
     
     // Check configs
     console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
@@ -696,6 +706,7 @@ window.debugCareerPortal = function() {
     console.log('Positions Config:', window.POSITIONS_CONFIG);
     console.log('Thanks Config:', window.THANKS_CONFIG);
     console.log('Exclude Config:', window.EXCLUDE_CONFIG);
+    console.log('Offers1 Config:', window.OFFERS1_CONFIG);
 };
 
 // Debug helper for Cookie Banner
@@ -875,6 +886,15 @@ window.reinitializeExcludeSection = function() {
         return new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
     } else {
         console.error('ExcludeSection class or EXCLUDE_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeOffers1Section = function() {
+    if (window.Offers1Section && window.OFFERS1_CONFIG) {
+        return new window.Offers1Section(window.OFFERS1_CONFIG, 'offers1-section');
+    } else {
+        console.error('Offers1Section class or OFFERS1_CONFIG not available');
         return false;
     }
 };
