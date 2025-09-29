@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Includes Cookie Banner, Thanks Section, Exclude Section, and Tracking validation
+ * Includes Cookie Banner, Thanks Section, Exclude Section, Offers1, and Tracking validation
  */
 
 window.ConfigValidator = {
@@ -429,6 +429,201 @@ window.ConfigValidator = {
                     }
                     if (!Array.isArray(config.talentPool.interests)) {
                         errors.push('talentPool.interests must be an array');
+                    }
+                }
+                
+                return errors;
+            }
+        },
+        offers1: {
+            required: ['hero', 'rooms', 'cta'],
+            optional: ['offerBanner', 'trustBadges', 'display', 'tracking'],
+            types: {
+                hero: 'object',
+                offerBanner: 'object',
+                rooms: 'object',
+                cta: 'object',
+                trustBadges: 'object',
+                display: 'object',
+                tracking: 'object'
+            },
+            defaults: {
+                hero: {
+                    headline: "Choose Your Space",
+                    subheadline: "Find the perfect room for your needs",
+                    badge: {
+                        enabled: true,
+                        text: "Flexible Options",
+                        icon: "fas fa-check-circle"
+                    }
+                },
+                offerBanner: {
+                    enabled: false,
+                    icon: "fas fa-tag",
+                    title: "Special Offer",
+                    text: "Book now and save",
+                    validUntil: null
+                },
+                rooms: [],
+                cta: {
+                    mainButtonText: "Get Started",
+                    mainButtonType: "MainButton1",
+                    phoneNumber: null,
+                    phoneText: "Or call:",
+                    secondaryLink: null,
+                    secondaryText: "Learn more"
+                },
+                trustBadges: {
+                    enabled: true,
+                    badges: []
+                },
+                display: {
+                    showCapacityBadge: true,
+                    showPricing: true,
+                    showFeatures: true,
+                    showHighlights: true,
+                    enableImageCarousel: true
+                },
+                tracking: {
+                    enabled: true,
+                    onRoomClick: null,
+                    onCTAClick: null
+                }
+            },
+            subSchemas: {
+                hero: {
+                    required: ['headline', 'subheadline'],
+                    optional: ['badge'],
+                    types: {
+                        headline: 'string',
+                        subheadline: 'string',
+                        badge: 'object'
+                    }
+                },
+                offerBanner: {
+                    required: ['enabled'],
+                    optional: ['icon', 'title', 'text', 'validUntil'],
+                    types: {
+                        enabled: 'boolean',
+                        icon: 'string',
+                        title: 'string',
+                        text: 'string',
+                        validUntil: 'string'
+                    }
+                },
+                cta: {
+                    required: ['mainButtonText'],
+                    optional: ['mainButtonType', 'phoneNumber', 'phoneText', 'secondaryLink', 'secondaryText'],
+                    types: {
+                        mainButtonText: 'string',
+                        mainButtonType: 'string',
+                        phoneNumber: 'string',
+                        phoneText: 'string',
+                        secondaryLink: 'string',
+                        secondaryText: 'string'
+                    }
+                },
+                trustBadges: {
+                    required: ['enabled'],
+                    optional: ['badges'],
+                    types: {
+                        enabled: 'boolean',
+                        badges: 'object'
+                    }
+                },
+                display: {
+                    optional: ['showCapacityBadge', 'showPricing', 'showFeatures', 'showHighlights', 'enableImageCarousel'],
+                    types: {
+                        showCapacityBadge: 'boolean',
+                        showPricing: 'boolean',
+                        showFeatures: 'boolean',
+                        showHighlights: 'boolean',
+                        enableImageCarousel: 'boolean'
+                    }
+                },
+                tracking: {
+                    optional: ['enabled', 'onRoomClick', 'onCTAClick'],
+                    types: {
+                        enabled: 'boolean',
+                        onRoomClick: 'function',
+                        onCTAClick: 'function'
+                    }
+                }
+            },
+            customValidation: (config) => {
+                const errors = [];
+                
+                // Validate rooms array
+                if (!Array.isArray(config.rooms)) {
+                    errors.push('rooms must be an array');
+                } else if (config.rooms.length === 0) {
+                    errors.push('rooms array cannot be empty');
+                } else {
+                    // Validate each room
+                    config.rooms.forEach((room, index) => {
+                        if (!room.id) errors.push(`Room ${index + 1}: id is required`);
+                        if (!room.name) errors.push(`Room ${index + 1}: name is required`);
+                        if (!room.description) errors.push(`Room ${index + 1}: description is required`);
+                        if (!room.capacity || !room.capacity.displayText) {
+                            errors.push(`Room ${index + 1}: capacity.displayText is required`);
+                        }
+                        
+                        // Validate images if provided
+                        if (room.images && !Array.isArray(room.images)) {
+                            errors.push(`Room ${index + 1}: images must be an array`);
+                        }
+                        
+                        // Validate features if provided
+                        if (room.features && !Array.isArray(room.features)) {
+                            errors.push(`Room ${index + 1}: features must be an array`);
+                        } else if (room.features) {
+                            room.features.forEach((feature, fIndex) => {
+                                if (!feature.icon || !feature.text) {
+                                    errors.push(`Room ${index + 1}, Feature ${fIndex + 1}: icon and text are required`);
+                                }
+                            });
+                        }
+                        
+                        // Validate highlights if provided
+                        if (room.highlights && !Array.isArray(room.highlights)) {
+                            errors.push(`Room ${index + 1}: highlights must be an array`);
+                        }
+                        
+                        // Validate pricing if provided
+                        if (room.pricing) {
+                            if (!room.pricing.from) errors.push(`Room ${index + 1}: pricing.from is required`);
+                            if (!room.pricing.currency) errors.push(`Room ${index + 1}: pricing.currency is required`);
+                            if (!room.pricing.period) errors.push(`Room ${index + 1}: pricing.period is required`);
+                        }
+                    });
+                }
+                
+                // Validate trust badges if enabled
+                if (config.trustBadges && config.trustBadges.enabled) {
+                    if (!Array.isArray(config.trustBadges.badges)) {
+                        errors.push('trustBadges.badges must be an array');
+                    } else {
+                        config.trustBadges.badges.forEach((badge, index) => {
+                            if (!badge.icon || !badge.text) {
+                                errors.push(`Trust badge ${index + 1}: icon and text are required`);
+                            }
+                        });
+                    }
+                }
+                
+                // Validate phone number format if provided
+                if (config.cta && config.cta.phoneNumber) {
+                    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+                    if (!phoneRegex.test(config.cta.phoneNumber)) {
+                        errors.push('cta.phoneNumber contains invalid characters');
+                    }
+                }
+                
+                // Validate button type
+                if (config.cta && config.cta.mainButtonType) {
+                    const validTypes = ['MainButton1', 'MainButton2', 'MainButton3'];
+                    if (!validTypes.includes(config.cta.mainButtonType)) {
+                        errors.push(`cta.mainButtonType must be one of: ${validTypes.join(', ')}`);
                     }
                 }
                 
@@ -1032,6 +1227,49 @@ window.ConfigValidator = {
                     xing: { enabled: false, url: "#", icon: "fab fa-xing" }
                 }
             },
+            offers1: {
+                hero: {
+                    headline: "Choose Your Space",
+                    subheadline: "Find the perfect room for your needs",
+                    badge: {
+                        enabled: true,
+                        text: "Flexible Options",
+                        icon: "fas fa-check-circle"
+                    }
+                },
+                offerBanner: {
+                    enabled: false,
+                    icon: "fas fa-tag",
+                    title: "Special Offer",
+                    text: "Book now and save",
+                    validUntil: null
+                },
+                rooms: [],
+                cta: {
+                    mainButtonText: "Get Started",
+                    mainButtonType: "MainButton1",
+                    phoneNumber: null,
+                    phoneText: "Or call:",
+                    secondaryLink: null,
+                    secondaryText: "Learn more"
+                },
+                trustBadges: {
+                    enabled: true,
+                    badges: []
+                },
+                display: {
+                    showCapacityBadge: true,
+                    showPricing: true,
+                    showFeatures: true,
+                    showHighlights: true,
+                    enableImageCarousel: true
+                },
+                tracking: {
+                    enabled: true,
+                    onRoomClick: null,
+                    onCTAClick: null
+                }
+            },
             welcome: {
                 logoLink: 'https://placehold.co/32x32/cccccc/666666?text=Logo',
                 mainAsset: 'video',
@@ -1172,7 +1410,8 @@ window.ConfigValidator = {
         // Sanitize URLs
         const urlFields = ['logoLink', 'mainImageLink', 'ctaLink', 'ctaButtonLink', 'imageUrl', 
                           'websiteUrl', 'impressumUrl', 'datenschutzUrl', 'applicationUrl',
-                          'privacyPolicyUrl', 'cookiePolicyUrl', 'portraitUrl', 'channelUrl', 'linkUrl'];
+                          'privacyPolicyUrl', 'cookiePolicyUrl', 'portraitUrl', 'channelUrl', 'linkUrl',
+                          'secondaryLink'];
         for (const field of urlFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 // Basic URL validation
@@ -1191,12 +1430,13 @@ window.ConfigValidator = {
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
                            'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
                            'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
-                           'subtext', 'position', 'area', 'region', 'description', 'label',
+                           'subheadline', 'position', 'area', 'region', 'description', 'label',
                            'bannerText', 'confirmationBadgeText', 'mainDescription', 
                            'quickActionButtonText', 'name', 'channelName',
                            'statusBadgeText', 'messageTitle', 'messageText', 'alternativePathsTitle',
                            'improvementHeadline', 'footerText', 'buttonText', 'modalTitle', 
-                           'modalDescription', 'linkText', 'fallback', 'funnelStep'];
+                           'modalDescription', 'linkText', 'fallback', 'funnelStep',
+                           'mainButtonText', 'phoneText', 'secondaryText', 'tagline', 'validUntil'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
@@ -1227,6 +1467,105 @@ window.ConfigValidator = {
                 sanitized.tracking.scrollDepth.depths = sanitized.tracking.scrollDepth.depths
                     .filter(d => typeof d === 'number' && d >= 0 && d <= 100)
                     .sort((a, b) => a - b);
+            }
+        }
+
+        // Special sanitization for offers1 section
+        if (sectionType === 'offers1') {
+            // Sanitize hero
+            if (sanitized.hero) {
+                ['headline', 'subheadline'].forEach(field => {
+                    if (sanitized.hero[field]) {
+                        sanitized.hero[field] = sanitized.hero[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+                
+                if (sanitized.hero.badge) {
+                    if (sanitized.hero.badge.text) {
+                        sanitized.hero.badge.text = sanitized.hero.badge.text
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                }
+            }
+            
+            // Sanitize offer banner
+            if (sanitized.offerBanner) {
+                ['title', 'text', 'validUntil'].forEach(field => {
+                    if (sanitized.offerBanner[field]) {
+                        sanitized.offerBanner[field] = sanitized.offerBanner[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+            }
+            
+            // Sanitize rooms
+            if (sanitized.rooms && Array.isArray(sanitized.rooms)) {
+                sanitized.rooms = sanitized.rooms.map(room => {
+                    const cleanRoom = { ...room };
+                    
+                    // Sanitize text fields
+                    ['name', 'description', 'tagline', 'ctaText'].forEach(field => {
+                        if (cleanRoom[field]) {
+                            cleanRoom[field] = cleanRoom[field]
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                .trim();
+                        }
+                    });
+                    
+                    // Sanitize capacity
+                    if (cleanRoom.capacity && cleanRoom.capacity.displayText) {
+                        cleanRoom.capacity.displayText = cleanRoom.capacity.displayText
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                    
+                    // Sanitize features
+                    if (cleanRoom.features && Array.isArray(cleanRoom.features)) {
+                        cleanRoom.features = cleanRoom.features.map(feature => ({
+                            ...feature,
+                            text: feature.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                        }));
+                    }
+                    
+                    // Sanitize highlights
+                    if (cleanRoom.highlights && Array.isArray(cleanRoom.highlights)) {
+                        cleanRoom.highlights = cleanRoom.highlights.map(highlight =>
+                            highlight.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                        );
+                    }
+                    
+                    // Sanitize pricing
+                    if (cleanRoom.pricing) {
+                        ['currency', 'period'].forEach(field => {
+                            if (cleanRoom.pricing[field]) {
+                                cleanRoom.pricing[field] = cleanRoom.pricing[field]
+                                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                    .trim();
+                            }
+                        });
+                    }
+                    
+                    return cleanRoom;
+                });
+            }
+            
+            // Sanitize trust badges
+            if (sanitized.trustBadges && sanitized.trustBadges.badges && Array.isArray(sanitized.trustBadges.badges)) {
+                sanitized.trustBadges.badges = sanitized.trustBadges.badges.map(badge => ({
+                    ...badge,
+                    text: badge.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                }));
+            }
+            
+            // Sanitize phone number
+            if (sanitized.cta && sanitized.cta.phoneNumber) {
+                sanitized.cta.phoneNumber = sanitized.cta.phoneNumber
+                    .replace(/[^\d\s\-\+\(\)]/g, '')
+                    .trim();
             }
         }
 
@@ -1430,7 +1769,7 @@ window.ConfigValidator = {
         }
 
         return sanitized;
-    },
+    }
 
     /**
      * Complete validation workflow
