@@ -1,7 +1,7 @@
 /**
  * Configuration Validator
  * Validates section configurations to prevent runtime errors
- * Includes Cookie Banner, Thanks Section, Exclude Section, Offers1, and Tracking validation
+ * Includes Cookie Banner, Thanks Section, Exclude Section, Tracking, and Offers1 validation
  */
 
 window.ConfigValidator = {
@@ -270,10 +270,10 @@ window.ConfigValidator = {
                 onContactClick: 'function'
             },
             defaults: {
-                bannerText: "STOPP, schließe noch nicht diese Seite 👇",
-                confirmationBadgeText: "Erfolgreich übermittelt",
-                mainHeadline: "Vielen Dank für deine Anfrage!",
-                mainDescription: "Dein Formular wurde erfolgreich übermittelt.",
+                bannerText: "STOPP, schlieÃŸe noch nicht diese Seite ðŸ'‡",
+                confirmationBadgeText: "Erfolgreich Ã¼bermittelt",
+                mainHeadline: "Vielen Dank fÃ¼r deine Anfrage!",
+                mainDescription: "Dein Formular wurde erfolgreich Ã¼bermittelt.",
                 quickActionButtonText: "Schneller vorankommen",
                 contact: {
                     showPortrait: true,
@@ -356,15 +356,15 @@ window.ConfigValidator = {
             },
             defaults: {
                 statusBadgeText: "Bewerbung abgeschlossen",
-                mainHeadline: "Vielen Dank für dein Interesse",
-                mainDescription: "Wir haben deine Bewerbung sorgfältig geprüft.",
+                mainHeadline: "Vielen Dank fÃ¼r dein Interesse",
+                mainDescription: "Wir haben deine Bewerbung sorgfÃ¤ltig geprÃ¼ft.",
                 messageTitle: "Leider passt es diesmal nicht",
-                messageText: "Nach eingehender Prüfung deiner Unterlagen müssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
-                alternativePathsTitle: "Alternative Möglichkeiten",
+                messageText: "Nach eingehender PrÃ¼fung deiner Unterlagen mÃ¼ssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
+                alternativePathsTitle: "Alternative MÃ¶glichkeiten",
                 alternativePaths: [],
-                improvementHeadline: "Tipps für deine nächste Bewerbung",
+                improvementHeadline: "Tipps fÃ¼r deine nÃ¤chste Bewerbung",
                 improvementTips: [],
-                footerText: "Wir wünschen dir viel Erfolg für deinen weiteren Werdegang!",
+                footerText: "Wir wÃ¼nschen dir viel Erfolg fÃ¼r deinen weiteren Werdegang!",
                 talentPool: {
                     enabled: false,
                     buttonText: "In Talentpool aufnehmen",
@@ -461,17 +461,17 @@ window.ConfigValidator = {
                     enabled: false,
                     icon: "fas fa-tag",
                     title: "Special Offer",
-                    text: "Book now and save",
+                    text: "Limited time discount available",
                     validUntil: null
                 },
                 rooms: [],
                 cta: {
                     mainButtonText: "Get Started",
                     mainButtonType: "MainButton1",
+                    phoneText: "Or call us:",
                     phoneNumber: null,
-                    phoneText: "Or call:",
-                    secondaryLink: null,
-                    secondaryText: "Learn more"
+                    secondaryText: "View more options",
+                    secondaryLink: null
                 },
                 trustBadges: {
                     enabled: true,
@@ -513,14 +513,17 @@ window.ConfigValidator = {
                 },
                 cta: {
                     required: ['mainButtonText'],
-                    optional: ['mainButtonType', 'phoneNumber', 'phoneText', 'secondaryLink', 'secondaryText'],
+                    optional: ['mainButtonType', 'phoneText', 'phoneNumber', 'secondaryText', 'secondaryLink'],
                     types: {
                         mainButtonText: 'string',
                         mainButtonType: 'string',
-                        phoneNumber: 'string',
                         phoneText: 'string',
-                        secondaryLink: 'string',
-                        secondaryText: 'string'
+                        phoneNumber: 'string',
+                        secondaryText: 'string',
+                        secondaryLink: 'string'
+                    },
+                    enums: {
+                        mainButtonType: ['MainButton1', 'MainButton2', 'MainButton3']
                     }
                 },
                 trustBadges: {
@@ -564,7 +567,10 @@ window.ConfigValidator = {
                         if (!room.id) errors.push(`Room ${index + 1}: id is required`);
                         if (!room.name) errors.push(`Room ${index + 1}: name is required`);
                         if (!room.description) errors.push(`Room ${index + 1}: description is required`);
-                        if (!room.capacity || !room.capacity.displayText) {
+                        if (!room.capacity) errors.push(`Room ${index + 1}: capacity is required`);
+                        
+                        // Validate capacity object
+                        if (room.capacity && !room.capacity.displayText) {
                             errors.push(`Room ${index + 1}: capacity.displayText is required`);
                         }
                         
@@ -574,14 +580,15 @@ window.ConfigValidator = {
                         }
                         
                         // Validate features if provided
-                        if (room.features && !Array.isArray(room.features)) {
-                            errors.push(`Room ${index + 1}: features must be an array`);
-                        } else if (room.features) {
-                            room.features.forEach((feature, fIndex) => {
-                                if (!feature.icon || !feature.text) {
-                                    errors.push(`Room ${index + 1}, Feature ${fIndex + 1}: icon and text are required`);
-                                }
-                            });
+                        if (room.features) {
+                            if (!Array.isArray(room.features)) {
+                                errors.push(`Room ${index + 1}: features must be an array`);
+                            } else {
+                                room.features.forEach((feature, fIndex) => {
+                                    if (!feature.icon) errors.push(`Room ${index + 1}, Feature ${fIndex + 1}: icon is required`);
+                                    if (!feature.text) errors.push(`Room ${index + 1}, Feature ${fIndex + 1}: text is required`);
+                                });
+                            }
                         }
                         
                         // Validate highlights if provided
@@ -602,11 +609,10 @@ window.ConfigValidator = {
                 if (config.trustBadges && config.trustBadges.enabled) {
                     if (!Array.isArray(config.trustBadges.badges)) {
                         errors.push('trustBadges.badges must be an array');
-                    } else {
+                    } else if (config.trustBadges.badges.length > 0) {
                         config.trustBadges.badges.forEach((badge, index) => {
-                            if (!badge.icon || !badge.text) {
-                                errors.push(`Trust badge ${index + 1}: icon and text are required`);
-                            }
+                            if (!badge.icon) errors.push(`Trust badge ${index + 1}: icon is required`);
+                            if (!badge.text) errors.push(`Trust badge ${index + 1}: text is required`);
                         });
                     }
                 }
@@ -619,11 +625,12 @@ window.ConfigValidator = {
                     }
                 }
                 
-                // Validate button type
-                if (config.cta && config.cta.mainButtonType) {
-                    const validTypes = ['MainButton1', 'MainButton2', 'MainButton3'];
-                    if (!validTypes.includes(config.cta.mainButtonType)) {
-                        errors.push(`cta.mainButtonType must be one of: ${validTypes.join(', ')}`);
+                // Validate offer banner date format if provided
+                if (config.offerBanner && config.offerBanner.enabled && config.offerBanner.validUntil) {
+                    // Basic date format check (DD.MM.YYYY or YYYY-MM-DD)
+                    const dateRegex = /^(\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/;
+                    if (!dateRegex.test(config.offerBanner.validUntil)) {
+                        console.warn('offerBanner.validUntil should be in DD.MM.YYYY or YYYY-MM-DD format');
                     }
                 }
                 
@@ -790,7 +797,7 @@ window.ConfigValidator = {
                 filters: {
                     search: {
                         enabled: true,
-                        placeholder: 'Titel, Bereich oder Stadt …'
+                        placeholder: 'Titel, Bereich oder Stadt â€¦'
                     },
                     bereich: {
                         enabled: true,
@@ -819,9 +826,9 @@ window.ConfigValidator = {
                         icon: 'fa-light fa-arrow-down-a-z',
                         options: [
                             { value: 'new', text: 'Neueste zuerst' },
-                            { value: 'old', text: 'Älteste zuerst' },
-                            { value: 'az', text: 'A–Z (Titel)' },
-                            { value: 'za', text: 'Z–A (Titel)' }
+                            { value: 'old', text: 'Ã„lteste zuerst' },
+                            { value: 'az', text: 'Aâ€"Z (Titel)' },
+                            { value: 'za', text: 'Zâ€"A (Titel)' }
                         ]
                     }
                 }
@@ -1130,8 +1137,8 @@ window.ConfigValidator = {
                     }
                 },
                 banner: {
-                    headline: "Mehr Relevanz, mehr Möglichkeiten",
-                    description: "Wir nutzen Cookies, um unsere Karriereseite optimal für dich zu gestalten.",
+                    headline: "Mehr Relevanz, mehr MÃ¶glichkeiten",
+                    description: "Wir nutzen Cookies, um unsere Karriereseite optimal fÃ¼r dich zu gestalten.",
                     privacyPolicyUrl: "#datenschutz",
                     position: "bottom-left",
                     showOverlay: true,
@@ -1142,7 +1149,7 @@ window.ConfigValidator = {
                 categories: {
                     essential: {
                         label: "Essenziell",
-                        description: "Diese Cookies sind für den Betrieb der Webseite erforderlich.",
+                        description: "Diese Cookies sind fÃ¼r den Betrieb der Webseite erforderlich.",
                         required: true
                     },
                     analytics: {
@@ -1152,7 +1159,7 @@ window.ConfigValidator = {
                     },
                     marketing: {
                         label: "Marketing",
-                        description: "Diese Cookies ermöglichen personalisierte Werbung.",
+                        description: "Diese Cookies ermÃ¶glichen personalisierte Werbung.",
                         defaultEnabled: false
                     }
                 },
@@ -1183,10 +1190,10 @@ window.ConfigValidator = {
                 }
             },
             thanks: {
-                bannerText: "STOPP, schließe noch nicht diese Seite 👇",
-                confirmationBadgeText: "Erfolgreich übermittelt",
-                mainHeadline: "Vielen Dank für deine Anfrage!",
-                mainDescription: "Dein Formular wurde erfolgreich übermittelt.",
+                bannerText: "STOPP, schlieÃŸe noch nicht diese Seite ðŸ'‡",
+                confirmationBadgeText: "Erfolgreich Ã¼bermittelt",
+                mainHeadline: "Vielen Dank fÃ¼r deine Anfrage!",
+                mainDescription: "Dein Formular wurde erfolgreich Ã¼bermittelt.",
                 quickActionButtonText: "Schneller vorankommen",
                 contact: {
                     showPortrait: true,
@@ -1203,15 +1210,15 @@ window.ConfigValidator = {
             },
             exclude: {
                 statusBadgeText: "Bewerbung abgeschlossen",
-                mainHeadline: "Vielen Dank für dein Interesse",
-                mainDescription: "Wir haben deine Bewerbung sorgfältig geprüft.",
+                mainHeadline: "Vielen Dank fÃ¼r dein Interesse",
+                mainDescription: "Wir haben deine Bewerbung sorgfÃ¤ltig geprÃ¼ft.",
                 messageTitle: "Leider passt es diesmal nicht",
-                messageText: "Nach eingehender Prüfung deiner Unterlagen müssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
-                alternativePathsTitle: "Alternative Möglichkeiten",
+                messageText: "Nach eingehender PrÃ¼fung deiner Unterlagen mÃ¼ssen wir dir mitteilen, dass dein Profil aktuell nicht zu unseren Anforderungen passt.",
+                alternativePathsTitle: "Alternative MÃ¶glichkeiten",
                 alternativePaths: [],
-                improvementHeadline: "Tipps für deine nächste Bewerbung",
+                improvementHeadline: "Tipps fÃ¼r deine nÃ¤chste Bewerbung",
                 improvementTips: [],
-                footerText: "Wir wünschen dir viel Erfolg für deinen weiteren Werdegang!",
+                footerText: "Wir wÃ¼nschen dir viel Erfolg fÃ¼r deinen weiteren Werdegang!",
                 talentPool: {
                     enabled: false,
                     buttonText: "In Talentpool aufnehmen",
@@ -1241,17 +1248,17 @@ window.ConfigValidator = {
                     enabled: false,
                     icon: "fas fa-tag",
                     title: "Special Offer",
-                    text: "Book now and save",
+                    text: "Limited time discount available",
                     validUntil: null
                 },
                 rooms: [],
                 cta: {
                     mainButtonText: "Get Started",
                     mainButtonType: "MainButton1",
+                    phoneText: "Or call us:",
                     phoneNumber: null,
-                    phoneText: "Or call:",
-                    secondaryLink: null,
-                    secondaryText: "Learn more"
+                    secondaryText: "View more options",
+                    secondaryLink: null
                 },
                 trustBadges: {
                     enabled: true,
@@ -1289,7 +1296,7 @@ window.ConfigValidator = {
                     enabled: true,
                     order: 1,
                     icon: 'fas fa-building',
-                    title: 'Über Uns',
+                    title: 'Ãœber Uns',
                     text: 'Beschreibungstext...',
                     imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image'
                 },
@@ -1305,7 +1312,7 @@ window.ConfigValidator = {
                     enabled: true,
                     order: 3,
                     icon: 'fas fa-question-circle',
-                    title: 'Häufige Fragen',
+                    title: 'HÃ¤ufige Fragen',
                     imageUrl: 'https://placehold.co/250x200/e1e5e6/6d7b8b?text=Demo+Image',
                     faqs: []
                 }
@@ -1327,7 +1334,7 @@ window.ConfigValidator = {
                 filters: {
                     search: {
                         enabled: true,
-                        placeholder: 'Titel, Bereich oder Stadt …'
+                        placeholder: 'Titel, Bereich oder Stadt â€¦'
                     },
                     bereich: {
                         enabled: true,
@@ -1356,9 +1363,9 @@ window.ConfigValidator = {
                         icon: 'fa-light fa-arrow-down-a-z',
                         options: [
                             { value: 'new', text: 'Neueste zuerst' },
-                            { value: 'old', text: 'Älteste zuerst' },
-                            { value: 'az', text: 'A–Z (Titel)' },
-                            { value: 'za', text: 'Z–A (Titel)' }
+                            { value: 'old', text: 'Ã„lteste zuerst' },
+                            { value: 'az', text: 'Aâ€"Z (Titel)' },
+                            { value: 'za', text: 'Zâ€"A (Titel)' }
                         ]
                     }
                 },
@@ -1430,18 +1437,115 @@ window.ConfigValidator = {
                            'secondaryText', 'companyPlaceholder', 'title', 'text',
                            'ctaHeadline', 'ctaSubtext', 'ctaButtonText', 'sectionHeadline',
                            'businessName', 'streetAddress', 'city', 'zipCode', 'headline', 
-                           'subheadline', 'position', 'area', 'region', 'description', 'label',
+                           'subtext', 'position', 'area', 'region', 'description', 'label',
                            'bannerText', 'confirmationBadgeText', 'mainDescription', 
                            'quickActionButtonText', 'name', 'channelName',
                            'statusBadgeText', 'messageTitle', 'messageText', 'alternativePathsTitle',
                            'improvementHeadline', 'footerText', 'buttonText', 'modalTitle', 
                            'modalDescription', 'linkText', 'fallback', 'funnelStep',
-                           'mainButtonText', 'phoneText', 'secondaryText', 'tagline', 'validUntil'];
+                           'subheadline', 'tagline', 'mainButtonText', 'phoneText', 'ctaText',
+                           'validUntil', 'displayText', 'from', 'currency', 'period'];
         for (const field of textFields) {
             if (sanitized[field] && typeof sanitized[field] === 'string') {
                 sanitized[field] = sanitized[field]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .trim();
+            }
+        }
+
+        // Special sanitization for offers1 section
+        if (sectionType === 'offers1') {
+            // Sanitize hero badge
+            if (sanitized.hero?.badge?.text) {
+                sanitized.hero.badge.text = sanitized.hero.badge.text
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .trim();
+            }
+            
+            // Sanitize offer banner
+            if (sanitized.offerBanner) {
+                ['title', 'text', 'validUntil'].forEach(field => {
+                    if (sanitized.offerBanner[field]) {
+                        sanitized.offerBanner[field] = sanitized.offerBanner[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
+            }
+            
+            // Sanitize rooms
+            if (sanitized.rooms && Array.isArray(sanitized.rooms)) {
+                sanitized.rooms = sanitized.rooms.map(room => {
+                    const cleanRoom = { ...room };
+                    
+                    // Sanitize text fields
+                    ['name', 'tagline', 'description', 'ctaText'].forEach(field => {
+                        if (cleanRoom[field]) {
+                            cleanRoom[field] = cleanRoom[field]
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                .trim();
+                        }
+                    });
+                    
+                    // Sanitize capacity
+                    if (cleanRoom.capacity?.displayText) {
+                        cleanRoom.capacity.displayText = cleanRoom.capacity.displayText
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                    
+                    // Sanitize pricing
+                    if (cleanRoom.pricing) {
+                        ['from', 'currency', 'period'].forEach(field => {
+                            if (cleanRoom.pricing[field]) {
+                                cleanRoom.pricing[field] = String(cleanRoom.pricing[field])
+                                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                    .trim();
+                            }
+                        });
+                    }
+                    
+                    // Sanitize features
+                    if (cleanRoom.features && Array.isArray(cleanRoom.features)) {
+                        cleanRoom.features = cleanRoom.features.map(feature => ({
+                            ...feature,
+                            text: feature.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                        }));
+                    }
+                    
+                    // Sanitize highlights
+                    if (cleanRoom.highlights && Array.isArray(cleanRoom.highlights)) {
+                        cleanRoom.highlights = cleanRoom.highlights.map(highlight =>
+                            highlight.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                        );
+                    }
+                    
+                    // Sanitize images URLs
+                    if (cleanRoom.images && Array.isArray(cleanRoom.images)) {
+                        cleanRoom.images = cleanRoom.images.map(url => url.trim());
+                    }
+                    
+                    return cleanRoom;
+                });
+            }
+            
+            // Sanitize trust badges
+            if (sanitized.trustBadges?.badges && Array.isArray(sanitized.trustBadges.badges)) {
+                sanitized.trustBadges.badges = sanitized.trustBadges.badges.map(badge => ({
+                    ...badge,
+                    text: badge.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
+                }));
+            }
+            
+            // Sanitize CTA fields
+            if (sanitized.cta) {
+                ['mainButtonText', 'phoneText', 'secondaryText', 'phoneNumber'].forEach(field => {
+                    if (sanitized.cta[field]) {
+                        sanitized.cta[field] = sanitized.cta[field]
+                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                            .trim();
+                    }
+                });
             }
         }
 
@@ -1467,105 +1571,6 @@ window.ConfigValidator = {
                 sanitized.tracking.scrollDepth.depths = sanitized.tracking.scrollDepth.depths
                     .filter(d => typeof d === 'number' && d >= 0 && d <= 100)
                     .sort((a, b) => a - b);
-            }
-        }
-
-        // Special sanitization for offers1 section
-        if (sectionType === 'offers1') {
-            // Sanitize hero
-            if (sanitized.hero) {
-                ['headline', 'subheadline'].forEach(field => {
-                    if (sanitized.hero[field]) {
-                        sanitized.hero[field] = sanitized.hero[field]
-                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                            .trim();
-                    }
-                });
-                
-                if (sanitized.hero.badge) {
-                    if (sanitized.hero.badge.text) {
-                        sanitized.hero.badge.text = sanitized.hero.badge.text
-                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                            .trim();
-                    }
-                }
-            }
-            
-            // Sanitize offer banner
-            if (sanitized.offerBanner) {
-                ['title', 'text', 'validUntil'].forEach(field => {
-                    if (sanitized.offerBanner[field]) {
-                        sanitized.offerBanner[field] = sanitized.offerBanner[field]
-                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                            .trim();
-                    }
-                });
-            }
-            
-            // Sanitize rooms
-            if (sanitized.rooms && Array.isArray(sanitized.rooms)) {
-                sanitized.rooms = sanitized.rooms.map(room => {
-                    const cleanRoom = { ...room };
-                    
-                    // Sanitize text fields
-                    ['name', 'description', 'tagline', 'ctaText'].forEach(field => {
-                        if (cleanRoom[field]) {
-                            cleanRoom[field] = cleanRoom[field]
-                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                                .trim();
-                        }
-                    });
-                    
-                    // Sanitize capacity
-                    if (cleanRoom.capacity && cleanRoom.capacity.displayText) {
-                        cleanRoom.capacity.displayText = cleanRoom.capacity.displayText
-                            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                            .trim();
-                    }
-                    
-                    // Sanitize features
-                    if (cleanRoom.features && Array.isArray(cleanRoom.features)) {
-                        cleanRoom.features = cleanRoom.features.map(feature => ({
-                            ...feature,
-                            text: feature.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
-                        }));
-                    }
-                    
-                    // Sanitize highlights
-                    if (cleanRoom.highlights && Array.isArray(cleanRoom.highlights)) {
-                        cleanRoom.highlights = cleanRoom.highlights.map(highlight =>
-                            highlight.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
-                        );
-                    }
-                    
-                    // Sanitize pricing
-                    if (cleanRoom.pricing) {
-                        ['currency', 'period'].forEach(field => {
-                            if (cleanRoom.pricing[field]) {
-                                cleanRoom.pricing[field] = cleanRoom.pricing[field]
-                                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                                    .trim();
-                            }
-                        });
-                    }
-                    
-                    return cleanRoom;
-                });
-            }
-            
-            // Sanitize trust badges
-            if (sanitized.trustBadges && sanitized.trustBadges.badges && Array.isArray(sanitized.trustBadges.badges)) {
-                sanitized.trustBadges.badges = sanitized.trustBadges.badges.map(badge => ({
-                    ...badge,
-                    text: badge.text?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim()
-                }));
-            }
-            
-            // Sanitize phone number
-            if (sanitized.cta && sanitized.cta.phoneNumber) {
-                sanitized.cta.phoneNumber = sanitized.cta.phoneNumber
-                    .replace(/[^\d\s\-\+\(\)]/g, '')
-                    .trim();
             }
         }
 
@@ -1769,7 +1774,7 @@ window.ConfigValidator = {
         }
 
         return sanitized;
-    }
+    },
 
     /**
      * Complete validation workflow
