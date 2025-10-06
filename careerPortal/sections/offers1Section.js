@@ -3,7 +3,7 @@
  * Clean, Uber-inspired design with smooth navigation
  */
 
-window.OffersSection1 = class OffersSection1 extends window.BaseSec {
+window.Offers1Section = class Offers1Section extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.currentRoomIndex = 0;
@@ -334,9 +334,9 @@ window.OffersSection1 = class OffersSection1 extends window.BaseSec {
     }
 
     static create(containerId, config) {
-        const defaultConfig = OffersSection1.getDefaultConfig();
+        const defaultConfig = Offers1Section.getDefaultConfig();
         const mergedConfig = { ...defaultConfig, ...config };
-        return new OffersSection1(mergedConfig, containerId);
+        return new Offers1Section(mergedConfig, containerId);
     }
 
     static getDefaultConfig() {
