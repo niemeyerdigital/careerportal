@@ -3,7 +3,7 @@
  * Clean, Uber-inspired design with smooth navigation
  */
 
-window.Offers1Section = class Offers1Section extends window.BaseSec {
+window.OffersSection1 = class OffersSection1 extends window.BaseSec {
     constructor(config, containerId) {
         super(config, containerId);
         this.currentRoomIndex = 0;
@@ -172,15 +172,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
                             `).join('')}
                         </ul>
                     ` : ''}
-
-                    <div class="offers1-room-cta">
-                        <button class="offers1-room-button" 
-                                data-room-id="${room.id}"
-                                data-room-name="${room.name}">
-                            ${room.ctaText || 'Anfragen'}
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
         `;
@@ -231,14 +222,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
             pill.addEventListener('click', () => {
                 const index = parseInt(pill.dataset.index);
                 this.showRoom(index);
-            });
-        });
-
-        // Room CTA buttons
-        const roomButtons = this.container.querySelectorAll('.offers1-room-button');
-        roomButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.handleRoomCTAClick(btn.dataset.roomId, btn.dataset.roomName);
             });
         });
     }
@@ -308,14 +291,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         }
     }
 
-    handleRoomCTAClick(roomId, roomName) {
-        if (this.config.tracking?.enabled && this.config.tracking.onCTAClick) {
-            this.config.tracking.onCTAClick(roomId, roomName);
-        }
-
-        this.handleMainCTAClick();
-    }
-
     setupEventTracking() {
         if (this.config.tracking?.enabled && window.gtag) {
             const observer = new IntersectionObserver((entries) => {
@@ -359,9 +334,9 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
     }
 
     static create(containerId, config) {
-        const defaultConfig = Offers1Section.getDefaultConfig();
+        const defaultConfig = OffersSection1.getDefaultConfig();
         const mergedConfig = { ...defaultConfig, ...config };
-        return new Offers1Section(mergedConfig, containerId);
+        return new OffersSection1(mergedConfig, containerId);
     }
 
     static getDefaultConfig() {
