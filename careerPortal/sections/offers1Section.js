@@ -1,687 +1,1014 @@
-/**
- * Offers Section 1 - Rooms & Capacity Display
- * Mobile-first room showcase with capacity badges and booking CTAs
- * Flexible for any business type (venues, restaurants, hotels, etc.)
- */
+/* ====================================================================
+   OFFERS SECTION 1 - ROOMS & CAPACITY DISPLAY
+   Mobile-first responsive design optimized with root variables
+   ==================================================================== */
 
-window.Offers1Section = class Offers1Section extends window.BaseSec {
-    constructor(config, containerId) {
-        super(config, containerId);
-        this.currentRoomIndex = 0;
-        this.imageSliders = new Map();
-        this.touchStartX = 0;
-        this.touchEndX = 0;
-        this.initializeOffers();
+/* Container overrides for ClickFunnels */
+div[data-title='SectionOffers1'],
+div[data-title='RowOffers1'],
+div[data-title='RowOffers1'] .container {
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+/* Main wrapper */
+.offers1-enhanced {
+    width: 100%;
+    position: relative;
+}
+
+.offers1-wrapper {
+    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+    padding: 48px 20px;
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    font-family: var(--font-family);
+}
+
+/* Hero Section */
+.offers1-hero {
+    text-align: center;
+    margin-bottom: 32px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.offers1-headline {
+    font-size: var(--font-2xl);
+    font-weight: 800;
+    color: var(--heading-text);
+    margin: 0 0 12px 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.offers1-subheadline {
+    font-size: var(--font-md);
+    color: var(--secondary-text);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.offers1-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 999px;
+    padding: 8px 16px;
+    color: var(--primary-color);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.offers1-badge:hover {
+    background: rgba(255, 107, 53, 0.2);
+    transform: scale(1.05);
+}
+
+.offers1-badge i {
+    font-size: var(--font-sm);
+}
+
+/* Offer Banner */
+.offers1-banner {
+    background: var(--button-primary);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.25);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease 0.1s forwards;
+}
+
+.offers1-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--primary-text);
+}
+
+.offers1-banner-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.offers1-banner-icon i {
+    font-size: var(--font-lg);
+}
+
+.offers1-banner-text {
+    flex: 1;
+}
+
+.offers1-banner-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.offers1-banner-subtitle {
+    font-size: var(--font-sm);
+    opacity: 0.95;
+}
+
+.offers1-banner-validity {
+    font-size: var(--font-xs);
+    opacity: 0.85;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* Navigation - Mobile */
+.offers1-nav-mobile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.offers1-nav-arrow {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    color: var(--secondary-text);
+}
+
+.offers1-nav-arrow:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-text);
+    transform: scale(1.1);
+}
+
+.offers1-nav-arrow:active {
+    transform: scale(0.95);
+}
+
+.offers1-nav-pills {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+    padding: 4px 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.offers1-nav-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.offers1-nav-pill {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 130px;
+}
+
+.offers1-nav-pill.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.offers1-nav-pill:hover:not(.active) {
+    border-color: var(--primary-color);
+    background: var(--secondary-bg);
+    transform: translateY(-2px);
+}
+
+.pill-name {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.pill-capacity {
+    font-size: 0.75rem;
+    color: var(--secondary-text);
+}
+
+.offers1-nav-pill.active .pill-name,
+.offers1-nav-pill.active .pill-capacity {
+    color: var(--primary-text);
+}
+
+/* Navigation - Desktop */
+.offers1-nav-desktop {
+    display: none;
+    gap: 6px;
+    margin-bottom: 32px;
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 6px;
+    border: 1px solid var(--border-light);
+}
+
+.offers1-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    color: var(--secondary-text);
+}
+
+.offers1-tab.active {
+    background: var(--primary-color);
+    color: var(--primary-text);
+}
+
+.offers1-tab:hover:not(.active) {
+    background: var(--secondary-bg);
+    color: var(--primary-text);
+}
+
+.tab-name {
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.tab-capacity {
+    font-size: var(--font-xs);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+}
+
+/* Room Cards Container */
+.offers1-rooms {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+/* Room Card */
+.offers1-room-card {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease 0.2s forwards;
+    transition: all 0.3s ease;
+}
+
+.offers1-room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px var(--shadow-medium);
+    border-color: var(--border-medium);
+}
+
+.offers1-room-card.active {
+    display: block;
+}
+
+/* Room Images */
+.offers1-room-images {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+    background: var(--secondary-bg);
+}
+
+.offers1-image-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.offers1-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.offers1-slide.active {
+    opacity: 1;
+}
+
+.offers1-no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted-text);
+    font-size: 48px;
+}
+
+/* Slider Dots */
+.offers1-slider-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+
+.offers1-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.offers1-dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.offers1-dot.active {
+    width: 20px;
+    border-radius: 3px;
+    background: var(--primary-text);
+}
+
+/* Capacity Badge */
+.offers1-capacity-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--primary-color);
+    color: var(--primary-text);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.offers1-capacity-badge i {
+    font-size: var(--font-xs);
+}
+
+/* Room Content */
+.offers1-room-content {
+    padding: 24px 20px;
+}
+
+.offers1-room-header {
+    margin-bottom: 16px;
+}
+
+.offers1-room-name {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--heading-text);
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+}
+
+.offers1-room-tagline {
+    font-size: var(--font-sm);
+    color: var(--primary-color);
+    margin: 0 0 12px 0;
+    font-weight: 500;
+}
+
+.offers1-room-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.price-from {
+    font-size: var(--font-xs);
+    color: var(--secondary-text);
+}
+
+.price-amount {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.price-period {
+    font-size: var(--font-xs);
+    color: var(--secondary-text);
+}
+
+.offers1-room-description {
+    font-size: var(--font-sm);
+    color: var(--secondary-text);
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+}
+
+/* Features Grid */
+.offers1-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.offers1-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--secondary-bg);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.offers1-feature:hover {
+    background: var(--accent-bg);
+    transform: translateX(4px);
+    border-color: var(--border-light);
+}
+
+.offers1-feature i {
+    font-size: var(--font-md);
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.offers1-feature span {
+    font-size: var(--font-xs);
+    color: var(--primary-text);
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* Highlights List */
+.offers1-highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.offers1-highlights li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: var(--font-sm);
+    color: var(--primary-text);
+}
+
+.offers1-highlights li i {
+    color: #10b981;
+    font-size: var(--font-xs);
+    flex-shrink: 0;
+}
+
+/* Room CTA Button */
+.offers1-room-cta {
+    margin-top: 24px;
+}
+
+.offers1-room-button {
+    width: 100%;
+    padding: 14px 28px;
+    background: var(--button-primary);
+    color: var(--primary-text);
+    border: none;
+    border-radius: 10px;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
+}
+
+.offers1-room-button:hover {
+    background: var(--button-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 107, 53, 0.35);
+}
+
+.offers1-room-button:active {
+    transform: translateY(0);
+}
+
+.offers1-room-button i {
+    font-size: var(--font-sm);
+    transition: transform 0.3s ease;
+}
+
+.offers1-room-button:hover i {
+    transform: translateX(4px);
+}
+
+/* Trust Badges */
+.offers1-trust {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.offers1-trust-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    min-width: 110px;
+    transition: all 0.3s ease;
+}
+
+.offers1-trust-badge:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 16px var(--shadow-light);
+}
+
+.offers1-trust-badge i {
+    font-size: var(--font-xl);
+    color: var(--primary-color);
+}
+
+.offers1-trust-badge span {
+    font-size: var(--font-xs);
+    color: var(--secondary-text);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* CTA Section */
+.offers1-cta-section {
+    text-align: center;
+    padding: 28px 20px;
+    background: var(--secondary-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+}
+
+.offers1-cta-main {
+    margin-bottom: 16px;
+}
+
+.offers1-cta-phone {
+    margin-bottom: 14px;
+    font-size: var(--font-sm);
+    color: var(--secondary-text);
+}
+
+.offers1-phone-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--font-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 6px;
+    transition: all 0.3s ease;
+}
+
+.offers1-phone-link:hover {
+    color: var(--hover-color);
+    transform: scale(1.05);
+}
+
+.offers1-phone-link i {
+    font-size: var(--font-sm);
+}
+
+.offers1-secondary-link {
+    color: var(--primary-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border-light);
+    font-size: var(--font-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.offers1-secondary-link:hover {
+    color: var(--primary-color);
+    text-decoration-color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.offers1-secondary-link i {
+    font-size: var(--font-xs);
+    transition: transform 0.3s ease;
+}
+
+.offers1-secondary-link:hover i {
+    transform: translateX(4px);
+}
+
+/* Fallback CTA Button */
+.offers1-fallback-cta {
+    padding: 16px 32px;
+    background: var(--button-primary);
+    color: var(--primary-text);
+    border: none;
+    border-radius: 10px;
+    font-size: var(--font-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
+}
+
+.offers1-fallback-cta:hover {
+    background: var(--button-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 107, 53, 0.35);
+}
+
+.offers1-fallback-cta:active {
+    transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-
-    /**
-     * Initialize Offers section specific functionality
-     */
-    initializeOffers() {
-        if (!this.container) {
-            console.error('Offers section container not found');
-            return;
-        }
-
-        // Apply section class
-        this.container.classList.add('offers1-enhanced');
-
-        // Generate HTML structure
-        this.generateHTML();
-
-        // Initialize interactions
-        this.initializeNavigation();
-        this.initializeImageSliders();
-        this.initializeAnimations();
-        this.setupEventTracking();
-
-        // Setup responsive behavior
-        this.onResize();
-    }
-
-    /**
-     * Generate complete HTML structure
-     */
-    generateHTML() {
-        const { hero, offerBanner, rooms, cta, trustBadges, display } = this.config;
-
-        this.container.innerHTML = `
-            <div class="offers1-wrapper">
-                <!-- Hero Section -->
-                <div class="offers1-hero">
-                    <h2 class="offers1-headline">${hero.headline}</h2>
-                    <p class="offers1-subheadline">${hero.subheadline}</p>
-                    ${hero.badge?.enabled ? `
-                        <div class="offers1-badge">
-                            <i class="${hero.badge.icon}"></i>
-                            <span>${hero.badge.text}</span>
-                        </div>
-                    ` : ''}
-                </div>
-
-                <!-- Offer Banner -->
-                ${offerBanner?.enabled ? `
-                    <div class="offers1-banner">
-                        <div class="offers1-banner-content">
-                            <div class="offers1-banner-icon">
-                                <i class="${offerBanner.icon}"></i>
-                            </div>
-                            <div class="offers1-banner-text">
-                                <div class="offers1-banner-title">${offerBanner.title}</div>
-                                <div class="offers1-banner-subtitle">${offerBanner.text}</div>
-                            </div>
-                            ${offerBanner.validUntil ? `
-                                <div class="offers1-banner-validity">
-                                    <small>Gültig bis ${offerBanner.validUntil}</small>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- Room Navigation (Mobile) -->
-                <div class="offers1-nav-mobile">
-                    <button class="offers1-nav-arrow offers1-nav-prev" aria-label="Previous room">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="offers1-nav-pills">
-                        ${rooms.map((room, index) => `
-                            <button class="offers1-nav-pill ${index === 0 ? 'active' : ''}" 
-                                    data-index="${index}" 
-                                    aria-label="${room.name}">
-                                <span class="pill-name">${room.name}</span>
-                                <span class="pill-capacity">${room.capacity.displayText}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                    <button class="offers1-nav-arrow offers1-nav-next" aria-label="Next room">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-
-                <!-- Room Navigation (Desktop Tabs) -->
-                <div class="offers1-nav-desktop">
-                    ${rooms.map((room, index) => `
-                        <button class="offers1-tab ${index === 0 ? 'active' : ''}" 
-                                data-index="${index}">
-                            <span class="tab-name">${room.name}</span>
-                            <span class="tab-capacity">
-                                <i class="fas fa-users"></i> ${room.capacity.displayText}
-                            </span>
-                        </button>
-                    `).join('')}
-                </div>
-
-                <!-- Room Cards Container -->
-                <div class="offers1-rooms">
-                    ${rooms.map((room, index) => this.generateRoomCard(room, index)).join('')}
-                </div>
-
-                <!-- Trust Badges -->
-                ${trustBadges?.enabled ? `
-                    <div class="offers1-trust">
-                        ${trustBadges.badges.map(badge => `
-                            <div class="offers1-trust-badge">
-                                <i class="${badge.icon}"></i>
-                                <span>${badge.text}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-
-                <!-- CTA Section -->
-                <div class="offers1-cta-section">
-                    <div class="offers1-cta-main" id="offers1-main-cta"></div>
-                    ${cta.phoneNumber ? `
-                        <div class="offers1-cta-phone">
-                            <span>${cta.phoneText || 'Oder anrufen:'}</span>
-                            <a href="tel:${cta.phoneNumber.replace(/\s/g, '')}" class="offers1-phone-link">
-                                <i class="fas fa-phone"></i> ${cta.phoneNumber}
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${cta.secondaryLink ? `
-                        <a href="${cta.secondaryLink}" class="offers1-secondary-link">
-                            ${cta.secondaryText} <i class="fas fa-arrow-right"></i>
-                        </a>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-
-        // Add main CTA button using ButtonManager
-        this.addMainCTAButton();
-    }
-
-    /**
-     * Generate individual room card
-     */
-    generateRoomCard(room, index) {
-        const { display } = this.config;
-        const isActive = index === 0 ? 'active' : '';
-
-        return `
-            <div class="offers1-room-card ${isActive}" data-room-index="${index}" data-room-id="${room.id}">
-                <!-- Image Section -->
-                <div class="offers1-room-images">
-                    ${room.images && room.images.length > 0 ? `
-                        <div class="offers1-image-slider" data-slider-index="${index}">
-                            ${room.images.map((image, imgIndex) => `
-                                <div class="offers1-slide ${imgIndex === 0 ? 'active' : ''}" 
-                                     style="background-image: url('${image}')">
-                                </div>
-                            `).join('')}
-                        </div>
-                        ${room.images.length > 1 ? `
-                            <div class="offers1-slider-dots">
-                                ${room.images.map((_, imgIndex) => `
-                                    <button class="offers1-dot ${imgIndex === 0 ? 'active' : ''}" 
-                                            data-slide="${imgIndex}"
-                                            aria-label="Go to slide ${imgIndex + 1}">
-                                    </button>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                    ` : `
-                        <div class="offers1-no-image">
-                            <i class="fas fa-door-open"></i>
-                        </div>
-                    `}
-                    
-                    <!-- Capacity Badge Overlay -->
-                    ${display.showCapacityBadge ? `
-                        <div class="offers1-capacity-badge">
-                            <i class="fas fa-users"></i>
-                            <span>${room.capacity.displayText}</span>
-                        </div>
-                    ` : ''}
-                </div>
-
-                <!-- Content Section -->
-                <div class="offers1-room-content">
-                    <div class="offers1-room-header">
-                        <h3 class="offers1-room-name">${room.name}</h3>
-                        ${room.tagline ? `<p class="offers1-room-tagline">${room.tagline}</p>` : ''}
-                        ${display.showPricing && room.pricing ? `
-                            <div class="offers1-room-price">
-                                <span class="price-from">ab</span>
-                                <span class="price-amount">${room.pricing.from}${room.pricing.currency}</span>
-                                <span class="price-period">/${room.pricing.period}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    <p class="offers1-room-description">${room.description}</p>
-
-                    <!-- Features Grid -->
-                    ${display.showFeatures && room.features ? `
-                        <div class="offers1-features">
-                            ${room.features.map(feature => `
-                                <div class="offers1-feature">
-                                    <i class="${feature.icon}"></i>
-                                    <span>${feature.text}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-
-                    <!-- Highlights List -->
-                    ${display.showHighlights && room.highlights ? `
-                        <ul class="offers1-highlights">
-                            ${room.highlights.map(highlight => `
-                                <li><i class="fas fa-check"></i> ${highlight}</li>
-                            `).join('')}
-                        </ul>
-                    ` : ''}
-
-                    <!-- Room CTA Button -->
-                    <div class="offers1-room-cta">
-                        <button class="offers1-room-button" 
-                                data-room-id="${room.id}"
-                                data-room-name="${room.name}">
-                            ${room.ctaText || 'Anfragen'}
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Add main CTA button using ButtonManager
-     */
-    addMainCTAButton() {
-        const ctaContainer = this.container.querySelector('#offers1-main-cta');
-        if (!ctaContainer) return;
-
-        if (window.ButtonManager) {
-            const btnManager = new window.ButtonManager();
-            const mainButton = btnManager.createButton(
-                this.config.cta.mainButtonType || 'MainButton1',
-                {
-                    text: this.config.cta.mainButtonText,
-                    onClick: (e) => {
-                        e.preventDefault();
-                        this.handleMainCTAClick();
-                    }
-                }
-            );
-            ctaContainer.appendChild(mainButton);
-        } else {
-            // Fallback button
-            ctaContainer.innerHTML = `
-                <button class="offers1-fallback-cta">
-                    ${this.config.cta.mainButtonText}
-                </button>
-            `;
-            ctaContainer.querySelector('button').addEventListener('click', () => {
-                this.handleMainCTAClick();
-            });
-        }
-    }
-
-    /**
-     * Initialize navigation functionality
-     */
-    initializeNavigation() {
-        // Desktop tabs
-        const tabs = this.container.querySelectorAll('.offers1-tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const index = parseInt(tab.dataset.index);
-                this.showRoom(index);
-            });
-        });
-
-        // Mobile pills
-        const pills = this.container.querySelectorAll('.offers1-nav-pill');
-        pills.forEach(pill => {
-            pill.addEventListener('click', () => {
-                const index = parseInt(pill.dataset.index);
-                this.showRoom(index);
-            });
-        });
-
-        // Mobile navigation arrows
-        const prevBtn = this.container.querySelector('.offers1-nav-prev');
-        const nextBtn = this.container.querySelector('.offers1-nav-next');
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => this.navigateRooms(-1));
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => this.navigateRooms(1));
-        }
-
-        // Touch swipe support for mobile
-        this.setupTouchNavigation();
-
-        // Room CTA buttons
-        const roomButtons = this.container.querySelectorAll('.offers1-room-button');
-        roomButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.handleRoomCTAClick(btn.dataset.roomId, btn.dataset.roomName);
-            });
-        });
-    }
-
-    /**
-     * Setup touch navigation for mobile
-     */
-    setupTouchNavigation() {
-        const roomsContainer = this.container.querySelector('.offers1-rooms');
-        if (!roomsContainer) return;
-
-        roomsContainer.addEventListener('touchstart', (e) => {
-            this.touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        roomsContainer.addEventListener('touchend', (e) => {
-            this.touchEndX = e.changedTouches[0].screenX;
-            this.handleSwipe();
-        }, { passive: true });
-    }
-
-    /**
-     * Handle swipe gesture
-     */
-    handleSwipe() {
-        const swipeThreshold = 50;
-        const diff = this.touchStartX - this.touchEndX;
-
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                // Swipe left - next room
-                this.navigateRooms(1);
-            } else {
-                // Swipe right - previous room
-                this.navigateRooms(-1);
-            }
-        }
-    }
-
-    /**
-     * Navigate between rooms
-     */
-    navigateRooms(direction) {
-        const totalRooms = this.config.rooms.length;
-        let newIndex = this.currentRoomIndex + direction;
-
-        // Wrap around
-        if (newIndex < 0) newIndex = totalRooms - 1;
-        if (newIndex >= totalRooms) newIndex = 0;
-
-        this.showRoom(newIndex);
-    }
-
-    /**
-     * Show specific room
-     */
-    showRoom(index) {
-        // Update navigation
-        this.container.querySelectorAll('.offers1-tab, .offers1-nav-pill').forEach((nav, i) => {
-            nav.classList.toggle('active', i === index);
-        });
-
-        // Update room cards
-        this.container.querySelectorAll('.offers1-room-card').forEach((card, i) => {
-            card.classList.toggle('active', i === index);
-        });
-
-        // Scroll active pill into view on mobile
-        this.scrollActivePillIntoView(index);
-
-        this.currentRoomIndex = index;
-
-        // Track room view
-        if (this.config.tracking?.enabled && this.config.tracking.onRoomClick) {
-            this.config.tracking.onRoomClick(this.config.rooms[index].id, this.config.rooms[index].name);
-        }
-    }
-
-    /**
-     * Scroll active pill into view
-     */
-    scrollActivePillIntoView(index) {
-        const pillsContainer = this.container.querySelector('.offers1-nav-pills');
-        const activePill = this.container.querySelectorAll('.offers1-nav-pill')[index];
-        
-        if (pillsContainer && activePill) {
-            const containerRect = pillsContainer.getBoundingClientRect();
-            const pillRect = activePill.getBoundingClientRect();
-            
-            const scrollLeft = pillsContainer.scrollLeft;
-            const containerCenter = containerRect.width / 2;
-            const pillCenter = pillRect.left - containerRect.left + pillRect.width / 2;
-            
-            pillsContainer.scrollTo({
-                left: scrollLeft + pillCenter - containerCenter,
-                behavior: 'smooth'
-            });
-        }
-    }
-
-    /**
-     * Initialize image sliders for rooms with multiple images
-     */
-    initializeImageSliders() {
-        if (!this.config.display.enableImageCarousel) return;
-
-        this.config.rooms.forEach((room, roomIndex) => {
-            if (room.images && room.images.length > 1) {
-                const sliderElement = this.container.querySelector(`[data-slider-index="${roomIndex}"]`);
-                if (sliderElement) {
-                    const slider = new RoomImageSlider(sliderElement, roomIndex);
-                    this.imageSliders.set(roomIndex, slider);
-                }
-            }
-        });
-    }
-
-    /**
-     * Handle main CTA click
-     */
-    handleMainCTAClick() {
-        // Track conversion
-        if (this.config.tracking?.enabled) {
-            if (window.gtag) {
-                window.gtag('event', 'generate_lead', {
-                    event_category: 'Conversion',
-                    event_label: 'Main CTA - Offers Section',
-                    value: 1
-                });
-            }
-        }
-
-        // Scroll to form or navigate
-        const formSection = document.querySelector('[data-title="SectionApplication"]');
-        if (formSection) {
-            formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    /**
-     * Handle room-specific CTA click
-     */
-    handleRoomCTAClick(roomId, roomName) {
-        // Track conversion
-        if (this.config.tracking?.enabled && this.config.tracking.onCTAClick) {
-            this.config.tracking.onCTAClick(roomId, roomName);
-        }
-
-        // Could navigate to a room-specific form or booking page
-        this.handleMainCTAClick();
-    }
-
-    /**
-     * Setup event tracking
-     */
-    setupEventTracking() {
-        // Track section view
-        if (this.config.tracking?.enabled && window.gtag) {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        window.gtag('event', 'view_item_list', {
-                            event_category: 'Engagement',
-                            event_label: 'Offers Section Viewed',
-                            items: this.config.rooms.map(r => ({ id: r.id, name: r.name }))
-                        });
-                        observer.disconnect();
-                    }
-                });
-            }, { threshold: 0.5 });
-
-            observer.observe(this.container);
-        }
-    }
-
-    /**
-     * Initialize animations
-     */
-    initializeAnimations() {
-        const animatedElements = this.container.querySelectorAll(
-            '.offers1-hero, .offers1-banner, .offers1-room-card, .offers1-trust-badge'
-        );
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        animatedElements.forEach(el => observer.observe(el));
-    }
-
-    /**
-     * Handle responsive updates
-     */
-    onResize() {
-        const breakpoint = this.getCurrentBreakpoint();
-        
-        // Update container classes
-        this.container.classList.remove('offers1-mobile', 'offers1-tablet', 'offers1-desktop');
-        this.container.classList.add(`offers1-${breakpoint}`);
-
-        // Adjust display based on breakpoint
-        if (breakpoint === 'mobile') {
-            // Show mobile navigation
-            const mobileNav = this.container.querySelector('.offers1-nav-mobile');
-            const desktopNav = this.container.querySelector('.offers1-nav-desktop');
-            if (mobileNav) mobileNav.style.display = 'flex';
-            if (desktopNav) desktopNav.style.display = 'none';
-        } else {
-            // Show desktop navigation
-            const mobileNav = this.container.querySelector('.offers1-nav-mobile');
-            const desktopNav = this.container.querySelector('.offers1-nav-desktop');
-            if (mobileNav) mobileNav.style.display = 'none';
-            if (desktopNav) desktopNav.style.display = 'flex';
-        }
-    }
-
-    /**
-     * Get section metrics
-     */
-    getMetrics() {
-        return {
-            sectionType: 'offers1',
-            config: this.config,
-            currentRoom: this.currentRoomIndex,
-            totalRooms: this.config.rooms.length,
-            hasOfferBanner: this.config.offerBanner?.enabled,
-            hasTrustBadges: this.config.trustBadges?.enabled
-        };
-    }
-
-    /**
-     * Cleanup
-     */
-    destroy() {
-        // Cleanup image sliders
-        this.imageSliders.forEach(slider => {
-            if (slider.destroy) slider.destroy();
-        });
-        this.imageSliders.clear();
-
-        super.destroy();
-    }
-
-    /**
-     * Static factory method
-     */
-    static create(containerId, config) {
-        const defaultConfig = Offers1Section.getDefaultConfig();
-        const mergedConfig = { ...defaultConfig, ...config };
-        return new Offers1Section(mergedConfig, containerId);
-    }
-
-    /**
-     * Get default configuration
-     */
-    static getDefaultConfig() {
-        return {
-            hero: {
-                headline: "Choose Your Space",
-                subheadline: "Find the perfect room for your needs",
-                badge: {
-                    enabled: true,
-                    text: "Flexible Options",
-                    icon: "fas fa-check-circle"
-                }
-            },
-            offerBanner: {
-                enabled: false
-            },
-            rooms: [],
-            cta: {
-                mainButtonText: "Get Started",
-                mainButtonType: "MainButton1"
-            },
-            trustBadges: {
-                enabled: true,
-                badges: []
-            },
-            display: {
-                showCapacityBadge: true,
-                showPricing: true,
-                showFeatures: true,
-                showHighlights: true,
-                enableImageCarousel: true
-            },
-            tracking: {
-                enabled: true
-            }
-        };
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-/**
- * Room Image Slider Component
- */
-class RoomImageSlider {
-    constructor(container, roomIndex) {
-        this.container = container;
-        this.roomIndex = roomIndex;
-        this.currentSlide = 0;
-        this.slides = container.querySelectorAll('.offers1-slide');
-        this.dots = container.parentElement.querySelectorAll('.offers1-dot');
-        this.autoplayInterval = null;
+.offers1-room-card.animated,
+.offers1-trust-badge.animated {
+    animation: fadeInUp 0.6s ease forwards;
+}
 
-        this.init();
+/* Tablet Responsive - 768px+ */
+@media (min-width: 768px) {
+    .offers1-wrapper {
+        padding: 64px 32px;
     }
 
-    init() {
-        if (this.slides.length <= 1) return;
-
-        // Bind dot clicks
-        this.dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => this.goToSlide(index));
-        });
-
-        // Start autoplay
-        this.startAutoplay();
-
-        // Pause on hover
-        this.container.addEventListener('mouseenter', () => this.pauseAutoplay());
-        this.container.addEventListener('mouseleave', () => this.startAutoplay());
+    .offers1-hero {
+        margin-bottom: 40px;
     }
 
-    goToSlide(index) {
-        // Update slides
-        this.slides.forEach((slide, i) => {
-            slide.classList.toggle('active', i === index);
-        });
-
-        // Update dots
-        this.dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === index);
-        });
-
-        this.currentSlide = index;
+    .offers1-headline {
+        font-size: var(--font-3xl);
+        margin-bottom: 16px;
     }
 
-    nextSlide() {
-        const nextIndex = (this.currentSlide + 1) % this.slides.length;
-        this.goToSlide(nextIndex);
+    .offers1-subheadline {
+        font-size: var(--font-lg);
+        margin-bottom: 24px;
     }
 
-    startAutoplay() {
-        this.pauseAutoplay();
-        this.autoplayInterval = setInterval(() => this.nextSlide(), 4000);
+    .offers1-badge {
+        padding: 10px 20px;
+        font-size: var(--font-sm);
     }
 
-    pauseAutoplay() {
-        if (this.autoplayInterval) {
-            clearInterval(this.autoplayInterval);
-            this.autoplayInterval = null;
-        }
+    .offers1-banner {
+        padding: 20px;
+        border-radius: 14px;
+        margin-bottom: 32px;
     }
 
-    destroy() {
-        this.pauseAutoplay();
+    .offers1-banner-content {
+        gap: 16px;
+    }
+
+    .offers1-banner-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .offers1-banner-title {
+        font-size: var(--font-lg);
+    }
+
+    .offers1-banner-subtitle {
+        font-size: var(--font-md);
+    }
+
+    .offers1-nav-mobile {
+        display: none;
+    }
+
+    .offers1-nav-desktop {
+        display: flex;
+    }
+
+    .offers1-room-card {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .offers1-room-card.active {
+        display: grid;
+    }
+
+    .offers1-room-images {
+        height: 360px;
+    }
+
+    .offers1-room-content {
+        padding: 32px 28px;
+    }
+
+    .offers1-room-name {
+        font-size: var(--font-2xl);
+    }
+
+    .offers1-room-tagline {
+        font-size: var(--font-md);
+    }
+
+    .offers1-room-description {
+        font-size: var(--font-md);
+    }
+
+    .offers1-features {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .offers1-feature span {
+        font-size: var(--font-sm);
+    }
+
+    .offers1-highlights li {
+        font-size: var(--font-md);
+    }
+
+    .offers1-room-button {
+        padding: 16px 32px;
+        font-size: var(--font-md);
+    }
+
+    .offers1-trust {
+        gap: 32px;
+        margin-bottom: 48px;
+    }
+
+    .offers1-trust-badge {
+        padding: 16px 20px;
+        min-width: 130px;
+    }
+
+    .offers1-trust-badge span {
+        font-size: var(--font-sm);
+    }
+
+    .offers1-cta-section {
+        padding: 36px 32px;
+    }
+
+    .offers1-cta-phone {
+        font-size: var(--font-md);
+    }
+
+    .offers1-phone-link {
+        font-size: var(--font-lg);
+    }
+}
+
+/* Desktop Responsive - 1024px+ */
+@media (min-width: 1024px) {
+    .offers1-wrapper {
+        padding: 80px 48px;
+    }
+
+    .offers1-hero {
+        margin-bottom: 48px;
+    }
+
+    .offers1-headline {
+        font-size: var(--font-4xl);
+        margin-bottom: 20px;
+    }
+
+    .offers1-subheadline {
+        font-size: var(--font-xl);
+    }
+
+    .offers1-banner {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 40px;
+    }
+
+    .offers1-nav-desktop {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 40px;
+    }
+
+    .offers1-room-images {
+        height: 420px;
+    }
+
+    .offers1-room-content {
+        padding: 40px 36px;
+    }
+
+    .offers1-features {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .offers1-feature {
+        padding: 12px;
+    }
+
+    /* Grid layout for multiple cards */
+    .offers1-rooms {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 28px;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 48px;
+    }
+
+    .offers1-room-card {
+        display: block !important;
+        grid-template-columns: 1fr;
+    }
+
+    .offers1-room-card:nth-child(n+3) {
+        display: none !important;
+    }
+
+    .offers1-desktop .offers1-room-card:nth-child(1),
+    .offers1-desktop .offers1-room-card:nth-child(2) {
+        display: block !important;
+    }
+
+    .offers1-trust {
+        gap: 40px;
+    }
+
+    .offers1-cta-section {
+        padding: 44px 40px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Large Desktop - 1440px+ */
+@media (min-width: 1440px) {
+    .offers1-wrapper {
+        padding: 100px 60px;
+    }
+
+    .offers1-headline {
+        font-size: var(--font-5xl);
+    }
+
+    .offers1-nav-desktop,
+    .offers1-banner {
+        max-width: 1100px;
+    }
+
+    .offers1-rooms {
+        max-width: 1400px;
+        gap: 32px;
+    }
+
+    .offers1-room-images {
+        height: 480px;
+    }
+
+    .offers1-room-content {
+        padding: 48px 40px;
+    }
+
+    .offers1-cta-section {
+        max-width: 1100px;
+    }
+}
+
+/* Extra responsive adjustments for small mobile */
+@media (max-width: 375px) {
+    .offers1-wrapper {
+        padding: 40px 16px;
+    }
+
+    .offers1-headline {
+        font-size: var(--font-xl);
+    }
+
+    .offers1-subheadline {
+        font-size: var(--font-sm);
+    }
+
+    .offers1-banner {
+        padding: 14px;
+    }
+
+    .offers1-banner-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .offers1-banner-title {
+        font-size: var(--font-sm);
+    }
+
+    .offers1-banner-subtitle {
+        font-size: var(--font-xs);
+    }
+
+    .offers1-nav-pill {
+        min-width: 110px;
+        padding: 8px 12px;
+    }
+
+    .offers1-room-content {
+        padding: 20px 16px;
+    }
+
+    .offers1-features {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .offers1-trust {
+        gap: 14px;
+    }
+
+    .offers1-trust-badge {
+        min-width: 100px;
+        padding: 12px;
     }
 }
