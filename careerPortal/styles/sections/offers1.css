@@ -41,17 +41,17 @@ div[data-title='RowOffers1'] .container {
 }
 
 .offers1-headline {
-    font-size: var(--font-3xl);
+    font-size: var(--font-4xl);
     font-weight: 700;
     color: var(--primary-text);
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
     line-height: 1.2;
 }
 
 .offers1-subheadline {
-    font-size: var(--font-md);
+    font-size: var(--font-xl);
     color: var(--secondary-text);
-    margin: 0 0 20px 0;
+    margin: 0 0 24px 0;
     line-height: 1.5;
 }
 
@@ -62,21 +62,21 @@ div[data-title='RowOffers1'] .container {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
     border-radius: 24px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     color: var(--primary-color);
-    font-size: var(--font-sm);
+    font-size: var(--font-md);
     font-weight: 600;
 }
 
 .offers1-badge i {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
 }
 
 /* Offer Banner */
 .offers1-banner {
     background: var(--primary-color);
     border-radius: 12px;
-    padding: 16px 20px;
+    padding: 20px 24px;
     margin-bottom: 32px;
     max-width: 800px;
     margin-left: auto;
@@ -86,13 +86,13 @@ div[data-title='RowOffers1'] .container {
 .offers1-banner-content {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     color: white;
 }
 
 .offers1-banner-icon {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
@@ -102,7 +102,7 @@ div[data-title='RowOffers1'] .container {
 }
 
 .offers1-banner-icon i {
-    font-size: var(--font-lg);
+    font-size: var(--font-xl);
 }
 
 .offers1-banner-text {
@@ -110,18 +110,18 @@ div[data-title='RowOffers1'] .container {
 }
 
 .offers1-banner-title {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
     font-weight: 700;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
 .offers1-banner-subtitle {
-    font-size: var(--font-sm);
+    font-size: var(--font-md);
     opacity: 0.95;
 }
 
 .offers1-banner-validity {
-    font-size: var(--font-xs);
+    font-size: var(--font-sm);
     opacity: 0.8;
     text-align: right;
     flex-shrink: 0;
@@ -131,8 +131,8 @@ div[data-title='RowOffers1'] .container {
 .offers1-nav-mobile,
 .offers1-nav-desktop {
     display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 32px;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -152,14 +152,14 @@ div[data-title='RowOffers1'] .container {
 .offers1-nav-pill,
 .offers1-tab {
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: 24px;
-    padding: 12px 20px;
+    padding: 14px 24px;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    font-size: var(--font-sm);
-    font-weight: 500;
+    font-size: var(--font-md);
+    font-weight: 600;
     color: var(--secondary-text);
     white-space: nowrap;
 }
@@ -167,7 +167,9 @@ div[data-title='RowOffers1'] .container {
 .offers1-nav-pill:hover,
 .offers1-tab:hover {
     background: var(--accent-bg);
-    border-color: var(--border-medium);
+    border-color: var(--primary-color);
+    color: var(--primary-text);
+    transform: translateY(-2px);
 }
 
 .offers1-nav-pill.active,
@@ -175,12 +177,14 @@ div[data-title='RowOffers1'] .container {
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+    transform: scale(1.05);
 }
 
 /* Room Cards Container */
 .offers1-rooms {
     position: relative;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
 }
 
 /* Room Card */
@@ -200,7 +204,7 @@ div[data-title='RowOffers1'] .container {
 /* Room Images */
 .offers1-room-images {
     position: relative;
-    height: 240px;
+    height: 280px;
     overflow: hidden;
     background: var(--secondary-bg);
 }
@@ -233,23 +237,23 @@ div[data-title='RowOffers1'] .container {
     justify-content: center;
     height: 100%;
     color: var(--muted-text);
-    font-size: 48px;
+    font-size: 64px;
 }
 
 /* Slider Dots */
 .offers1-slider-dots {
     position: absolute;
-    bottom: 12px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 6px;
+    gap: 8px;
     z-index: 2;
 }
 
 .offers1-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.4);
     border: none;
@@ -259,106 +263,106 @@ div[data-title='RowOffers1'] .container {
 }
 
 .offers1-dot.active {
-    width: 20px;
-    border-radius: 3px;
+    width: 24px;
+    border-radius: 4px;
     background: white;
 }
 
 /* Capacity Badge */
 .offers1-capacity-badge {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 16px;
+    right: 16px;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
     color: white;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 20px;
-    font-size: var(--font-xs);
+    font-size: var(--font-md);
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     z-index: 2;
 }
 
 .offers1-capacity-badge i {
-    font-size: var(--font-sm);
+    font-size: var(--font-md);
 }
 
 /* Room Content */
 .offers1-room-content {
-    padding: 24px 20px;
+    padding: 32px 24px;
 }
 
 .offers1-room-header {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .offers1-room-name {
-    font-size: var(--font-xl);
+    font-size: var(--font-2xl);
     font-weight: 700;
     color: var(--primary-text);
-    margin: 0 0 6px 0;
+    margin: 0 0 8px 0;
 }
 
 .offers1-room-tagline {
-    font-size: var(--font-sm);
+    font-size: var(--font-lg);
     color: var(--primary-color);
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
     font-weight: 500;
 }
 
 .offers1-room-price {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 12px;
 }
 
 .price-from {
-    font-size: var(--font-xs);
+    font-size: var(--font-md);
     color: var(--muted-text);
 }
 
 .price-amount {
-    font-size: var(--font-xl);
+    font-size: var(--font-3xl);
     font-weight: 700;
     color: var(--primary-text);
 }
 
 .price-period {
-    font-size: var(--font-xs);
+    font-size: var(--font-md);
     color: var(--muted-text);
 }
 
 .offers1-room-description {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
     color: var(--secondary-text);
     line-height: 1.6;
-    margin: 0 0 20px 0;
+    margin: 0 0 24px 0;
 }
 
 /* Features Grid */
 .offers1-features {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .offers1-feature {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: var(--font-sm);
+    gap: 12px;
+    font-size: var(--font-md);
     color: var(--secondary-text);
 }
 
 .offers1-feature i {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
     color: var(--primary-color);
-    width: 20px;
+    width: 24px;
     text-align: center;
 }
 
@@ -366,64 +370,28 @@ div[data-title='RowOffers1'] .container {
 .offers1-highlights {
     list-style: none;
     padding: 0;
-    margin: 0 0 20px 0;
+    margin: 0 0 0 0;
 }
 
 .offers1-highlights li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    font-size: var(--font-sm);
+    gap: 12px;
+    padding: 8px 0;
+    font-size: var(--font-md);
     color: var(--secondary-text);
 }
 
 .offers1-highlights li i {
     color: var(--primary-color);
-    font-size: var(--font-xs);
-}
-
-/* Room CTA Button */
-.offers1-room-cta {
-    margin-top: 24px;
-}
-
-.offers1-room-button {
-    width: 100%;
-    padding: 14px 24px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 12px;
     font-size: var(--font-md);
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-}
-
-.offers1-room-button:hover {
-    background: var(--hover-color);
-    transform: translateY(-1px);
-}
-
-.offers1-room-button i {
-    font-size: var(--font-sm);
-    transition: transform 0.2s ease;
-}
-
-.offers1-room-button:hover i {
-    transform: translateX(2px);
 }
 
 /* CTA Section */
 .offers1-cta-section {
     text-align: center;
-    padding: 32px 20px;
-    max-width: 500px;
+    padding: 40px 20px;
+    max-width: 600px;
     margin: 0 auto;
 }
 
@@ -433,12 +401,12 @@ div[data-title='RowOffers1'] .container {
 
 /* Fallback CTA Button */
 .offers1-fallback-cta {
-    padding: 16px 32px;
+    padding: 18px 40px;
     background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -448,7 +416,8 @@ div[data-title='RowOffers1'] .container {
 
 .offers1-fallback-cta:hover {
     background: var(--hover-color);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
 }
 
 /* Animations */
@@ -470,11 +439,16 @@ div[data-title='RowOffers1'] .container {
     }
 
     .offers1-headline {
-        font-size: var(--font-4xl);
+        font-size: var(--font-5xl);
     }
 
     .offers1-subheadline {
+        font-size: var(--font-2xl);
+    }
+
+    .offers1-badge {
         font-size: var(--font-lg);
+        padding: 12px 24px;
     }
 
     .offers1-nav-mobile {
@@ -484,10 +458,16 @@ div[data-title='RowOffers1'] .container {
     .offers1-nav-desktop {
         display: flex;
         justify-content: center;
-        max-width: 800px;
+        max-width: 900px;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 32px;
+        margin-bottom: 40px;
+    }
+
+    .offers1-nav-pill,
+    .offers1-tab {
+        font-size: var(--font-lg);
+        padding: 16px 32px;
     }
 
     .offers1-room-card {
@@ -496,24 +476,57 @@ div[data-title='RowOffers1'] .container {
     }
 
     .offers1-room-images {
-        height: 320px;
+        height: 360px;
     }
 
     .offers1-room-content {
-        padding: 32px;
+        padding: 40px;
+    }
+
+    .offers1-room-name {
+        font-size: var(--font-3xl);
+    }
+
+    .offers1-room-tagline {
+        font-size: var(--font-xl);
+    }
+
+    .offers1-room-description {
+        font-size: var(--font-xl);
     }
 
     .offers1-features {
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        gap: 20px;
+    }
+
+    .offers1-feature {
+        font-size: var(--font-lg);
+    }
+
+    .offers1-highlights li {
+        font-size: var(--font-lg);
     }
 
     .offers1-banner-content {
-        gap: 16px;
+        gap: 20px;
     }
 
-    .offers1-banner-validity {
-        text-align: right;
+    .offers1-banner-title {
+        font-size: var(--font-xl);
+    }
+
+    .offers1-banner-subtitle {
+        font-size: var(--font-lg);
+    }
+
+    .offers1-cta-section {
+        padding: 56px 40px;
+    }
+
+    .offers1-fallback-cta {
+        font-size: var(--font-xl);
+        padding: 20px 48px;
     }
 }
 
@@ -521,10 +534,6 @@ div[data-title='RowOffers1'] .container {
 @media (min-width: 1024px) {
     .offers1-wrapper {
         padding: 80px 60px;
-    }
-
-    .offers1-headline {
-        font-size: var(--font-5xl);
     }
 
     .offers1-room-card {
@@ -540,11 +549,11 @@ div[data-title='RowOffers1'] .container {
 
     .offers1-room-images {
         height: 100%;
-        min-height: 450px;
+        min-height: 500px;
     }
 
     .offers1-room-content {
-        padding: 40px;
+        padding: 48px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -555,12 +564,12 @@ div[data-title='RowOffers1'] .container {
     }
 
     .offers1-cta-section {
-        padding: 48px 40px;
+        padding: 64px 40px;
     }
 
     .offers1-fallback-cta {
         width: auto;
-        min-width: 300px;
+        min-width: 350px;
     }
 }
 
@@ -575,6 +584,10 @@ div[data-title='RowOffers1'] .container {
     }
 
     .offers1-room-images {
-        min-height: 500px;
+        min-height: 550px;
+    }
+
+    .offers1-room-content {
+        padding: 56px;
     }
 }
