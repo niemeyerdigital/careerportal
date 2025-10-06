@@ -1,7 +1,6 @@
 /**
- * Offers Section 1 - Rooms & Capacity Display
- * Simplified mobile-first design with clean hide/show navigation
- * Optimized for lead generation pages
+ * Offers Section 1 - Simplified Room Showcase
+ * Clean, Uber-inspired design with smooth navigation
  */
 
 window.Offers1Section = class Offers1Section extends window.BaseSec {
@@ -12,9 +11,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         this.initializeOffers();
     }
 
-    /**
-     * Initialize Offers section
-     */
     initializeOffers() {
         if (!this.container) {
             console.error('Offers section container not found');
@@ -29,11 +25,8 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         this.onResize();
     }
 
-    /**
-     * Generate HTML structure
-     */
     generateHTML() {
-        const { hero, offerBanner, rooms, cta, trustBadges, display } = this.config;
+        const { hero, offerBanner, rooms, cta, display } = this.config;
 
         this.container.innerHTML = `
             <div class="offers1-wrapper">
@@ -41,6 +34,12 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
                 <div class="offers1-hero">
                     <h2 class="offers1-headline">${hero.headline}</h2>
                     <p class="offers1-subheadline">${hero.subheadline}</p>
+                    ${hero.badge?.enabled ? `
+                        <div class="offers1-badge">
+                            <i class="${hero.badge.icon}"></i>
+                            <span>${hero.badge.text}</span>
+                        </div>
+                    ` : ''}
                 </div>
 
                 <!-- Offer Banner -->
@@ -53,63 +52,45 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
                             <div class="offers1-banner-text">
                                 <div class="offers1-banner-title">${offerBanner.title}</div>
                                 <div class="offers1-banner-subtitle">${offerBanner.text}</div>
-                                ${offerBanner.validUntil ? `
-                                    <div class="offers1-banner-validity">
-                                        Gültig bis ${offerBanner.validUntil}
-                                    </div>
-                                ` : ''}
                             </div>
+                            ${offerBanner.validUntil ? `
+                                <div class="offers1-banner-validity">
+                                    <small>Gültig bis ${offerBanner.validUntil}</small>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 ` : ''}
 
-                <!-- Room Navigation -->
-                <div class="offers1-nav-desktop">
+                <!-- Mobile Navigation -->
+                <div class="offers1-nav-mobile">
                     ${rooms.map((room, index) => `
-                        <button class="offers1-tab ${index === 0 ? 'active' : ''}" 
-                                data-index="${index}"
-                                aria-label="View ${room.name}">
-                            <span class="tab-name">${room.name}</span>
-                            <span class="tab-capacity">
-                                <i class="fas fa-users"></i> ${room.capacity.displayText}
-                            </span>
+                        <button class="offers1-nav-pill ${index === 0 ? 'active' : ''}" 
+                                data-index="${index}" 
+                                aria-label="${room.name}">
+                            ${room.name}
                         </button>
                     `).join('')}
                 </div>
 
-                <!-- Room Cards -->
+                <!-- Desktop Navigation -->
+                <div class="offers1-nav-desktop">
+                    ${rooms.map((room, index) => `
+                        <button class="offers1-tab ${index === 0 ? 'active' : ''}" 
+                                data-index="${index}">
+                            ${room.name}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- Room Cards Container -->
                 <div class="offers1-rooms">
                     ${rooms.map((room, index) => this.generateRoomCard(room, index)).join('')}
                 </div>
 
-                <!-- Trust Badges -->
-                ${trustBadges?.enabled ? `
-                    <div class="offers1-trust">
-                        ${trustBadges.badges.map(badge => `
-                            <div class="offers1-trust-badge">
-                                <i class="${badge.icon}"></i>
-                                <span>${badge.text}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-
                 <!-- CTA Section -->
                 <div class="offers1-cta-section">
                     <div class="offers1-cta-main" id="offers1-main-cta"></div>
-                    ${cta.phoneNumber ? `
-                        <div class="offers1-cta-phone">
-                            <span>${cta.phoneText || 'Oder anrufen:'}</span>
-                            <a href="tel:${cta.phoneNumber.replace(/\s/g, '')}" class="offers1-phone-link">
-                                <i class="fas fa-phone"></i> ${cta.phoneNumber}
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${cta.secondaryLink ? `
-                        <a href="${cta.secondaryLink}" class="offers1-secondary-link">
-                            ${cta.secondaryText} <i class="fas fa-arrow-right"></i>
-                        </a>
-                    ` : ''}
                 </div>
             </div>
         `;
@@ -117,9 +98,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         this.addMainCTAButton();
     }
 
-    /**
-     * Generate room card
-     */
     generateRoomCard(room, index) {
         const { display } = this.config;
         const isActive = index === 0 ? 'active' : '';
@@ -208,9 +186,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         `;
     }
 
-    /**
-     * Add main CTA button
-     */
     addMainCTAButton() {
         const ctaContainer = this.container.querySelector('#offers1-main-cta');
         if (!ctaContainer) return;
@@ -240,10 +215,8 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         }
     }
 
-    /**
-     * Initialize navigation
-     */
     initializeNavigation() {
+        // Desktop tabs
         const tabs = this.container.querySelectorAll('.offers1-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -252,6 +225,16 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
             });
         });
 
+        // Mobile pills
+        const pills = this.container.querySelectorAll('.offers1-nav-pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const index = parseInt(pill.dataset.index);
+                this.showRoom(index);
+            });
+        });
+
+        // Room CTA buttons
         const roomButtons = this.container.querySelectorAll('.offers1-room-button');
         roomButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -260,29 +243,42 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         });
     }
 
-    /**
-     * Show specific room
-     */
     showRoom(index) {
-        this.container.querySelectorAll('.offers1-tab').forEach((tab, i) => {
-            tab.classList.toggle('active', i === index);
+        // Update navigation
+        this.container.querySelectorAll('.offers1-tab, .offers1-nav-pill').forEach((nav, i) => {
+            nav.classList.toggle('active', i === index);
         });
 
+        // Update room cards
         this.container.querySelectorAll('.offers1-room-card').forEach((card, i) => {
             card.classList.toggle('active', i === index);
         });
 
+        // Scroll active pill into view on mobile
+        this.scrollActivePillIntoView(index);
+
         this.currentRoomIndex = index;
 
+        // Track room view
         if (this.config.tracking?.enabled && this.config.tracking.onRoomClick) {
             const room = this.config.rooms[index];
             this.config.tracking.onRoomClick(room.id, room.name);
         }
     }
 
-    /**
-     * Initialize image sliders
-     */
+    scrollActivePillIntoView(index) {
+        const pillsContainer = this.container.querySelector('.offers1-nav-mobile');
+        const activePill = this.container.querySelectorAll('.offers1-nav-pill')[index];
+        
+        if (pillsContainer && activePill) {
+            activePill.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }
+
     initializeImageSliders() {
         if (!this.config.display.enableImageCarousel) return;
 
@@ -297,9 +293,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         });
     }
 
-    /**
-     * Handle main CTA click
-     */
     handleMainCTAClick() {
         if (this.config.tracking?.enabled && window.gtag) {
             window.gtag('event', 'generate_lead', {
@@ -315,9 +308,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         }
     }
 
-    /**
-     * Handle room CTA click
-     */
     handleRoomCTAClick(roomId, roomName) {
         if (this.config.tracking?.enabled && this.config.tracking.onCTAClick) {
             this.config.tracking.onCTAClick(roomId, roomName);
@@ -326,9 +316,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         this.handleMainCTAClick();
     }
 
-    /**
-     * Setup event tracking
-     */
     setupEventTracking() {
         if (this.config.tracking?.enabled && window.gtag) {
             const observer = new IntersectionObserver((entries) => {
@@ -348,31 +335,21 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         }
     }
 
-    /**
-     * Handle responsive updates
-     */
     onResize() {
         const breakpoint = this.getCurrentBreakpoint();
         this.container.classList.remove('offers1-mobile', 'offers1-tablet', 'offers1-desktop');
         this.container.classList.add(`offers1-${breakpoint}`);
     }
 
-    /**
-     * Get section metrics
-     */
     getMetrics() {
         return {
             sectionType: 'offers1',
+            config: this.config,
             currentRoom: this.currentRoomIndex,
-            totalRooms: this.config.rooms.length,
-            hasOfferBanner: this.config.offerBanner?.enabled,
-            hasTrustBadges: this.config.trustBadges?.enabled
+            totalRooms: this.config.rooms.length
         };
     }
 
-    /**
-     * Cleanup
-     */
     destroy() {
         this.imageSliders.forEach(slider => {
             if (slider.destroy) slider.destroy();
@@ -381,23 +358,22 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
         super.destroy();
     }
 
-    /**
-     * Static factory method
-     */
     static create(containerId, config) {
         const defaultConfig = Offers1Section.getDefaultConfig();
         const mergedConfig = { ...defaultConfig, ...config };
         return new Offers1Section(mergedConfig, containerId);
     }
 
-    /**
-     * Get default configuration
-     */
     static getDefaultConfig() {
         return {
             hero: {
                 headline: "Choose Your Space",
-                subheadline: "Find the perfect room for your needs"
+                subheadline: "Find the perfect room for your needs",
+                badge: {
+                    enabled: true,
+                    text: "Flexible Options",
+                    icon: "fas fa-check-circle"
+                }
             },
             offerBanner: {
                 enabled: false
@@ -406,10 +382,6 @@ window.Offers1Section = class Offers1Section extends window.BaseSec {
             cta: {
                 mainButtonText: "Get Started",
                 mainButtonType: "MainButton1"
-            },
-            trustBadges: {
-                enabled: true,
-                badges: []
             },
             display: {
                 showCapacityBadge: true,
