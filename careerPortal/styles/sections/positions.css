@@ -1039,7 +1039,7 @@ body.modal-open {
 }
 
 .positions-block li span {
-    flex: 1 !important;
+    flex: 0 1 auto !important;
     text-align: left !important;
     word-wrap: break-word !important;
 }
