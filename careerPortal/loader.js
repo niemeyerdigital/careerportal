@@ -317,7 +317,7 @@ if (document.readyState === 'loading') {
 
 (function() {
     const GITHUB_USERNAME = 'niemeyerdigital';
-    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/`;
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/`;
     
     // Only load cookie banner if config exists and loader hasn't already handled it
     if (window.COOKIE_BANNER_CONFIG && !window.CareerPortalLoader?.cookieBannerLoaded) {
