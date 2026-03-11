@@ -33,7 +33,9 @@ window.MehrErfahrenSection = class MehrErfahrenSection extends window.BaseSec {
      */
     createMehrErfahrenHTML() {
         // Update headline with company placeholder
-        const mainHeadline = this.config.customHeadline || `Wieso ${this.config.companyPlaceholder}?`;
+        const mainHeadline = (this.config && this.config.customHeadline)
+    ? this.config.customHeadline
+    : `Wieso ${this.config.companyPlaceholder}?`;
         
         // Create cards array from config
         const cards = this.buildCardsArray();
