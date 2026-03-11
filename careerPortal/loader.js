@@ -6,7 +6,7 @@
 
 class CareerPortalLoader {
     constructor() {
-        this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
+        this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/';
         this.loadedModules = new Map();
         this.loadedStyles = new Map();
         this.initializationQueue = [];
@@ -317,7 +317,7 @@ if (document.readyState === 'loading') {
 
 (function() {
     const GITHUB_USERNAME = 'niemeyerdigital';
-    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/`;
     
     // Only load cookie banner if config exists and loader hasn't already handled it
     if (window.COOKIE_BANNER_CONFIG && !window.CareerPortalLoader?.cookieBannerLoaded) {
@@ -374,7 +374,7 @@ if (document.readyState === 'loading') {
 
 (function() {
     const GITHUB_USERNAME = 'niemeyerdigital';
-    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/`;
     
     // Only load tracking if config exists and loader hasn't already handled it
     if (window.TRACKING_CONFIG && !window.CareerPortalLoader?.trackingLoaded) {
@@ -422,7 +422,7 @@ if (document.readyState === 'loading') {
 
 (function() {
     const GITHUB_USERNAME = 'niemeyerdigital';
-    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/105a7c3dea2ec542e059e21398c7e11f392a429f/careerPortal/`;
     
     console.log('🚀 Loading Career Portal via fetch method...');
     
