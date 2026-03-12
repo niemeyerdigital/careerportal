@@ -1,0 +1,900 @@
+/**
+ * Career Portal Loader - Main Entry Point
+ * Dynamically loads CSS and JavaScript modules and initializes sections
+ * Includes Cookie Banner, Thanks Section, Exclude Section, Offers1, and Tracking support
+ */
+
+class CareerPortalLoader {
+    constructor() {
+        this.baseURL = 'https://raw.githubusercontent.com/niemeyerdigital/careerportal/main/careerPortal/';
+        this.loadedModules = new Map();
+        this.loadedStyles = new Map();
+        this.initializationQueue = [];
+        this.cookieBannerLoaded = false;
+        this.trackingLoaded = false;
+    }
+
+    /**
+     * Load CSS file by fetching as text and injecting as style element
+     */
+    async loadCSS(path) {
+        const url = this.baseURL + path;
+        
+        // Check if already loaded
+        if (this.loadedStyles.has(path)) {
+            console.log(`✅ CSS already loaded: ${path}`);
+            return true;
+        }
+        
+        try {
+            // Fetch CSS as text
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const cssText = await response.text();
+            
+            // Create and inject style element
+            const style = document.createElement('style');
+            style.textContent = cssText;
+            style.setAttribute('data-source', path);
+            document.head.appendChild(style);
+            
+            this.loadedStyles.set(path, true);
+            console.log(`✅ CSS loaded: ${path}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to load CSS: ${path}`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Load a JavaScript module dynamically
+     */
+    async loadModule(path) {
+        if (this.loadedModules.has(path)) {
+            return this.loadedModules.get(path);
+        }
+
+        try {
+            const response = await fetch(this.baseURL + path);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const code = await response.text();
+            
+            // Create a script element and execute it
+            const script = document.createElement('script');
+            script.textContent = code;
+            script.setAttribute('data-source', path);
+            document.head.appendChild(script);
+            
+            this.loadedModules.set(path, true);
+            console.log(`✅ Module loaded: ${path}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to load module: ${path}`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Load cookie banner module
+     */
+    async loadCookieBanner() {
+        if (this.cookieBannerLoaded) {
+            console.log('✅ Cookie banner already loaded');
+            return true;
+        }
+
+        try {
+            console.log('🍪 Loading cookie banner module...');
+            
+            // Load cookie banner CSS
+            await this.loadCSS('styles/cookieBanner.css');
+            
+            // Load cookie banner JS
+            await this.loadModule('cookieBanner.js');
+            
+            // Initialize if config exists
+            if (window.COOKIE_BANNER_CONFIG && window.CookieBannerModule) {
+                window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                console.log('🎉 Cookie banner initialized successfully!');
+            } else {
+                console.log('ℹ️ Cookie banner module loaded, waiting for config');
+            }
+            
+            this.cookieBannerLoaded = true;
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to load cookie banner:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Load tracking modules
+     */
+    async loadTracking() {
+        if (this.trackingLoaded) {
+            console.log('✅ Tracking already loaded');
+            return true;
+        }
+
+        try {
+            console.log('📊 Loading tracking modules...');
+            
+            // Load tracking constants first
+            await this.loadModule('tracking/constantsTracking.js');
+            
+            // Load main tracking module
+            await this.loadModule('tracking/funnelTracking.js');
+            
+            // Initialize if config exists
+            if (window.TRACKING_CONFIG && window.FunnelTracking) {
+                window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                console.log('🎉 Tracking initialized successfully!');
+            } else {
+                console.log('ℹ️ Tracking modules loaded, waiting for config');
+            }
+            
+            this.trackingLoaded = true;
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to load tracking:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Load all required CSS files
+     */
+    async loadAllCSS() {
+        const cssFiles = [
+            'styles/components/buttons.css',
+            'styles/sections/welcome.css',
+            'styles/sections/mehrErfahren.css',
+            'styles/sections/process.css',
+            'styles/sections/positions.css',
+            'styles/sections/footer.css',
+            'styles/sections/thanks.css',
+            'styles/sections/exclude.css',
+            'styles/sections/offers1.css'
+        ];
+        
+        console.log('📦 Loading CSS files...');
+        for (const cssFile of cssFiles) {
+            await this.loadCSS(cssFile);
+        }
+        console.log('✅ All CSS files loaded');
+    }
+
+    /**
+     * Initialize a specific section
+     */
+    async initializeSection(sectionType, config, containerId) {
+        try {
+            // Load base section first
+            await this.loadModule('sections/baseSec.js');
+            
+            // Load required UI components
+            await Promise.all([
+                this.loadModule('ui/components/videoWistia.js'),
+                this.loadModule('ui/components/buttonManager.js'),
+                this.loadModule('ui/components/badgeComponent.js'),
+                this.loadModule('ui/animations/slideUp.js'),
+                this.loadModule('ui/animations/animationController.js')
+            ]);
+
+            // Load config validator
+            await this.loadModule('configValidator.js');
+
+            // Load section-specific module
+            await this.loadModule(`sections/${sectionType}Section.js`);
+
+            // Validate configuration
+            if (window.ConfigValidator) {
+                const validatedConfig = window.ConfigValidator.process(config, sectionType);
+                if (!validatedConfig.isValid) {
+                    console.error(`Invalid config for ${sectionType}:`, validatedConfig.errors);
+                    return false;
+                }
+                config = validatedConfig.config;
+            }
+
+            // Initialize the section
+            const sectionClass = window[`${this.capitalize(sectionType)}Section`];
+            if (sectionClass) {
+                new sectionClass(config, containerId);
+                console.log(`🎉 ${this.capitalize(sectionType)} section initialized successfully!`);
+                return true;
+            } else {
+                console.error(`Section class ${sectionType}Section not found`);
+                return false;
+            }
+
+        } catch (error) {
+            console.error(`Failed to initialize ${sectionType} section:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Queue section for initialization (useful when DOM isn't ready)
+     */
+    queueSection(sectionType, config, containerId) {
+        this.initializationQueue.push({ sectionType, config, containerId });
+    }
+
+    /**
+     * Process all queued sections
+     */
+    async processQueue() {
+        for (const item of this.initializationQueue) {
+            await this.initializeSection(item.sectionType, item.config, item.containerId);
+        }
+        this.initializationQueue = [];
+    }
+
+    /**
+     * Auto-initialize sections based on data attributes
+     */
+    async autoInitialize() {
+        // First check and load cookie banner if config exists
+        if (window.COOKIE_BANNER_CONFIG) {
+            await this.loadCookieBanner();
+        }
+        
+        // Load tracking if config exists
+        if (window.TRACKING_CONFIG) {
+            await this.loadTracking();
+        }
+        
+        // Then load all CSS
+        await this.loadAllCSS();
+        
+        // Then find and initialize sections
+        const sections = document.querySelectorAll('[data-career-section]');
+        
+        for (const section of sections) {
+            const sectionType = section.getAttribute('data-career-section');
+            const configName = section.getAttribute('data-config') || `${sectionType.toUpperCase()}_CONFIG`;
+            const config = window[configName];
+
+            if (config) {
+                await this.initializeSection(sectionType, config, section.id);
+            } else {
+                console.warn(`Config ${configName} not found for section ${sectionType}`);
+            }
+        }
+    }
+
+    /**
+     * Utility function to capitalize first letter
+     */
+    capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    /**
+     * Set custom base URL for loading modules
+     */
+    setBaseURL(url) {
+        this.baseURL = url.endsWith('/') ? url : url + '/';
+    }
+
+    /**
+     * Check if root variables are available
+     */
+    checkRootVariables() {
+        const testVar = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+        if (!testVar) {
+            console.warn('⚠️ Root variables not found. Ensure they are defined in the funnel header.');
+            return false;
+        }
+        console.log('✅ Root variables detected');
+        return true;
+    }
+}
+
+// Create global loader instance
+window.CareerPortalLoader = new CareerPortalLoader();
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.CareerPortalLoader.autoInitialize();
+    });
+} else {
+    // DOM is already ready
+    window.CareerPortalLoader.autoInitialize();
+}
+
+// ====================================================================
+// COOKIE BANNER STANDALONE LOADER (FOR FUNNEL HEADER)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    // Only load cookie banner if config exists and loader hasn't already handled it
+    if (window.COOKIE_BANNER_CONFIG && !window.CareerPortalLoader?.cookieBannerLoaded) {
+        console.log('🍪 Loading Cookie Banner (standalone)...');
+        
+        async function loadCookieBanner() {
+            try {
+                // Fetch and inject CSS
+                const cssResponse = await fetch(BASE_URL + 'styles/cookieBanner.css');
+                if (!cssResponse.ok) throw new Error('Failed to load cookie banner CSS');
+                const cssText = await cssResponse.text();
+                
+                // Check if already loaded
+                if (!document.querySelector('style[data-source="cookieBanner.css"]')) {
+                    const style = document.createElement('style');
+                    style.textContent = cssText;
+                    style.setAttribute('data-source', 'cookieBanner.css');
+                    document.head.appendChild(style);
+                    console.log('✅ Cookie banner CSS loaded');
+                }
+                
+                // Fetch and execute JS
+                const jsResponse = await fetch(BASE_URL + 'cookieBanner.js');
+                if (!jsResponse.ok) throw new Error('Failed to load cookie banner JS');
+                const jsCode = await jsResponse.text();
+                
+                // Execute the code
+                eval(jsCode);
+                console.log('✅ Cookie banner JS loaded');
+                
+                // Initialize with config
+                if (window.CookieBannerModule && !window.CookieBanner) {
+                    window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                    console.log('🎉 Cookie banner initialized successfully!');
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load cookie banner:', error);
+            }
+        }
+        
+        // Load immediately for GDPR compliance
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadCookieBanner);
+        } else {
+            loadCookieBanner();
+        }
+    }
+})();
+
+// ====================================================================
+// TRACKING STANDALONE LOADER (FOR FUNNEL HEADER)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    // Only load tracking if config exists and loader hasn't already handled it
+    if (window.TRACKING_CONFIG && !window.CareerPortalLoader?.trackingLoaded) {
+        console.log('📊 Loading Tracking (standalone)...');
+        
+        async function loadTracking() {
+            try {
+                // Load constants first
+                const constantsResponse = await fetch(BASE_URL + 'tracking/constantsTracking.js');
+                if (!constantsResponse.ok) throw new Error('Failed to load tracking constants');
+                const constantsCode = await constantsResponse.text();
+                eval(constantsCode);
+                console.log('✅ Tracking constants loaded');
+                
+                // Load main tracking module
+                const trackingResponse = await fetch(BASE_URL + 'tracking/funnelTracking.js');
+                if (!trackingResponse.ok) throw new Error('Failed to load tracking module');
+                const trackingCode = await trackingResponse.text();
+                eval(trackingCode);
+                console.log('✅ Tracking module loaded');
+                
+                // Initialize with config
+                if (window.FunnelTracking && !window.FunnelTracker) {
+                    window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                    console.log('🎉 Tracking initialized successfully!');
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load tracking:', error);
+            }
+        }
+        
+        // Load after DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadTracking);
+        } else {
+            loadTracking();
+        }
+    }
+})();
+
+// ====================================================================
+// MANUAL INITIALIZATION FOR CLICKFUNNELS (CSP WORKAROUND)
+// ====================================================================
+
+(function() {
+    const GITHUB_USERNAME = 'niemeyerdigital';
+    const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/careerportal/main/careerPortal/`;
+    
+    console.log('🚀 Loading Career Portal via fetch method...');
+    
+    // Helper function to load CSS as text and inject as style
+    async function loadCSSAsStyle(url, filename) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const cssText = await response.text();
+            
+            // Check if style already exists
+            if (document.querySelector(`style[data-source="${filename}"]`)) {
+                console.log(`✅ CSS already loaded: ${filename}`);
+                return true;
+            }
+            
+            const style = document.createElement('style');
+            style.textContent = cssText;
+            style.setAttribute('data-source', filename);
+            document.head.appendChild(style);
+            console.log(`✅ CSS loaded: ${filename}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to load CSS: ${filename}`, error);
+            return false;
+        }
+    }
+    
+    // Load modules sequentially via fetch to avoid CSP issues
+    async function loadCareerPortal() {
+        try {
+            // Check for root variables first
+            const rootVarsExist = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            if (!rootVarsExist) {
+                console.warn('⚠️ Root variables not detected. Waiting 100ms and retrying...');
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // 0. Load Cookie Banner first if config exists
+            if (window.COOKIE_BANNER_CONFIG && !window.CookieBanner) {
+                console.log('🍪 Loading cookie banner...');
+                await loadCSSAsStyle(BASE_URL + 'styles/cookieBanner.css', 'cookieBanner.css');
+                
+                const cookieBannerResponse = await fetch(BASE_URL + 'cookieBanner.js');
+                const cookieBannerCode = await cookieBannerResponse.text();
+                eval(cookieBannerCode);
+                
+                if (window.CookieBannerModule) {
+                    window.CookieBanner = new window.CookieBannerModule(window.COOKIE_BANNER_CONFIG);
+                    console.log('🎉 Cookie banner initialized!');
+                }
+            }
+            
+            // 0.5 Load Tracking if config exists
+            if (window.TRACKING_CONFIG && !window.FunnelTracker) {
+                console.log('📊 Loading tracking modules...');
+                
+                // Load constants
+                const constantsResponse = await fetch(BASE_URL + 'tracking/constantsTracking.js');
+                const constantsCode = await constantsResponse.text();
+                eval(constantsCode);
+                console.log('✅ Tracking constants loaded');
+                
+                // Load main tracking
+                const trackingResponse = await fetch(BASE_URL + 'tracking/funnelTracking.js');
+                const trackingCode = await trackingResponse.text();
+                eval(trackingCode);
+                console.log('✅ Tracking module loaded');
+                
+                if (window.FunnelTracking) {
+                    window.FunnelTracker = new window.FunnelTracking(window.TRACKING_CONFIG);
+                    console.log('🎉 Tracking initialized!');
+                }
+            }
+            
+            // 1. Load CSS files by fetching as text and injecting as style elements
+            const cssFiles = [
+                'styles/components/buttons.css',
+                'styles/sections/welcome.css',
+                'styles/sections/mehrErfahren.css',
+                'styles/sections/process.css',
+                'styles/sections/positions.css',
+                'styles/sections/footer.css',
+                'styles/sections/thanks.css',
+                'styles/sections/exclude.css',
+                'styles/sections/offers1.css'
+            ];
+            
+            console.log('📦 Loading CSS files...');
+            for (const cssFile of cssFiles) {
+                await loadCSSAsStyle(BASE_URL + cssFile, cssFile);
+            }
+            console.log('✅ All CSS files loaded');
+            
+            // 2. Load and execute loader.js (already loaded, so skip)
+            console.log('✅ Loader already loaded');
+            
+            // Set the base URL
+            if (window.CareerPortalLoader) {
+                window.CareerPortalLoader.setBaseURL(BASE_URL);
+                console.log('✅ Base URL set to:', BASE_URL);
+            }
+            
+            // 3. Load and execute config validator
+            const validatorResponse = await fetch(BASE_URL + 'configValidator.js');
+            const validatorCode = await validatorResponse.text();
+            eval(validatorCode);
+            console.log('✅ Config validator loaded');
+            
+            // 4. Load base section
+            const baseSecResponse = await fetch(BASE_URL + 'sections/baseSec.js');
+            const baseSecCode = await baseSecResponse.text();
+            eval(baseSecCode);
+            console.log('✅ Base section loaded');
+            
+            // 5. Load UI components
+            const components = [
+                'ui/components/videoWistia.js',
+                'ui/components/buttonManager.js',
+                'ui/components/badgeComponent.js',
+                'ui/animations/slideUp.js',
+                'ui/animations/animationController.js'
+            ];
+            
+            for (const component of components) {
+                const response = await fetch(BASE_URL + component);
+                const code = await response.text();
+                eval(code);
+                console.log('✅ Loaded:', component);
+            }
+            
+            // 6. Load all section modules
+            const sections = ['welcome', 'mehrErfahren', 'process', 'footer', 'positions', 'thanks', 'exclude', 'offers1'];
+            
+            for (const section of sections) {
+                const response = await fetch(BASE_URL + `sections/${section}Section.js`);
+                const code = await response.text();
+                eval(code);
+                console.log(`✅ ${section} section loaded`);
+            }
+            
+            // 7. Initialize sections that exist on the page
+            if (window.WelcomeSection && document.getElementById('welcome-section') && window.WELCOME_CONFIG) {
+                new window.WelcomeSection(window.WELCOME_CONFIG, 'welcome-section');
+                console.log('🎉 Welcome section initialized successfully!');
+            }
+            
+            if (window.MehrErfahrenSection && document.getElementById('mehr-erfahren-section') && window.MEHR_ERFAHREN_CONFIG) {
+                new window.MehrErfahrenSection(window.MEHR_ERFAHREN_CONFIG, 'mehr-erfahren-section');
+                console.log('🎉 Mehr Erfahren section initialized successfully!');
+            }
+            
+            if (window.ProcessSection && document.getElementById('process-section') && window.PROCESS_CONFIG) {
+                new window.ProcessSection(window.PROCESS_CONFIG, 'process-section');
+                console.log('🎉 Process section initialized successfully!');
+            }
+            
+            if (window.FooterSection && document.getElementById('footer-section') && window.FOOTER_CONFIG) {
+                new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+                console.log('🎉 Footer section initialized successfully!');
+            }
+            
+            if (window.PositionsSection && document.getElementById('positions-section') && window.POSITIONS_CONFIG) {
+                new window.PositionsSection(window.POSITIONS_CONFIG, 'positions-section');
+                console.log('🎉 Positions section initialized successfully!');
+            }
+            
+            if (window.ThanksSection && document.getElementById('thanks-section') && window.THANKS_CONFIG) {
+                new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
+                console.log('🎉 Thanks section initialized successfully!');
+            }
+            
+            if (window.ExcludeSection && document.getElementById('exclude-section') && window.EXCLUDE_CONFIG) {
+                new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
+                console.log('🎉 Exclude section initialized successfully!');
+            }
+            
+            if (window.Offers1Section && document.getElementById('offers1-section') && window.OFFERS1_CONFIG) {
+                new window.Offers1Section(window.OFFERS1_CONFIG, 'offers1-section');
+                console.log('🎉 Offers1 section initialized successfully!');
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to load Career Portal:', error);
+        }
+    }
+    
+    // Start loading when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadCareerPortal);
+    } else {
+        loadCareerPortal();
+    }
+})();
+
+// ====================================================================
+// DEBUG HELPER FUNCTIONS
+// ====================================================================
+
+// Function to check if all components loaded correctly
+window.debugCareerPortal = function() {
+    const components = [
+        'CareerPortalLoader',
+        'ConfigValidator', 
+        'BaseSec',
+        'WelcomeSection',
+        'MehrErfahrenSection',
+        'ProcessSection',
+        'FooterSection',
+        'PositionsSection',
+        'ThanksSection',
+        'ExcludeSection',
+        'Offers1Section',
+        'VideoWistia',
+        'ButtonManager',
+        'BadgeComponent',
+        'SlideUpAnimation',
+        'AnimationController',
+        'CookieBannerModule',
+        'FunnelTracking',
+        'TrackingConstants'
+    ];
+    
+    console.log('=== Career Portal Debug Info ===');
+    components.forEach(component => {
+        const loaded = !!window[component];
+        console.log(`${component}: ${loaded ? '✅ Loaded' : '❌ Missing'}`);
+    });
+    
+    // Check CSS
+    const cssStyles = document.querySelectorAll('style[data-source]');
+    console.log(`CSS Styles Loaded: ${cssStyles.length} files`);
+    cssStyles.forEach(style => {
+        console.log(`  - ${style.getAttribute('data-source')}`);
+    });
+    
+    // Check root variables
+    const rootVars = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+    console.log(`Root Variables: ${rootVars ? '✅ Available' : '❌ Missing'}`);
+    
+    // Check cookie banner
+    console.log(`Cookie Banner Instance: ${window.CookieBanner ? '✅ Initialized' : '❌ Not initialized'}`);
+    if (window.CookieBanner) {
+        console.log('Cookie Banner Status:', window.CookieBanner.getStatus());
+    }
+    
+    // Check tracking
+    console.log(`Tracking Instance: ${window.FunnelTracker ? '✅ Initialized' : '❌ Not initialized'}`);
+    if (window.FunnelTracker) {
+        console.log('Tracking Status:', window.FunnelTracker.getStatus());
+    }
+    
+    // Check sections
+    const welcomeElement = document.getElementById('welcome-section');
+    const mehrErfahrenElement = document.getElementById('mehr-erfahren-section');
+    const processElement = document.getElementById('process-section');
+    const footerElement = document.getElementById('footer-section');
+    const positionsElement = document.getElementById('positions-section');
+    const thanksElement = document.getElementById('thanks-section');
+    const excludeElement = document.getElementById('exclude-section');
+    const offers1Element = document.getElementById('offers1-section');
+    
+    console.log(`Welcome Section Element: ${welcomeElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Mehr Erfahren Section Element: ${mehrErfahrenElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Process Section Element: ${processElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Footer Section Element: ${footerElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Positions Section Element: ${positionsElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Thanks Section Element: ${thanksElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Exclude Section Element: ${excludeElement ? '✅ Found' : '❌ Missing'}`);
+    console.log(`Offers1 Section Element: ${offers1Element ? '✅ Found' : '❌ Missing'}`);
+    
+    // Check configs
+    console.log('Cookie Banner Config:', window.COOKIE_BANNER_CONFIG);
+    console.log('Tracking Config:', window.TRACKING_CONFIG);
+    console.log('Welcome Config:', window.WELCOME_CONFIG);
+    console.log('Mehr Erfahren Config:', window.MEHR_ERFAHREN_CONFIG);
+    console.log('Process Config:', window.PROCESS_CONFIG);
+    console.log('Footer Config:', window.FOOTER_CONFIG);
+    console.log('Positions Config:', window.POSITIONS_CONFIG);
+    console.log('Thanks Config:', window.THANKS_CONFIG);
+    console.log('Exclude Config:', window.EXCLUDE_CONFIG);
+    console.log('Offers1 Config:', window.OFFERS1_CONFIG);
+};
+
+// Debug helper for Cookie Banner
+window.debugCookieBanner = function() {
+    console.log('=== Cookie Banner Debug Info ===');
+    console.log('CookieBannerModule loaded:', !!window.CookieBannerModule);
+    console.log('CookieBanner instance:', !!window.CookieBanner);
+    
+    if (window.CookieBanner) {
+        const status = window.CookieBanner.getStatus();
+        console.log('Initialized:', status.initialized);
+        console.log('Consent State:', status.consentState);
+        console.log('FB Pixel Ready:', status.fbPixelReady);
+        console.log('Config:', status.config);
+        
+        // Check localStorage
+        console.log('Preferences Set:', localStorage.getItem('cookiePreferencesSet'));
+        console.log('Essential Consent:', localStorage.getItem('cookie_consent_essential'));
+        console.log('Analytics Consent:', localStorage.getItem('cookie_consent_analytics'));
+        console.log('Marketing Consent:', localStorage.getItem('cookie_consent_marketing'));
+    } else {
+        console.log('Cookie Banner not initialized');
+    }
+};
+
+// Debug helper for Tracking
+window.debugTracking = function() {
+    console.log('=== Tracking Debug Info ===');
+    console.log('FunnelTracking loaded:', !!window.FunnelTracking);
+    console.log('TrackingConstants loaded:', !!window.TrackingConstants);
+    console.log('FunnelTracker instance:', !!window.FunnelTracker);
+    
+    if (window.FunnelTracker) {
+        const status = window.FunnelTracker.getStatus();
+        console.log('Initialized:', status.initialized);
+        console.log('Funnel Step:', status.config.funnelStep);
+        console.log('Session Data:', status.sessionData);
+        console.log('Analytics Consent:', status.hasAnalyticsConsent);
+        console.log('Marketing Consent:', status.hasMarketingConsent);
+        console.log('Tracked Events:', status.trackedEvents);
+        console.log('Active Parameters:', window.TrackingConstants.getActiveParameters(status.config));
+    } else {
+        console.log('Tracking not initialized');
+    }
+    
+    // Check session storage
+    console.log('Session Storage:');
+    console.log('  - origin:', sessionStorage.getItem('origin'));
+    console.log('  - contentId:', sessionStorage.getItem('contentId'));
+    console.log('  - selectedPosition:', sessionStorage.getItem('selectedPosition'));
+};
+
+// Reset cookie preferences
+window.resetCookiePreferences = function() {
+    if (window.CookieBanner) {
+        window.CookieBanner.resetPreferences();
+        console.log('✅ Cookie preferences reset');
+    } else {
+        console.error('❌ Cookie banner not initialized');
+    }
+};
+
+// Manually trigger cookie banner
+window.showCookieBanner = function() {
+    if (window.CookieBanner) {
+        window.CookieBanner.showBanner();
+        console.log('✅ Cookie banner shown');
+    } else {
+        console.error('❌ Cookie banner not initialized');
+    }
+};
+
+// Manually trigger tracking event
+window.trackCustomEvent = function(eventName, parameters) {
+    if (window.FunnelTracker) {
+        window.FunnelTracker.trackEvent(eventName, parameters);
+        console.log('✅ Custom event tracked:', eventName);
+    } else {
+        console.error('❌ Tracking not initialized');
+    }
+};
+
+// Test tracking data flow
+window.testTrackingDataFlow = function() {
+    console.log('=== Testing Tracking Data Flow ===');
+    
+    // Simulate position data
+    const testPositionData = {
+        id: 'test-123',
+        contentId: 'pflegefachkraft_bielefeld_voll',
+        position: 'Pflegefachkraft',
+        region: 'Bielefeld',
+        workCapacity: ['Vollzeit']
+    };
+    
+    console.log('Test Position Data:', testPositionData);
+    
+    if (window.FunnelTracker) {
+        // Update position data
+        window.FunnelTracker.updatePositionData(testPositionData);
+        console.log('✅ Position data updated');
+        
+        // Check formatted content ID
+        const formatted = window.TrackingConstants.formatContentId(testPositionData.contentId);
+        console.log('Formatted Content ID:', formatted);
+        
+        // Check expected event names
+        const step = window.FunnelTracker.config.funnelStep;
+        const prefix = window.TrackingConstants.getPrefix(step);
+        console.log('Expected Event:', `${prefix}_${formatted}`);
+        
+        // Prepare next step URL
+        const nextUrl = window.FunnelTracker.prepareNextStepUrl('https://example.com/next-step');
+        console.log('Next Step URL:', nextUrl);
+    } else {
+        console.error('❌ Tracking not initialized');
+    }
+};
+
+// Function to manually reinitialize sections
+window.reinitializeWelcomeSection = function() {
+    if (window.WelcomeSection && window.WELCOME_CONFIG) {
+        return new window.WelcomeSection(WELCOME_CONFIG, 'welcome-section');
+    } else {
+        console.error('WelcomeSection class or WELCOME_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeMehrErfahrenSection = function() {
+    if (window.MehrErfahrenSection && window.MEHR_ERFAHREN_CONFIG) {
+        return new window.MehrErfahrenSection(MEHR_ERFAHREN_CONFIG, 'mehr-erfahren-section');
+    } else {
+        console.error('MehrErfahrenSection class or MEHR_ERFAHREN_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeProcessSection = function() {
+    if (window.ProcessSection && window.PROCESS_CONFIG) {
+        return new window.ProcessSection(PROCESS_CONFIG, 'process-section');
+    } else {
+        console.error('ProcessSection class or PROCESS_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeFooterSection = function() {
+    if (window.FooterSection && window.FOOTER_CONFIG) {
+        return new window.FooterSection(window.FOOTER_CONFIG, 'footer-section');
+    } else {
+        console.error('FooterSection class or FOOTER_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializePositionsSection = function() {
+    if (window.PositionsSection && window.POSITIONS_CONFIG) {
+        return new window.PositionsSection(window.POSITIONS_CONFIG, 'positions-section');
+    } else {
+        console.error('PositionsSection class or POSITIONS_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeThanksSection = function() {
+    if (window.ThanksSection && window.THANKS_CONFIG) {
+        return new window.ThanksSection(window.THANKS_CONFIG, 'thanks-section');
+    } else {
+        console.error('ThanksSection class or THANKS_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeExcludeSection = function() {
+    if (window.ExcludeSection && window.EXCLUDE_CONFIG) {
+        return new window.ExcludeSection(window.EXCLUDE_CONFIG, 'exclude-section');
+    } else {
+        console.error('ExcludeSection class or EXCLUDE_CONFIG not available');
+        return false;
+    }
+};
+
+window.reinitializeOffers1Section = function() {
+    if (window.Offers1Section && window.OFFERS1_CONFIG) {
+        return new window.Offers1Section(window.OFFERS1_CONFIG, 'offers1-section');
+    } else {
+        console.error('Offers1Section class or OFFERS1_CONFIG not available');
+        return false;
+    }
+};
